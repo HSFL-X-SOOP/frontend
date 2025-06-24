@@ -65,7 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
             href: NavItems.NAV5,
             isActive: activeItem === NavItems.NAV5,
             icon: <QuestionMarkIcon size={20}/>
-        },
+        }
     ];
 
     const menuItems = [
@@ -116,9 +116,9 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
                 </NavbarItem>
                 {!login && (
                     <NavbarItem>
-                        <Button as={Link} onPress={() => {
+                        <Button onPress={() => {
                             setLogin(true)
-                        }} color="primary" href="#" variant="flat">
+                        }} color="primary" variant="flat">
                             Anmelden
                         </Button>
                     </NavbarItem>
@@ -131,6 +131,8 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
                             className="transition-transform"
                             color="primary"
                             size="sm"
+                            as={Link}
+                            href={"/profile"}
                             src={Profile}
                         />
                     </NavbarItem>

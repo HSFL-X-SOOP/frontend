@@ -210,7 +210,7 @@ export default {
                         content2: { DEFAULT: "#27272a", foreground: "#fff" },
                         content3: { DEFAULT: "#3f3f46", foreground: "#fff" },
                         content4: { DEFAULT: "#52525b", foreground: "#fff" },
-                        focus: "#78D278",
+                        focus: "#053246",
                         overlay: "#ffffff"
                     }
                 }

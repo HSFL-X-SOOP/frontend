@@ -11,4 +11,5 @@ export enum NavItems {
     NAV3 = "/nav3",
     NAV4 = "/nav4",
     NAV5 = "/nav5",
+    PROFILE = "/profile",
 }
