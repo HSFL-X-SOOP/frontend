@@ -1,10 +1,10 @@
-import DefaultLayout from "@/layouts/default.tsx";
+import DefaultLayout from "@/layouts/DefaultLayout.tsx";
 import {NavItems} from "@/types";
 
 export function Nav() {
     return (
         <DefaultLayout activeItem={NavItems.NAV2}>
-            <div className={"w-full h-screen items-center justify-center"}>Navigation 2</div>
+            <div className="w-screen h-[calc(100vh-65px)] flex items-center justify-center bg-content1 ">Navigation 2</div>
         </DefaultLayout>
     );
 }

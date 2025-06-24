@@ -1,6 +1,6 @@
 import {Route, Routes} from "react-router-dom";
 
-import IndexPage from "@/pages";
+import IndexPage from "@/pages/Index.tsx";
 import {Nav} from "@/pages/Nav.tsx";
 import {Nav3} from "@/pages/Nav3.tsx";
 import {Nav4} from "@/pages/Nav4.tsx";

@@ -1,4 +1,4 @@
-import DefaultLayout from "@/layouts/default.tsx";
+import DefaultLayout from "@/layouts/DefaultLayout.tsx";
 import {NavItems} from "@/types";
 
 export function Nav3() {

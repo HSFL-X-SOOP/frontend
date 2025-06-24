@@ -11,10 +11,14 @@ import {
 
 
 import {ThemeSwitch} from "@/components/theme-switch.tsx";
-import {LOGO, MapIcon, QuestionMarkIcon} from "@/components/icons.tsx";
-import {useState} from "react";
+import {LOGO, MapIcon, QuestionMarkIcon} from "@/components/Icons.tsx";
+import React, {useState} from "react";
 import {Button} from "@heroui/button";
 import {NavItems} from "@/types";
+import {Avatar} from "@heroui/avatar";
+import Profile from "@/assets/profile.jpg"
+
+import {useNavigate} from "react-router-dom";
 
 export interface NavbarProps {
     activeItem: NavItems;
@@ -22,9 +26,12 @@ export interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const navigate = useNavigate()
+    const [login, setLogin] = useState(false);
 
     const itemClasses = [
-        "flex relative h-full items-center px-4 hover:text-primary",
+        "flex relative h-full items-center px-4 font-normal",
+        "data-[active=true]:!font-normal data-[active=true]:text-primary",
         "data-[active=true]:after:absolute",
         "data-[active=true]:after:bottom-0",
         "data-[active=true]:after:left-0",
@@ -61,8 +68,6 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
         },
     ];
 
-    console.log(activeItem);
-
     const menuItems = [
         "Karte",
         "Nav2",
@@ -72,7 +77,8 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
     ];
 
     return (
-        <DefaultNavbar isBordered maxWidth={"2xl"} position={"sticky"} classNames={{item: itemClasses}}
+        <DefaultNavbar isBordered maxWidth={"2xl"} position={"sticky"} className={"dark:bg-secondary"}
+                       classNames={{item: itemClasses}}
                        onMenuOpenChange={setIsMenuOpen}>
             <NavbarContent>
                 <NavbarMenuToggle
@@ -80,29 +86,56 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
                     className="sm:hidden"
                 />
                 <NavbarBrand>
-                    <LOGO size={40}/>
-                    <p className="font-bold text-2xl font-oswald text-primary text-inherit">Marlin</p>
+                    <LOGO size={40} className="text-secondary dark:text-primary"/>
+                    <p className="font-bold text-2xl font-oswald text-secondary dark:text-primary text-inherit">Marlin</p>
                 </NavbarBrand>
             </NavbarContent>
-            <NavbarContent className="hidden sm:flex gap-4" justify="center">
+            <NavbarContent className="hidden sm:flex gap-6" justify="center">
                 {navLinks.map(({label, href, isActive, icon}) => (
-                    <NavbarItem key={label} isActive={isActive} className="flex items-center p-0 gap-2">
-                        {icon}
-                        <Link href={href} color={isActive ? "primary" : "foreground"} className="text-medium">
+                    <NavbarItem
+                        key={label}
+                        isActive={isActive}
+                        onClick={() => {
+                            navigate(href)
+                        }}
+                        className="flex items-center p-1 gap-2 cursor-pointer"
+                    >
+                        {React.cloneElement(icon, {
+                            className: isActive ? "text-primary" : undefined
+                        })}
+
+                        <span className={`text-medium ${isActive ? "text-primary" : "text-foreground"}`}>
                             {label}
-                        </Link>
+                        </span>
                     </NavbarItem>
                 ))}
             </NavbarContent>
-            <NavbarContent justify="end">
+            <NavbarContent justify="end" className={"gap-0"}>
                 <NavbarItem>
                     <ThemeSwitch/>
                 </NavbarItem>
-                <NavbarItem>
-                    <Button as={Link} color="primary" href="#" variant="flat">
-                        Anmelden
-                    </Button>
-                </NavbarItem>
+                {!login && (
+                    <NavbarItem>
+                        <Button as={Link} onPress={() => {
+                            setLogin(true)
+                        }} color="primary" href="#" variant="flat">
+                            Anmelden
+                        </Button>
+                    </NavbarItem>
+                )}
+
+                {login && (
+                    <NavbarItem>
+                        <Avatar
+                            isBordered
+                            className="transition-transform"
+                            color="primary"
+                            size="sm"
+                            src={Profile}
+                        />
+                    </NavbarItem>
+                )}
+
             </NavbarContent>
             <NavbarMenu>
                 {menuItems.map((item, index) => (
