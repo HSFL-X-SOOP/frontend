@@ -11,21 +11,25 @@ import {Select, SelectItem, Avatar, Chip, Selection, SelectedItems} from "@herou
 import {Tabs, Tab} from "@heroui/tabs";
 
 // Filter-Optionen für die Karte
-interface FilterOption { key: string; label: string; }
+interface FilterOption {
+    key: string;
+    label: string;
+}
+
 const filterOptions: FilterOption[] = [
-    { key: "windStrength",      label: "Windstärke" },
-    { key: "windDirection",     label: "Windrichtung" },
-    { key: "waveHeight",        label: "Wellenhöhe" },
-    { key: "waterDepth",        label: "Wassertiefe" },
-    { key: "waterTemp",         label: "Wassertemperatur" },
-    { key: "waterLevel",        label: "Wasserstand" },
-    { key: "visibility",        label: "Sichtweite" },
-    { key: "tide",              label: "Gezeiten" },
-    { key: "salinity",          label: "Salzgehalt" },
-    { key: "precipitation",     label: "Niederschlagswahrscheinlichkeit" },
-    { key: "dateFocus",         label: "Zeitfokus" },
-    { key: "hazardZones",       label: "Gefahrenzonen" },
-    { key: "uvIndex",           label: "UV-Index" },
+    {key: "windStrength", label: "Windstärke"},
+    {key: "windDirection", label: "Windrichtung"},
+    {key: "waveHeight", label: "Wellenhöhe"},
+    {key: "waterDepth", label: "Wassertiefe"},
+    {key: "waterTemp", label: "Wassertemperatur"},
+    {key: "waterLevel", label: "Wasserstand"},
+    {key: "visibility", label: "Sichtweite"},
+    {key: "tide", label: "Gezeiten"},
+    {key: "salinity", label: "Salzgehalt"},
+    {key: "precipitation", label: "Niederschlagswahrscheinlichkeit"},
+    {key: "dateFocus", label: "Zeitfokus"},
+    {key: "hazardZones", label: "Gefahrenzonen"},
+    {key: "uvIndex", label: "UV-Index"},
 ];
 
 
@@ -57,12 +61,13 @@ export function Profile() {
     return (
         <DefaultLayout activeItem={NavItems.NAV2}>
             <div className="w-screen h-[calc(100vh-65px)] flex items-start justify-center bg-content1 p-4">
-                <Card  className="w-full dark:bg-content2 h-full">
+                <Card className="w-full dark:bg-content2 h-full">
                     <CardHeader>
                         <h2 className="text-2xl font-bold">Mein Profil</h2>
                     </CardHeader>
                     <CardBody>
-                        <Tabs defaultSelectedKey="general" variant={"solid"} color={"secondary"} classNames={{base: 'w-full'}}>
+                        <Tabs defaultSelectedKey="general" variant={"solid"} color={"secondary"}
+                              classNames={{base: 'w-full'}}>
 
                             <Tab key="general" title="Allgemeine Daten">
                                 <div className="space-y-4">
@@ -189,7 +194,8 @@ export function Profile() {
                                         renderValue={(items: SelectedItems<FilterOption>) => (
                                             <div className="flex flex-wrap gap-2">
                                                 {items.map(item => (
-                                                    <Chip color={"secondary"} variant={"dot"} key={item.key}>{item.data?.label}</Chip>
+                                                    <Chip color={"secondary"} variant={"dot"}
+                                                          key={item.key}>{item.data?.label}</Chip>
                                                 ))}
                                             </div>
                                         )}
