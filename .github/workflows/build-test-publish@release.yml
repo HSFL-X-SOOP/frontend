@@ -30,11 +30,9 @@ jobs:
       - name: Build frontend
         run: npm run build
 
-      - name: Copy dist to server
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ env.SERVER_IP }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ env.DEPLOY_KEY }}
-          source: "dist/*"
-          target: ${{ env.DEPLOY_PATH }}
+      - name: Deploy via rsync
+        run: |
+          echo "$DEPLOY_KEY" > ~/marlin_id
+          chmod 600 ~/marlin_id
+          rsync -avz -e "ssh -4 -i ~/marlin_id -o StrictHostKeyChecking=no" \
+          dist/ $SERVER_USER@$SERVER_IP:$DEPLOY_PATH
