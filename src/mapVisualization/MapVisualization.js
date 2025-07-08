@@ -31,6 +31,7 @@ import {createSensorDataVectorSource} from './data/sensor-utils.js';
 import {ShowPopover, DisposePopover} from './popover.js';
 import {DrawOverlay} from './overlays/overlay.js';
 import openFreeMapStyle from "./style.json";
+import { base } from 'framer-motion/client';
 
 export class MapVisualization {
     constructor(containerId, options = {}) {
@@ -78,14 +79,14 @@ export class MapVisualization {
         this.airPropertiesSensorVectorSource = await createAirPropertiesSensorVectorSource();
         this.layers.airProperties = new VectorLayer({
             source: this.airPropertiesSensorVectorSource,
-            visible: true,
+            visible: false,
             title: "AirProperties",
             style: airPropertiesSensorStyle,
         });
 
         this.layers.airQuality = new VectorLayer({
             source: createSensorDataVectorSource(airQualitySensorData),
-            visible: true,
+            visible: false,
             title: "AirQuality",
             style: airQualitySensorStyle,
         });
@@ -94,7 +95,7 @@ export class MapVisualization {
         const waterLevelTemperatureSource = createSensorDataVectorSource(waterLevelTemperatureData);
         this.layers.waterLevelTemperature = new VectorLayer({
             source: waterLevelTemperatureSource,
-            visible: true,
+            visible: false,
             title: "WaterLevelTemperature",
             style: waterLevelTemperatureSensorStyle,
         });
@@ -191,6 +192,15 @@ export class MapVisualization {
                 }
             }
         }
+    }
+
+    setModuleVisibility(moduleName, visible) {
+        this.map.getLayers().forEach(function(element, index, array){
+            let baseVectorLayerTitle = element.get('title')
+            if (element instanceof VectorLayer && baseVectorLayerTitle == moduleName){
+                element.setVisible(visible)
+            }
+        })
     }
 
     toggleLayer(layerName) {

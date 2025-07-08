@@ -2,11 +2,14 @@ import React, {useEffect, useRef} from "react";
 import {MapVisualization} from "@/mapVisualization/MapVisualization";
 
 interface MapWrapperProps {
+    module1Visible: boolean;
+    module2Visible: boolean;
+    module3Visible: boolean;
     temperatureVisible: boolean;
     windDirectionVisible: boolean;
 }
 
-const MapWrapper: React.FC<MapWrapperProps> = ({temperatureVisible, windDirectionVisible}) => {
+const MapWrapper: React.FC<MapWrapperProps> = ({module1Visible, module2Visible, module3Visible, temperatureVisible, windDirectionVisible}) => {
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<any>(null);
 
@@ -23,6 +26,24 @@ const MapWrapper: React.FC<MapWrapperProps> = ({temperatureVisible, windDirectio
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.setModuleVisibility("WaterLevelTemperature", module1Visible);
+        }
+    }, [module1Visible]);
+
+    useEffect(() => {
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.setModuleVisibility("AirProperties", module2Visible);
+        }
+    }, [module2Visible]);
+
+    useEffect(() => {
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.setModuleVisibility("AirQuality", module3Visible);
+        }
+    }, [module3Visible]);
 
     useEffect(() => {
         if (mapInstanceRef.current) {
