@@ -29,12 +29,3 @@ jobs:
 
       - name: Build frontend
         run: npm run build
-
-      - name: Copy dist to server
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ env.SERVER_IP }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ env.MARLIN_DEPLOY_KEY }}
-          source: "dist/*"
-          target: ${{ env.DEPLOY_PATH }}
