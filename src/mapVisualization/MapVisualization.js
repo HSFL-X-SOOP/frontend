@@ -31,6 +31,7 @@ import {createSensorDataVectorSource} from './data/sensor-utils.js';
 import {ShowPopover, DisposePopover} from './popover.js';
 import {DrawOverlay} from './overlays/overlay.js';
 import openFreeMapStyle from "./style.json";
+import {Overlay} from "ol";
 
 export class MapVisualization {
     constructor(containerId, options = {}) {
@@ -78,14 +79,14 @@ export class MapVisualization {
         this.airPropertiesSensorVectorSource = await createAirPropertiesSensorVectorSource();
         this.layers.airProperties = new VectorLayer({
             source: this.airPropertiesSensorVectorSource,
-            visible: true,
+            visible: false,
             title: "AirProperties",
             style: airPropertiesSensorStyle,
         });
 
         this.layers.airQuality = new VectorLayer({
             source: createSensorDataVectorSource(airQualitySensorData),
-            visible: true,
+            visible: false,
             title: "AirQuality",
             style: airQualitySensorStyle,
         });
@@ -94,7 +95,7 @@ export class MapVisualization {
         const waterLevelTemperatureSource = createSensorDataVectorSource(waterLevelTemperatureData);
         this.layers.waterLevelTemperature = new VectorLayer({
             source: waterLevelTemperatureSource,
-            visible: true,
+            visible: false,
             title: "WaterLevelTemperature",
             style: waterLevelTemperatureSensorStyle,
         });
@@ -107,6 +108,9 @@ export class MapVisualization {
     createOverlays() {
         this.overlays.temperature = document.getElementById('temperature-overlay');
         this.overlays.windDirection = document.getElementById('wind-direction-overlay');
+        const popupElement = document.getElementById('popup');
+        this.overlays.popup = new Overlay({ element: popupElement });
+        this.map.addOverlay(this.overlays.popup);
     }
 
     setupEventListeners() {
@@ -142,17 +146,15 @@ export class MapVisualization {
         const feature = this.map.forEachFeatureAtPixel(evt.pixel, (feature) => {
             this.selectedFeature = feature;
 
+            console.log("Selected feature:", feature.get("sensor_name"));
             switch (feature.get("sensor_name")) {
                 case "Air Properties Sensor":
-                    this.sensorData = showAirPropertiesSensorData(feature);
                     ShowPopover(this.overlays.popup, this.overlays.popup.getElement(), evt, feature, AirPropertiesPopoverContent(feature));
                     break;
                 case "Air Quality Sensor":
-                    this.sensorData = showAirQualitySensorData(feature);
                     ShowPopover(this.overlays.popup, this.overlays.popup.getElement(), evt, feature, AirQualityPopoverContent(feature));
                     break;
                 case "Water Level Temperature Sensor":
-                    this.sensorData = showWaterLevelTemperatureSensorData(feature);
                     ShowPopover(this.overlays.popup, this.overlays.popup.getElement(), evt, feature, WaterLevelTemperaturePopoverContent(feature));
                     break;
             }
@@ -191,6 +193,15 @@ export class MapVisualization {
                 }
             }
         }
+    }
+
+    setModuleVisibility(moduleName, visible) {
+        this.map.getLayers().forEach(function(element, index, array){
+            let baseVectorLayerTitle = element.get('title')
+            if (element instanceof VectorLayer && baseVectorLayerTitle == moduleName){
+                element.setVisible(visible)
+            }
+        })
     }
 
     toggleLayer(layerName) {

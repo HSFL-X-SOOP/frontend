@@ -21,12 +21,18 @@ export default function IndexPage() {
     // State für die Overlays
     const [temperatureVisible, setTemperatureVisible] = useState(false);
     const [windDirectionVisible, setWindDirectionVisible] = useState(false);
+    const [module1Visible, setModule1Visible] = useState(false);
+    const [module2Visible, setModule2Visible] = useState(false);
+    const [module3Visible, setModule3Visible] = useState(false);
 
     return (
         <DefaultLayout activeItem={NavItems.MAP}>
             <div className="h-[calc(100vh-65px)] relative">
 
                 <MapWrapper
+                    module1Visible={module1Visible}
+                    module2Visible={module2Visible}
+                    module3Visible={module3Visible}
                     temperatureVisible={temperatureVisible}
                     windDirectionVisible={windDirectionVisible}
                 />
@@ -74,6 +80,24 @@ export default function IndexPage() {
                                 </DrawerHeader>
                                 <DrawerBody className="space-y-4 p-4 overflow-visible">
                                     <div className="flex flex-col gap-4">
+                                        <Checkbox
+                                            isSelected={module1Visible}
+                                            onValueChange={setModule1Visible}
+                                        >
+                                            Module 1: Water Level Temperature
+                                        </Checkbox>
+                                        <Checkbox
+                                            isSelected={module2Visible}
+                                            onValueChange={setModule2Visible}
+                                        >
+                                            Module 2: Air Properties
+                                        </Checkbox>
+                                        <Checkbox
+                                            isSelected={module3Visible}
+                                            onValueChange={setModule3Visible}
+                                        >
+                                            Module 3: Air Quality
+                                        </Checkbox>
                                         <Checkbox
                                             isSelected={temperatureVisible}
                                             onValueChange={setTemperatureVisible}

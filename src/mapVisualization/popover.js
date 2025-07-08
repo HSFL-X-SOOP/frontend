@@ -1,3 +1,5 @@
+import * as bootstrap from 'bootstrap';
+
 function ShowPopover(popup, element, evt, feature, content) {
     const coordinate = evt.coordinate;
     popup.setPosition(coordinate);
