@@ -47,6 +47,7 @@ export class MapVisualization {
         this.eventListeners = {};
         this.selectedFeature = null;
         this.sensorData = null;
+        this.airPropertiesSensorVectorSource = null;
 
         this.init();
     }
@@ -74,9 +75,9 @@ export class MapVisualization {
     }
 
     async createLayers() {
-        const airPropertiesSource = await createAirPropertiesSensorVectorSource();
+        this.airPropertiesSensorVectorSource = await createAirPropertiesSensorVectorSource();
         this.layers.airProperties = new VectorLayer({
-            source: airPropertiesSource,
+            source: this.airPropertiesSensorVectorSource,
             visible: true,
             title: "AirProperties",
             style: airPropertiesSensorStyle,
@@ -170,10 +171,10 @@ export class MapVisualization {
 
     handleMapMoveEnd() {
         if (this.overlays && this.overlays.temperature && this.overlays.temperature.style.display !== "none") {
-            DrawOverlay(this.map, airPropertiesSensorVectorSource, this.overlays.temperature, 10, 10, "Temperature");
+            DrawOverlay(this.map, this.airPropertiesSensorVectorSource, this.overlays.temperature, 10, 10, "Temperature");
         }
         if (this.overlays && this.overlays.windDirection && this.overlays.windDirection.style.display !== "none") {
-            DrawOverlay(this.map, airPropertiesSensorVectorSource, this.overlays.windDirection, 10, 10, "WindDirection");
+            DrawOverlay(this.map, this.airPropertiesSensorVectorSource, this.overlays.windDirection, 10, 10, "WindDirection");
         }
         this.map.render();
     }
@@ -183,10 +184,10 @@ export class MapVisualization {
             this.overlays[overlayName].style.display = visible ? "" : "none";
             if (visible) {
                 if (overlayName === "temperature") {
-                    DrawOverlay(this.map, airPropertiesSensorVectorSource, this.overlays.temperature, 10, 10, "Temperature");
+                    DrawOverlay(this.map, this.airPropertiesSensorVectorSource, this.overlays.temperature, 10, 10, "Temperature");
                 }
                 if (overlayName === "windDirection") {
-                    DrawOverlay(this.map, airPropertiesSensorVectorSource, this.overlays.windDirection, 10, 10, "WindDirection");
+                    DrawOverlay(this.map, this.airPropertiesSensorVectorSource, this.overlays.windDirection, 10, 10, "WindDirection");
                 }
             }
         }
@@ -197,14 +198,14 @@ export class MapVisualization {
             const isVisible = this.overlays.temperature.style.display !== 'none';
             this.overlays.temperature.style.display = isVisible ? 'none' : '';
             if (!isVisible) {
-                DrawOverlay(this.map, airPropertiesSensorVectorSource, this.overlays.temperature, 10, 10, "Temperature");
+                DrawOverlay(this.map, this.airPropertiesSensorVectorSource, this.overlays.temperature, 10, 10, "Temperature");
             }
         }
         if (layerName === 'windDirection' && this.overlays.windDirection) {
             const isVisible = this.overlays.windDirection.style.display !== 'none';
             this.overlays.windDirection.style.display = isVisible ? 'none' : '';
             if (!isVisible) {
-                DrawOverlay(this.map, airPropertiesSensorVectorSource, this.overlays.windDirection, 10, 10, "WindDirection");
+                DrawOverlay(this.map, this.airPropertiesSensorVectorSource, this.overlays.windDirection, 10, 10, "WindDirection");
             }
         }
     }
