@@ -7,18 +7,22 @@ import {Nav4} from "@/pages/Nav4.tsx";
 import {Nav5} from "@/pages/Nav5.tsx";
 import {Profile} from "@/pages/Profile.tsx";
 import {About} from "@/pages/About.tsx";
+import {AuthProvider} from "@/context/AuthContext.tsx";
+import {ProtectedRoute} from "@/components/ProtectedRoute.tsx";
 
 function App() {
     return (
-        <Routes>
-            <Route element={<IndexPage/>} path="/"/>
-            <Route element={<Nav/>} path="/nav2"/>
-            <Route element={<Nav3/>} path="/nav3"/>
-            <Route element={<Nav4/>} path="/nav4"/>
-            <Route element={<Nav5/>} path="/nav5"/>
-            <Route element={<Profile/>} path="/profile"/>
-            <Route element={<About/>} path="/about"/>
-        </Routes>
+        <AuthProvider>
+            <Routes>
+                <Route element={<IndexPage/>} path="/"/>
+                <Route element={<Nav/>} path="/nav2"/>
+                <Route element={<Nav3/>} path="/nav3"/>
+                <Route element={<Nav4/>} path="/nav4"/>
+                <Route element={<Nav5/>} path="/nav5"/>
+                <Route element={<ProtectedRoute><Profile/></ProtectedRoute>} path="/profile"/>
+                <Route element={<About/>} path="/about"/>
+            </Routes>
+        </AuthProvider>
     );
 }
 
