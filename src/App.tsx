@@ -6,6 +6,7 @@ import {Nav3} from "@/pages/Nav3.tsx";
 import {Nav4} from "@/pages/Nav4.tsx";
 import {Nav5} from "@/pages/Nav5.tsx";
 import {Profile} from "@/pages/Profile.tsx";
+import {About} from "@/pages/About.tsx";
 
 function App() {
     return (
@@ -16,6 +17,7 @@ function App() {
             <Route element={<Nav4/>} path="/nav4"/>
             <Route element={<Nav5/>} path="/nav5"/>
             <Route element={<Profile/>} path="/profile"/>
+            <Route element={<About/>} path="/about"/>
         </Routes>
     );
 }

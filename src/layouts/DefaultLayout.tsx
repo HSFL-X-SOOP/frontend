@@ -12,7 +12,7 @@ export default function DefaultLayout({
     return (
         <div className="relative flex flex-col w-screen h-screen">
             <Navbar activeItem={activeItem}/>
-            <main className="w-screen h-screen">
+            <main className="w-screen min-h-[calc(100vh-65px)]">
                 {children}
             </main>
         </div>

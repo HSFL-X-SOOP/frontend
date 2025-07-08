@@ -11,7 +11,7 @@ import {
 
 
 import {ThemeSwitch} from "@/components/theme-switch.tsx";
-import {LOGO, MapIcon, QuestionMarkIcon} from "@/components/Icons.tsx";
+import {InfoIcon, LOGO, MapIcon} from "@/components/Icons.tsx";
 import React, {useState} from "react";
 import {Button} from "@heroui/button";
 import {NavItems} from "@/types";
@@ -43,28 +43,10 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
     const navLinks = [
         {label: "Karte", href: NavItems.MAP, isActive: activeItem === NavItems.MAP, icon: <MapIcon size={20}/>},
         {
-            label: "Nav2",
-            href: NavItems.NAV2,
+            label: "Über uns",
+            href: NavItems.ABOUT,
             isActive: activeItem === NavItems.NAV2,
-            icon: <QuestionMarkIcon size={20}/>
-        },
-        {
-            label: "Nav3",
-            href: NavItems.NAV3,
-            isActive: activeItem === NavItems.NAV3,
-            icon: <QuestionMarkIcon size={20}/>
-        },
-        {
-            label: "Nav4",
-            href: NavItems.NAV4,
-            isActive: activeItem === NavItems.NAV4,
-            icon: <QuestionMarkIcon size={20}/>
-        },
-        {
-            label: "Nav5",
-            href: NavItems.NAV5,
-            isActive: activeItem === NavItems.NAV5,
-            icon: <QuestionMarkIcon size={20}/>
+            icon: <InfoIcon size={20}/>
         }
     ];
 
@@ -86,7 +68,7 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
                     className="sm:hidden"
                 />
                 <NavbarBrand>
-                    <LOGO size={40} className="text-secondary dark:text-primary"/>
+                    <LOGO size={50} className="text-secondary dark:text-primary"/>
                     <p className="font-bold text-2xl font-oswald text-secondary dark:text-primary text-inherit">Marlin</p>
                 </NavbarBrand>
             </NavbarContent>

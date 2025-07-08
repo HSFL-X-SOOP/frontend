@@ -12,4 +12,5 @@ export enum NavItems {
     NAV4 = "/nav4",
     NAV5 = "/nav5",
     PROFILE = "/profile",
+    ABOUT = "/about",
 }
