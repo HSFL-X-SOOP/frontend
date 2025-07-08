@@ -14,4 +14,13 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://46.252.195.123',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });

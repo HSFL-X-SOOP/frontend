@@ -19,6 +19,7 @@ import {Avatar} from "@heroui/avatar";
 import Profile from "@/assets/profile.jpg"
 
 import {useNavigate} from "react-router-dom";
+import {useAuth} from "@/context/AuthContext.tsx";
 
 export interface NavbarProps {
     activeItem: NavItems;
@@ -27,7 +28,7 @@ export interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate()
-    const [login, setLogin] = useState(false);
+    const {session, login} = useAuth()
 
     const itemClasses = [
         "flex relative h-full items-center px-4 font-normal",
@@ -96,17 +97,19 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
                 <NavbarItem>
                     <ThemeSwitch/>
                 </NavbarItem>
-                {!login && (
+                {!session && (
                     <NavbarItem>
                         <Button onPress={() => {
-                            setLogin(true)
+                            login({
+                                userId: Math.floor(Math.random() * 1000000)
+                            })
                         }} color="primary" variant="flat">
                             Anmelden
                         </Button>
                     </NavbarItem>
                 )}
 
-                {login && (
+                {session && (
                     <NavbarItem>
                         <Avatar
                             isBordered

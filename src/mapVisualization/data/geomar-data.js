@@ -1,5 +1,5 @@
 async function GetGeomarData() {
-    let url = "http://46.252.195.123/api/latestmeasurements"
+    let url = "/api/latestmeasurements"
     const response = await fetch(url, {
         method: "GET",
         headers: {

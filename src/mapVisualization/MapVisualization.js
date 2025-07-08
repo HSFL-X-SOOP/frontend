@@ -24,7 +24,6 @@ import {
 import {
     WaterLevelTemperaturePopoverContent,
     waterLevelTemperatureSensorStyle,
-    waterLevelTemperatureSensorData,
     showWaterLevelTemperatureSensorData,
     createWaterLevelTemperatureSensorStyleSelected, loadWaterLevelTemperatureSensorData
 } from './data/water-level-temperature-sensor.js';
@@ -52,9 +51,9 @@ export class MapVisualization {
         this.init();
     }
 
-    init() {
+    async init() {
         this.createMap();
-        this.createLayers();
+        await this.createLayers();
         this.createOverlays();
         this.setupEventListeners();
     }
@@ -74,9 +73,10 @@ export class MapVisualization {
         apply(this.openfreemap, openFreeMapStyle);
     }
 
-    createLayers() {
+    async createLayers() {
+        const airPropertiesSource = await createAirPropertiesSensorVectorSource();
         this.layers.airProperties = new VectorLayer({
-            source: createAirPropertiesSensorVectorSource,
+            source: airPropertiesSource,
             visible: true,
             title: "AirProperties",
             style: airPropertiesSensorStyle,
@@ -89,8 +89,10 @@ export class MapVisualization {
             style: airQualitySensorStyle,
         });
 
+        const waterLevelTemperatureData = await loadWaterLevelTemperatureSensorData();
+        const waterLevelTemperatureSource = createSensorDataVectorSource(waterLevelTemperatureData);
         this.layers.waterLevelTemperature = new VectorLayer({
-            source: createSensorDataVectorSource(loadWaterLevelTemperatureSensorData),
+            source: waterLevelTemperatureSource,
             visible: true,
             title: "WaterLevelTemperature",
             style: waterLevelTemperatureSensorStyle,
