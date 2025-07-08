@@ -34,6 +34,62 @@ export const LOGO: React.FC<IconSvgProps> = ({
     </svg>
 );
 
+export const CloudIcon: React.FC<IconSvgProps> = ({
+                                                      size = 24,
+                                                      width,
+                                                      height,
+                                                      className,
+                                                      ...props
+                                                  }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        width={size || width}
+        height={size || height}
+        className={className}
+        {...props}
+    >
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z"
+        />
+    </svg>
+);
+
+export const ChevronDown: React.FC<IconSvgProps> = ({
+                                                        fill,
+                                                        size = 24,
+                                                        height,
+                                                        width,
+                                                        className,
+                                                        ...props
+                                                    }) => {
+    return (
+        <svg
+            fill="none"
+            height={size || height}
+            viewBox="0 0 24 24"
+            width={size || width}
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="m19.92 8.95-6.52 6.52c-.77.77-2.03.77-2.8 0L4.08 8.95"
+                stroke={fill}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeMiterlimit={10}
+                strokeWidth={1.5}
+            />
+        </svg>
+    );
+};
+
 export const InfoIcon: React.FC<IconSvgProps> = ({
                                                      size = 24,
                                                      width,

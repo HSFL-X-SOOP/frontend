@@ -9,6 +9,8 @@ import {Profile} from "@/pages/Profile.tsx";
 import {About} from "@/pages/About.tsx";
 import {AuthProvider} from "@/context/AuthContext.tsx";
 import {ProtectedRoute} from "@/components/ProtectedRoute.tsx";
+import {Api} from "@/pages/Api.tsx";
+import {Sensor} from "@/pages/Sensor.tsx";
 
 function App() {
     return (
@@ -21,6 +23,8 @@ function App() {
                 <Route element={<Nav5/>} path="/nav5"/>
                 <Route element={<ProtectedRoute><Profile/></ProtectedRoute>} path="/profile"/>
                 <Route element={<About/>} path="/about"/>
+                <Route element={<Api/>} path="/api"/>
+                <Route element={<Sensor/>} path="/sensoren"/>
             </Routes>
         </AuthProvider>
     );

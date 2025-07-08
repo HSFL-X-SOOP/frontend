@@ -11,7 +11,7 @@ import {
 
 
 import {ThemeSwitch} from "@/components/theme-switch.tsx";
-import {InfoIcon, LOGO, MapIcon} from "@/components/Icons.tsx";
+import {CloudIcon, InfoIcon, LOGO, MapIcon} from "@/components/Icons.tsx";
 import React, {useState} from "react";
 import {Button} from "@heroui/button";
 import {NavItems} from "@/types";
@@ -20,6 +20,8 @@ import Profile from "@/assets/profile.jpg"
 
 import {useNavigate} from "react-router-dom";
 import {useAuth} from "@/context/AuthContext.tsx";
+import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@heroui/react";
+import {ChevronDown} from "@/components/Icons.tsx";
 
 export interface NavbarProps {
     activeItem: NavItems;
@@ -43,20 +45,13 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
 
     const navLinks = [
         {label: "Karte", href: NavItems.MAP, isActive: activeItem === NavItems.MAP, icon: <MapIcon size={20}/>},
-        {
-            label: "Über uns",
-            href: NavItems.ABOUT,
-            isActive: activeItem === NavItems.NAV2,
-            icon: <InfoIcon size={20}/>
-        }
     ];
 
     const menuItems = [
-        "Karte",
-        "Nav2",
-        "Nav3",
-        "Nav4",
-        "Nav5",
+        {label: "Karte", to: NavItems.MAP, isActive: activeItem === NavItems.MAP, icon: <MapIcon size={25}/>},
+        {label: "Sensoren", to: "/sensoren", isActive: activeItem === NavItems.SENSOR, icon: <LOGO size={25}/>},
+        {label: "API", to: "/api", isActive: activeItem === NavItems.API, icon: <CloudIcon size={25}/>},
+        {label: "Über uns", to: NavItems.ABOUT, isActive: activeItem === NavItems.ABOUT, icon: <InfoIcon size={25}/>},
     ];
 
     return (
@@ -92,6 +87,41 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
                         </span>
                     </NavbarItem>
                 ))}
+                {/* Über uns Dropdown */}
+                <Dropdown>
+                    <NavbarItem>
+                        <DropdownTrigger>
+                            <Button
+                                disableRipple
+                                className="p-0 bg-transparent data-[hover=true]:bg-transparent flex items-center gap-2"
+                                endContent={<ChevronDown fill="currentColor" size={16}/>}
+                                radius="sm"
+                                variant="light"
+                            >
+                                <InfoIcon size={20}
+                                          className={activeItem === NavItems.ABOUT ? "text-primary" : undefined}/>
+                                <span
+                                    className={`text-medium ${activeItem === NavItems.ABOUT ? "text-primary" : "text-foreground"}`}>Über uns</span>
+                            </Button>
+                        </DropdownTrigger>
+                    </NavbarItem>
+                    <DropdownMenu
+                        aria-label="Über uns"
+                        itemClasses={{
+                            base: "gap-4",
+                        }}
+                    >
+                        <DropdownItem key="about" startContent={<InfoIcon/>} onClick={() => navigate(NavItems.ABOUT)}>
+                            Über uns
+                        </DropdownItem>
+                        <DropdownItem key="sensoren" startContent={<LOGO/>} onClick={() => navigate('/sensoren')}>
+                            Sensoren
+                        </DropdownItem>
+                        <DropdownItem key="api" startContent={<CloudIcon/>} onClick={() => navigate('/api')}>
+                            API
+                        </DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
             </NavbarContent>
             <NavbarContent justify="end" className={"gap-0"}>
                 <NavbarItem>
@@ -125,20 +155,23 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
 
             </NavbarContent>
             <NavbarMenu>
-                {menuItems.map((item, index) => (
-                    <NavbarMenuItem key={`${item}-${index}`}>
-                        <Link
-                            className="w-full"
-                            color={
-                                index === 2 ? "primary" : index === menuItems.length - 1 ? "danger" : "foreground"
-                            }
-                            href="#"
-                            size="lg"
-                        >
-                            {item}
-                        </Link>
-                    </NavbarMenuItem>
-                ))}
+                {menuItems.map((item) => {
+                    return (
+                        <NavbarMenuItem className={"flex flex-row justify-center gap-2 items-center"} key={item.label}>
+                            {React.cloneElement(item.icon, {
+                                className: item.isActive ? "text-primary" : undefined
+                            })}
+                            <Link
+                                className="w-full"
+                                color={item.isActive ? "primary" : "foreground"}
+                                onPress={() => navigate(item.to)}
+                                size="lg"
+                            >
+                                {item.label}
+                            </Link>
+                        </NavbarMenuItem>
+                    );
+                })}
             </NavbarMenu>
         </DefaultNavbar>
     );
