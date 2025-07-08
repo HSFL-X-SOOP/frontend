@@ -38,3 +38,4 @@ jobs:
           key: ${{ env.DEPLOY_KEY }}
           source: "dist/**"
           target: ${{ env.DEPLOY_PATH }}
+          strip_components: 1
