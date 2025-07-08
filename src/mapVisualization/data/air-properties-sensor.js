@@ -150,7 +150,9 @@ function showAirPropertiesSensorData(feature) {
     let sensor_name = document.createElement("p")
     let info = document.createElement("div")
 
-    
+
+    console.log("Feature Data:", feature.get("data"))
+    console.log(selectedSensorData)
     selectedSensorData.innerHTML = ""
     sensorDataHeader.textContent = "Sensor Data"
     sensor_name.textContent = "Sensor Name: " + feature.get("sensor_name")

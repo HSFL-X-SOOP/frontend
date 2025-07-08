@@ -28,6 +28,16 @@ const MapWrapper: React.FC<MapWrapperProps> = ({module1Visible, module2Visible, 
     }, []);
 
     useEffect(() => {
+        // Jetzt ist das DOM garantiert da!
+        const popup = document.getElementById('popup');
+        if (!popup) {
+            console.error("Popup-Element nicht gefunden!");
+        } else {
+            console.log("Popup-Element gefunden:", popup);
+        }
+    }, []); // Leeres Array: läuft nach dem ersten Render
+
+    useEffect(() => {
         if (mapInstanceRef.current) {
             mapInstanceRef.current.setModuleVisibility("WaterLevelTemperature", module1Visible);
         }
@@ -67,6 +77,7 @@ const MapWrapper: React.FC<MapWrapperProps> = ({module1Visible, module2Visible, 
             <div id="wind-direction-overlay"
                  className="absolute top-0 left-0 w-full h-full pointer-events-none bg-transparent overflow-hidden box-border"
                  style={{display: "none"}}/>
+            <div id="popup"></div>
         </div>
     );
 };
