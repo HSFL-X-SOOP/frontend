@@ -30,13 +30,13 @@ jobs:
       - name: Build frontend artifacts
         run: npm run build
 
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ env.DEPLOY_KEY }}" > ~/.ssh/marlin_deploy_key
+          chmod 600 ~/.ssh/marlin_deploy_key
+          ssh-keyscan -H ${{ env.SERVER_IP }} >> ~/.ssh/known_hosts
+
       - name: Copy build artifacts to release server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ env.SERVER_IP }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ env.DEPLOY_KEY }}
-          source: "dist/**"
-          target: ${{ env.DEPLOY_PATH }}
-          strip_components: 1
-          timeout: 60s
+        run: |
+          scp -i ~/.ssh/marlin_deploy_key -r dist/* ${{ env.SERVER_USER }}@${{ env.SERVER_IP }}:${{ env.DEPLOY_PATH }}
