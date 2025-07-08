@@ -31,7 +31,7 @@ jobs:
         run: npm run build
 
       - name: Copy build artifacts to release server
-        uses: appleboy/scp-action@v1
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ env.SERVER_IP }}
           username: ${{ env.SERVER_USER }}
@@ -39,3 +39,4 @@ jobs:
           source: "dist/**"
           target: ${{ env.DEPLOY_PATH }}
           strip_components: 1
+          timeout: 60s
