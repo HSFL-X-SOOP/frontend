@@ -31,7 +31,6 @@ import {createSensorDataVectorSource} from './data/sensor-utils.js';
 import {ShowPopover, DisposePopover} from './popover.js';
 import {DrawOverlay} from './overlays/overlay.js';
 import openFreeMapStyle from "./style.json";
-import { base } from 'framer-motion/client';
 
 export class MapVisualization {
     constructor(containerId, options = {}) {

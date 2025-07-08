@@ -78,7 +78,7 @@ export default function IndexPage() {
                                     </h1>
 
                                 </DrawerHeader>
-                                <DrawerBody className="space-y-4 p-4 overflow-visible drawer">
+                                <DrawerBody className="space-y-4 p-4 overflow-visible">
                                     <div className="flex flex-col gap-4">
                                         <Checkbox
                                             isSelected={module1Visible}
