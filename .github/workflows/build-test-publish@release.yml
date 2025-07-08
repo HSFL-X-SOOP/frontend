@@ -36,5 +36,5 @@ jobs:
           host: ${{ env.SERVER_IP }}
           username: ${{ env.SERVER_USER }}
           key: ${{ env.DEPLOY_KEY }}
-          source: "dist/**"
+          source: "dist/*"
           target: ${{ env.DEPLOY_PATH }}
