@@ -79,7 +79,7 @@ export class MapVisualization {
         this.airPropertiesSensorVectorSource = await createAirPropertiesSensorVectorSource();
         this.layers.airProperties = new VectorLayer({
             source: this.airPropertiesSensorVectorSource,
-            visible: false,
+            visible: true,
             title: "AirProperties",
             style: airPropertiesSensorStyle,
         });
@@ -95,7 +95,7 @@ export class MapVisualization {
         const waterLevelTemperatureSource = createSensorDataVectorSource(waterLevelTemperatureData);
         this.layers.waterLevelTemperature = new VectorLayer({
             source: waterLevelTemperatureSource,
-            visible: false,
+            visible: true,
             title: "WaterLevelTemperature",
             style: waterLevelTemperatureSensorStyle,
         });
