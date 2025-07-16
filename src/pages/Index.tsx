@@ -21,8 +21,8 @@ export default function IndexPage() {
     // State für die Overlays
     const [temperatureVisible, setTemperatureVisible] = useState(false);
     const [windDirectionVisible, setWindDirectionVisible] = useState(false);
-    const [module1Visible, setModule1Visible] = useState(false);
-    const [module2Visible, setModule2Visible] = useState(false);
+    const [module1Visible, setModule1Visible] = useState(true);
+    const [module2Visible, setModule2Visible] = useState(true);
     const [module3Visible, setModule3Visible] = useState(false);
 
     return (
