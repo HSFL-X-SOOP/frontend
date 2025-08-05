@@ -1,7 +1,37 @@
 import * as React from "react";
-
 import {IconSvgProps} from "@/types";
+import {AnimatePresence, motion} from "framer-motion";
 
+
+export const AnimatedIconSwap = (
+    isToggled: boolean,
+    IconA: React.ComponentType<IconSvgProps>,
+    IconB: React.ComponentType<IconSvgProps>
+): React.JSX.Element => (
+    <AnimatePresence mode="wait" initial={false}>
+        {isToggled ? (
+            <motion.span
+                key="iconA"
+                initial={{opacity: 0, scale: 0.8}}
+                animate={{opacity: 1, scale: 1}}
+                exit={{opacity: 0, scale: 0.8}}
+                transition={{duration: 0.12}}
+            >
+                <IconA/>
+            </motion.span>
+        ) : (
+            <motion.span
+                key="iconB"
+                initial={{opacity: 0, scale: 0.8}}
+                animate={{opacity: 1, scale: 1}}
+                exit={{opacity: 0, scale: 0.8}}
+                transition={{duration: 0.12}}
+            >
+                <IconB/>
+            </motion.span>
+        )}
+    </AnimatePresence>
+);
 
 export const LOGO: React.FC<IconSvgProps> = ({
                                                  size = 24,
@@ -297,11 +327,69 @@ export const MagicLinkIcon: React.FC<IconSvgProps> = ({
         className={className}
         {...props}
     >
-        {/* shift the whole cluster downward so it's centred */}
         <g transform="translate(0 2)">
             <path d="M9 5l.75 2.25 2.25.75-2.25.75L9 11l-.75-2.25-2.25-.75 2.25-.75L9 5Z"/>
             <path d="M17 6l.56 1.69 1.69.56-1.69.56L17 10.5l-.56-1.69-1.69-.56 1.69-.56L17 6Z"/>
             <path d="M14 11.5l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6.6-1.8Z"/>
         </g>
+    </svg>
+);
+
+export const EyeIcon: React.FC<IconSvgProps> = ({
+                                                    size = 24,
+                                                    width,
+                                                    height,
+                                                    className,
+                                                    ...props
+                                                }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        width={size || width}
+        height={size || height}
+        className={className}
+        {...props}
+    >
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z"
+        />
+        <circle cx="12" cy="12" r="3.75" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+);
+
+export const EyeSlashIcon: React.FC<IconSvgProps> = ({
+                                                         size = 24,
+                                                         width,
+                                                         height,
+                                                         className,
+                                                         ...props
+                                                     }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        width={size || width}
+        height={size || height}
+        className={className}
+        {...props}
+    >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18"/>
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M10.605 5.645A10.463 10.463 0 0112 5.25c6 0 9.75 6.75 9.75 6.75a17.96 17.96 0 01-4.183 4.555M6.604 6.604C3.967 8.302 2.25 12 2.25 12s3.75 6.75 9.75 6.75c1.414 0 2.758-.306 4.01-.864"
+        />
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9.424 9.424a3.75 3.75 0 005.151 5.151"
+        />
     </svg>
 );

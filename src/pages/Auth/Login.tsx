@@ -12,7 +12,7 @@ import {
 import {useAuth} from "@/hooks/useAuth.ts";
 import {NavItems} from "@/types";
 import DefaultLayout from "@/layouts/DefaultLayout.tsx";
-import {GoogleIcon, MagicLinkIcon} from "@/components/Icons.tsx";
+import {AnimatedIconSwap, EyeIcon, EyeSlashIcon, GoogleIcon, MagicLinkIcon} from "@/components/Icons.tsx";
 import {useSession} from "@/context/SessionContext.tsx";
 
 export default function Login() {
@@ -86,10 +86,14 @@ export default function Login() {
                                 endContent={
                                     <button
                                         type="button"
-                                        onClick={() => setShowPassword((p) => !p)}
-                                        className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
+                                        onClick={() => setShowPassword(p => !p)}
+                                        className="flex h-9 w-9 items-center justify-center rounded-full focus:outline-none hover:bg-primary-100/60 text-primary-600 dark:text-primary-400"
                                     >
-                                        {showPassword ? "Hide" : "Show"}
+                                        {AnimatedIconSwap(
+                                            showPassword,
+                                            (props) => <EyeIcon {...props} size={20}/>,
+                                            (props) => <EyeSlashIcon {...props} size={20}/>
+                                        )}
                                     </button>
                                 }
                             />
