@@ -384,12 +384,8 @@ export const EyeSlashIcon: React.FC<IconSvgProps> = ({
         <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M10.605 5.645A10.463 10.463 0 0112 5.25c6 0 9.75 6.75 9.75 6.75a17.96 17.96 0 01-4.183 4.555M6.604 6.604C3.967 8.302 2.25 12 2.25 12s3.75 6.75 9.75 6.75c1.414 0 2.758-.306 4.01-.864"
+            d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z"
         />
-        <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M9.424 9.424a3.75 3.75 0 005.151 5.151"
-        />
+        <circle cx="12" cy="12" r="3.75" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
 );
