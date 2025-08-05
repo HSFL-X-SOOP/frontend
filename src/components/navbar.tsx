@@ -19,7 +19,7 @@ import {Avatar} from "@heroui/avatar";
 import Profile from "@/assets/profile.jpg"
 
 import {useNavigate} from "react-router-dom";
-import {useAuth} from "@/context/AuthContext.tsx";
+import {useSession} from "@/context/SessionContext.tsx";
 import {Dropdown, DropdownTrigger, DropdownMenu, DropdownItem} from "@heroui/react";
 import {ChevronDown} from "@/components/Icons.tsx";
 
@@ -30,7 +30,7 @@ export interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate()
-    const {session, login} = useAuth()
+    const {session} = useSession()
 
     const itemClasses = [
         "flex relative h-full items-center px-4 font-normal",
@@ -130,9 +130,7 @@ export const Navbar: React.FC<NavbarProps> = ({activeItem}) => {
                 {!session && (
                     <NavbarItem>
                         <Button onPress={() => {
-                            login({
-                                userId: Math.floor(Math.random() * 1000000)
-                            })
+                            navigate("/login")
                         }} color="primary" variant="flat">
                             Anmelden
                         </Button>

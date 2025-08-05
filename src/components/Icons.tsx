@@ -240,3 +240,68 @@ export const FilterIcon: React.FC<IconSvgProps> = ({
         />
     </svg>
 );
+
+export const GoogleIcon: React.FC<IconSvgProps> = ({
+                                                       size = 24,
+                                                       width,
+                                                       height,
+                                                       className,
+                                                       ...props
+                                                   }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 256 262"
+        width={width ?? size}
+        height={height ?? size}
+        className={className}
+        {...props}
+    >
+        <path
+            d="M255.89 133.52c0-9.24-.83-18.08-2.4-26.63H130.38v50.46h70.57c-3.05 16.48-12.18 30.42-25.88 39.78v33.04h41.85c24.49-22.55 38.97-55.78 38.97-96.65z"
+            fill="#4285F4"
+        />
+        <path
+            d="M130.38 262c35.21 0 64.76-11.58 86.34-31.45l-41.85-33.04c-11.63 7.8-26.54 12.4-44.49 12.4-34.19 0-63.14-23.07-73.52-54.07H14.18v33.94C35.65 234.26 80.18 262 130.38 262z"
+            fill="#34A853"
+        />
+        <path
+            d="M56.86 155.84a78.47 78.47 0 0 1 0-49.68V72.22H14.18a130.22 130.22 0 0 0 0 117.56l42.68-33.94z"
+            fill="#FBBC05"
+        />
+        <path
+            d="M130.38 51.34c19.12 0 36.32 6.58 49.87 19.47l37.45-37.45C193.41 11.58 163.86 0 130.38 0 80.18 0 35.65 27.74 14.18 72.22l42.68 33.94c10.38-31 39.33-54.82 73.52-54.82z"
+            fill="#EA4335"
+        />
+    </svg>
+);
+
+export const MagicLinkIcon: React.FC<IconSvgProps> = ({
+                                                          size = 24,
+                                                          width,
+                                                          height,
+                                                          className,
+                                                          ...props
+                                                      }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        width={width ?? size}
+        height={height ?? size}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={0.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+        shapeRendering="geometricPrecision"
+        className={className}
+        {...props}
+    >
+        {/* shift the whole cluster downward so it's centred */}
+        <g transform="translate(0 2)">
+            <path d="M9 5l.75 2.25 2.25.75-2.25.75L9 11l-.75-2.25-2.25-.75 2.25-.75L9 5Z"/>
+            <path d="M17 6l.56 1.69 1.69.56-1.69.56L17 10.5l-.56-1.69-1.69-.56 1.69-.56L17 6Z"/>
+            <path d="M14 11.5l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6.6-1.8Z"/>
+        </g>
+    </svg>
+);

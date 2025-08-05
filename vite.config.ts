@@ -17,7 +17,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://46.252.195.123',
+        target: 'https://marlin-live.com',
         changeOrigin: true,
         secure: false,
       },
