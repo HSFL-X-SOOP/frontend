@@ -1,9 +1,14 @@
-// src/context/AuthContext.tsx
+// src/context/SessionContext.tsx
 import React, {createContext, useContext, useState, ReactNode} from 'react';
 
 import {useLocalStorage} from '@/hooks/useLocalStorage.ts';
+import {useNavigate} from "react-router-dom";
+
 export interface SessionInfo {
-    userId: number;
+    accessToken: string;
+    refreshToken: string | null;
+    loggedInSince: Date;
+    lastTokenRefresh: Date | null;
 }
 
 interface AuthContextType {
@@ -12,7 +17,7 @@ interface AuthContextType {
     logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>({
+const SessionContext = createContext<AuthContextType>({
     session: undefined,
     login: () => {
     },
@@ -23,6 +28,7 @@ const AuthContext = createContext<AuthContextType>({
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({children}) => {
     const [stored, setStored] = useLocalStorage<SessionInfo>('session');
     const [session, setSession] = useState<SessionInfo | undefined>(stored);
+    const navigation = useNavigate();
 
     const login = (newSession: SessionInfo) => {
         setSession(newSession);
@@ -31,13 +37,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({children}) => {
     const logout = () => {
         setSession(undefined);
         setStored(undefined);
+        navigation('/');
     };
 
     return (
-        <AuthContext.Provider value={{session, login, logout}}>
+        <SessionContext.Provider value={{session, login, logout}}>
             {children}
-        </AuthContext.Provider>
+        </SessionContext.Provider>
     );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useSession = () => useContext(SessionContext);

@@ -15,4 +15,5 @@ export enum NavItems {
     ABOUT = "/about",
     API = "/api",
     SENSOR = "/sensoren",
+    LOGIN = "/login",
 }

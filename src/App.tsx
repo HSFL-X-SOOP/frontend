@@ -7,15 +7,23 @@ import {Nav4} from "@/pages/Nav4.tsx";
 import {Nav5} from "@/pages/Nav5.tsx";
 import {Profile} from "@/pages/Profile.tsx";
 import {About} from "@/pages/About.tsx";
-import {AuthProvider} from "@/context/AuthContext.tsx";
+import {AuthProvider} from "@/context/SessionContext.tsx";
 import {ProtectedRoute} from "@/components/ProtectedRoute.tsx";
 import {Api} from "@/pages/Api.tsx";
 import {Sensor} from "@/pages/Sensor.tsx";
+import Login from "@/pages/Auth/Login.tsx";
+import Register from "@/pages/Auth/Register.tsx";
+import MagicLink from "@/pages/Auth/Magic-Link.tsx";
+import OAuthCallbackHandler from "@/pages/Auth/OAuthCallbackHandler.tsx";
 
 function App() {
     return (
         <AuthProvider>
             <Routes>
+                <Route element={<Login/>} path="/login"/>
+                <Route element={<Register/>} path="/register"/>
+                <Route element={<MagicLink/>} path="/magic-link"/>
+                <Route element={<OAuthCallbackHandler/>} path="/google/callback"/>
                 <Route element={<IndexPage/>} path="/"/>
                 <Route element={<Nav/>} path="/nav2"/>
                 <Route element={<Nav3/>} path="/nav3"/>
