@@ -11,7 +11,7 @@ import {
 } from "@heroui/react";
 import DefaultLayout from "@/layouts/DefaultLayout";
 import {NavItems} from "@/types";
-import {GoogleIcon} from "@/components/Icons";
+import {AnimatedIconSwap, EyeIcon, EyeSlashIcon, GoogleIcon} from "@/components/Icons";
 import {useAuth} from "@/hooks/useAuth.ts";
 import {useSession} from "@/context/SessionContext.tsx";
 
@@ -89,9 +89,13 @@ export default function Register() {
                                     <button
                                         type="button"
                                         onClick={() => setShowPw((v) => !v)}
-                                        className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
+                                        className="flex h-9 w-9 items-center justify-center rounded-full focus:outline-none hover:bg-primary-100/60 text-primary-600 dark:text-primary-400"
                                     >
-                                        {showPw ? "Hide" : "Show"}
+                                        {AnimatedIconSwap(
+                                            showPw,
+                                            (props) => <EyeIcon {...props} size={20}/>,
+                                            (props) => <EyeSlashIcon {...props} size={20}/>
+                                        )}
                                     </button>
                                 }
                             />
@@ -109,9 +113,13 @@ export default function Register() {
                                     <button
                                         type="button"
                                         onClick={() => setShowPw((v) => !v)}
-                                        className="text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline focus:outline-none"
+                                        className="flex h-9 w-9 items-center justify-center rounded-full focus:outline-none hover:bg-primary-100/60 text-primary-600 dark:text-primary-400"
                                     >
-                                        {showPw ? "Hide" : "Show"}
+                                        {AnimatedIconSwap(
+                                            showPw,
+                                            (props) => <EyeIcon {...props} size={20}/>,
+                                            (props) => <EyeSlashIcon {...props} size={20}/>
+                                        )}
                                     </button>
                                 }
                             />
