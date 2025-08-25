@@ -12,13 +12,14 @@ import {
 import {useAuth} from "@/hooks/useAuth.ts";
 import {NavItems} from "@/types";
 import DefaultLayout from "@/layouts/DefaultLayout.tsx";
-import {AnimatedIconSwap, EyeIcon, EyeSlashIcon, GoogleIcon, MagicLinkIcon} from "@/components/Icons.tsx";
+import {EyeIcon, EyeSlashIcon, GoogleIcon, MagicLinkIcon} from "@/components/Icons.tsx";
 import {useSession} from "@/context/SessionContext.tsx";
+import {AnimatedIconSwap} from "@/components/iconSwapButton.tsx";
 
 export default function Login() {
     const navigate = useNavigate();
-    const {login: logUserIn, loginStatus} = useAuth();
-    const {login, session} = useSession()
+    const {login, loginStatus} = useAuth();
+    const {login: logUserIn, session} = useSession()
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -33,19 +34,18 @@ export default function Login() {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        await logUserIn({email, password, rememberMe});
-        let data = loginStatus.data
-        if (data != null && !loginStatus.error) {
-            login({
-                accessToken: data.accessToken,
-                refreshToken: data.refreshToken,
+        const res = await login({ email, password, rememberMe });
+        if (res) {
+            logUserIn({
+                accessToken: res.accessToken,
+                refreshToken: res.refreshToken,
                 loggedInSince: new Date(),
                 lastTokenRefresh: null
             });
             navigate("/");
         } else {
-            // TODO: ADD ERROR BANNER
-            console.error("Registration failed:", loginStatus.error);
+            //TODO: ADD ERROR BANNER
+            console.error("Login failed:", loginStatus.error);
         }
     };
 

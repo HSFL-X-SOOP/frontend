@@ -85,7 +85,7 @@ export default function MagicLink() {
                             </>
                         ) : (
                             <>
-                                <h1 className="font-oswald text-3xl">Send Magic Link</h1>
+                                <h1 className="font-oswald text-3xl">Magic Link</h1>
                                 <p className="text-sm mt-1">
                                     Enter your email and we’ll send you a sign-in link.
                                 </p>

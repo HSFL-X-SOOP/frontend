@@ -23,6 +23,7 @@ function App() {
                 <Route element={<Login/>} path="/login"/>
                 <Route element={<Register/>} path="/register"/>
                 <Route element={<MagicLink/>} path="/magic-link"/>
+                <Route element={<MagicLink/>} path="/forgot-password"/>
                 <Route element={<OAuthCallbackHandler/>} path="/google/callback"/>
                 <Route element={<IndexPage/>} path="/"/>
                 <Route element={<Nav/>} path="/nav2"/>

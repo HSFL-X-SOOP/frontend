@@ -7,7 +7,7 @@ export function useHttpClient() {
 
     const httpClient = axios.create({
         baseURL: "https://marlin-live.com/api",
-        timeout: 10_000,
+        timeout: 30_000,
     })
 
     httpClient.interceptors.request.use(
@@ -26,7 +26,7 @@ export function useHttpClient() {
                 try {
                     const {data} = await axios.post<LoginResponse>(
                         "https://marlin-live.com/api/auth/refresh",
-                        {refresh_token: session.refreshToken}
+                        {refreshToken: session.refreshToken}
                     )
 
                     const newSession = {

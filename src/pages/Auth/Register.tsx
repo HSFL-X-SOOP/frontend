@@ -11,9 +11,10 @@ import {
 } from "@heroui/react";
 import DefaultLayout from "@/layouts/DefaultLayout";
 import {NavItems} from "@/types";
-import {AnimatedIconSwap, EyeIcon, EyeSlashIcon, GoogleIcon} from "@/components/Icons";
+import {EyeIcon, EyeSlashIcon, GoogleIcon} from "@/components/Icons";
 import {useAuth} from "@/hooks/useAuth.ts";
 import {useSession} from "@/context/SessionContext.tsx";
+import {AnimatedIconSwap} from "@/components/iconSwapButton.tsx";
 
 export default function Register() {
     const navigate = useNavigate();
@@ -37,13 +38,11 @@ export default function Register() {
         if (password !== confirm) return;
         if (!acceptTos) return;
 
-        await register({email, password, rememberMe: false});
-
-        let data = registerStatus.data
-        if (data != null && !registerStatus.error) {
+        const res = await register({email, password, rememberMe: false});
+        if (res) {
             login({
-                accessToken: data.accessToken,
-                refreshToken: data.refreshToken,
+                accessToken: res.accessToken,
+                refreshToken: res.refreshToken,
                 loggedInSince: new Date(),
                 lastTokenRefresh: null
             });
