@@ -1,8 +1,3 @@
-export interface LoggedInUser {
-    id: number;
-    email: string;
-}
-
 export interface LoginRequest {
     email: string;
     password: string;
@@ -22,18 +17,10 @@ export interface MagicLinkRequest {
     email: string;
 }
 
-export interface RefreshTokenRequest {
-    refreshToken: string;
-}
-
 export interface RegisterRequest {
     email: string;
     password: string;
     rememberMe: boolean;
-}
-
-export interface ResetPasswordRequest {
-    email: string;
 }
 
 export interface VerifyEmailRequest {
