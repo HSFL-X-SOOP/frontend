@@ -5,6 +5,7 @@ import {Button, Text, YStack, XStack, Spinner, ScrollView} from 'tamagui';
 import {Sparkles, CheckCircle, AlertCircle} from '@tamagui/lucide-icons';
 import {useAuth} from '@/hooks/useAuth';
 import {useSession} from '@/context/SessionContext';
+import {AuthorityRole} from '@/api/models/profile';
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {useTranslation} from '@/hooks/useTranslation';
@@ -58,6 +59,7 @@ export default function MagicLinkScreen() {
                         refreshToken: result.refreshToken,
                         loggedInSince: new Date(),
                         lastTokenRefresh: null,
+                        role: result.role || AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
                         profile: result.profile
                     });
                     toast.success(t('auth.magicLink.loginSuccess'), {

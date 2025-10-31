@@ -1,5 +1,5 @@
-import { UpdateProfileRequest, UserProfile } from '@/api/models/profile';
-import { useHttpClient } from '@/api/client';
+import {UpdateProfileRequest, UserProfile} from '@/api/models/profile';
+import {useHttpClient} from '@/api/client';
 
 export function useUserStore() {
     const httpClient = useHttpClient();
@@ -17,8 +17,18 @@ export function useUserStore() {
             }
         },
 
-        createProfile: (body: UpdateProfileRequest) =>
-            httpClient.post<UserProfile>('/user-profile', body).then(r => r.data),
+        createProfile: async (body: UpdateProfileRequest) => {
+            console.log('[API] Creating profile with body:', JSON.stringify(body, null, 2));
+            try {
+                const response = await httpClient.post<UserProfile>('/user-profile', body);
+                console.log('[API] Profile created successfully:', response.data);
+                return response.data;
+            } catch (error: any) {
+                console.error('[API] Profile creation failed:', error.response?.data || error.message);
+                console.error('[API] Full error object:', error);
+                throw error;
+            }
+        },
 
         updateProfile: (body: UpdateProfileRequest) =>
             httpClient.put<UserProfile>('/user-profile', body).then(r => r.data),

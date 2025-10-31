@@ -45,6 +45,7 @@ export default function LoginScreen() {
                 refreshToken: res.refreshToken,
                 loggedInSince: new Date(),
                 lastTokenRefresh: null,
+                role: res.role,
                 profile: res.profile
             });
             toast.success(t('auth.loginSuccess'), {

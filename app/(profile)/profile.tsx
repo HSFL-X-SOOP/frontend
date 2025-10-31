@@ -1,6 +1,6 @@
-import {ExternalPathString, Link, useRouter} from 'expo-router';
+import {useRouter} from 'expo-router';
 import {useState, useEffect} from 'react';
-import {StyleSheet, ScrollView, SafeAreaView} from "react-native";
+import {ScrollView, SafeAreaView} from "react-native";
 import {
     Button,
     Text,
@@ -19,10 +19,9 @@ import {
 } from "tamagui";
 import {User, Globe, Activity, Ruler, Check, Anchor} from '@tamagui/lucide-icons';
 import {useToast} from '@/components/useToast';
-import {styles as LayoutStyle} from './_layout';
 import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/useUser';
-import {ActivityRole, AuthorityRole, Language, MeasurementSystem} from '@/api/models/profile';
+import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {useTranslation} from '@/hooks/useTranslation';
 
 export default function ProfileScreen() {
@@ -36,7 +35,6 @@ export default function ProfileScreen() {
 
     const [selectedLanguage, setSelectedLanguage] = useState<Language>(Language.DE);
     const [selectedRoles, setSelectedRoles] = useState<ActivityRole[]>([]);
-    const [selectedAuthorityRole, setSelectedAuthorityRole] = useState<AuthorityRole>(AuthorityRole.USER);
     const [selectedMeasurement, setSelectedMeasurement] = useState<MeasurementSystem>(MeasurementSystem.METRIC);
 
     useEffect(() => {
@@ -54,8 +52,7 @@ export default function ProfileScreen() {
     useEffect(() => {
         if (session?.profile) {
             setSelectedLanguage(session.profile.language);
-            setSelectedRoles(session.profile.activityRole || []);
-            setSelectedAuthorityRole(session.profile.authorityRole || AuthorityRole.USER);
+            setSelectedRoles(session.profile.roles || []);
             setSelectedMeasurement(session.profile.measurementSystem);
         }
     }, [session?.profile]);
@@ -79,7 +76,7 @@ export default function ProfileScreen() {
         try {
             const updatedProfile = await updateProfile({
                 language: selectedLanguage,
-                activityRole: selectedRoles,
+                roles: selectedRoles,
                 measurementSystem: selectedMeasurement
             });
 
@@ -106,8 +103,7 @@ export default function ProfileScreen() {
     const handleCancel = () => {
         if (session?.profile) {
             setSelectedLanguage(session.profile.language);
-            setSelectedRoles(session.profile.activityRole || []);
-            setSelectedAuthorityRole(session.profile.authorityRole || AuthorityRole.USER);
+            setSelectedRoles(session.profile.roles || []);
             setSelectedMeasurement(session.profile.measurementSystem);
         }
         setIsEditing(false);
@@ -148,8 +144,9 @@ export default function ProfileScreen() {
                     <Button
                         size="$4"
                         backgroundColor="$accent7"
-                        color="white"
-                        pressStyle={{backgroundColor: "$accent8"}}
+                        color={"white"}
+                        pressStyle={{backgroundColor: "$accent6"}}
+                        hoverStyle={{backgroundColor: "$accent4"}}
                         onPress={() => router.push('/(profile)/create-profile')}
                     >
                         {t('profile.createProfile')}
@@ -203,7 +200,8 @@ export default function ProfileScreen() {
                                                 size="$3"
                                                 backgroundColor="$accent7"
                                                 color="white"
-                                                pressStyle={{backgroundColor: "$accent8"}}
+                                                pressStyle={{backgroundColor: "$accent6"}}
+                                                hoverStyle={{backgroundColor: "$accent8"}}
                                                 onPress={() => setIsEditing(true)}
                                             >
                                                 {t('profile.edit')}
@@ -410,6 +408,7 @@ export default function ProfileScreen() {
                                                     borderWidth={1}
                                                     borderColor="$borderColor"
                                                     pressStyle={{backgroundColor: "$content3"}}
+                                                    hoverStyle={{backgroundColor: "$content1"}}
                                                     onPress={handleCancel}
                                                     disabled={updateProfileStatus.loading}
                                                 >
@@ -420,7 +419,8 @@ export default function ProfileScreen() {
                                                     size="$4"
                                                     backgroundColor="$accent7"
                                                     color="white"
-                                                    pressStyle={{backgroundColor: "$accent8"}}
+                                                    pressStyle={{backgroundColor: "$accent6"}}
+                                                    hoverStyle={{backgroundColor: "$accent8"}}
                                                     disabled={updateProfileStatus.loading || selectedRoles.length === 0}
                                                     onPress={handleSave}
                                                     icon={updateProfileStatus.loading ?
@@ -460,7 +460,8 @@ export default function ProfileScreen() {
                                                 size="$4"
                                                 backgroundColor="$accent7"
                                                 color="white"
-                                                pressStyle={{backgroundColor: "$accent8"}}
+                                                pressStyle={{backgroundColor: "$accent6"}}
+                                                hoverStyle={{backgroundColor: "$accent8"}}
                                                 icon={<Anchor size={16}/>}
                                             >
                                                 {t('profile.boats.addBoat')}

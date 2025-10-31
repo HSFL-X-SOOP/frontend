@@ -1,5 +1,6 @@
 import {useSession} from '@/context/SessionContext';
 import {useAuth} from '@/hooks/useAuth';
+import {AuthorityRole} from '@/api/models/profile';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native';
@@ -88,6 +89,7 @@ export default function RegisterScreen() {
                 refreshToken: res.refreshToken,
                 loggedInSince: new Date(),
                 lastTokenRefresh: null,
+                role: res.role || AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
                 profile: res.profile
             });
             toast.success(t('auth.registerSuccess'), {

@@ -5,6 +5,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { ENV } from '@/config/environment';
 import { useAuth } from '@/hooks/useAuth';
 import { useSession } from '@/context/SessionContext';
+import { AuthorityRole } from '@/api/models/profile';
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('Auth:GoogleSignIn');
@@ -58,6 +59,7 @@ export const useGoogleSignIn = () => {
           refreshToken: res.refreshToken,
           loggedInSince: new Date(),
           lastTokenRefresh: null,
+          role: res.role || AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
           profile: res.profile,
         });
         router.push(redirectPath);

@@ -22,7 +22,7 @@ export const LanguageSelector: React.FC = () => {
             try {
                 const updatedProfile = await updateProfile({
                     language: profileLang,
-                    activityRole: session.profile.activityRole,
+                    roles: session.profile.roles, // Backend erwartet 'roles'
                     measurementSystem: session.profile.measurementSystem
                 });
                 updateSessionProfile(updatedProfile);

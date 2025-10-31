@@ -19,29 +19,60 @@ export default function CreateProfileScreen() {
     const [selectedMeasurement, setSelectedMeasurement] = useState<MeasurementSystem>(MeasurementSystem.METRIC);
 
     const handleRoleToggle = (role: ActivityRole) => {
-        setSelectedRoles(prev =>
-            prev.includes(role)
+        console.log('[CreateProfile] Toggling role:', role);
+        setSelectedRoles(prev => {
+            const newRoles = prev.includes(role)
                 ? prev.filter(r => r !== role)
-                : [...prev, role]
-        );
+                : [...prev, role];
+            console.log('[CreateProfile] Selected roles after toggle:', newRoles);
+            return newRoles;
+        });
     };
 
     const handleSubmit = async () => {
+        console.log('[CreateProfile] Starting profile creation with:', {
+            language: selectedLanguage,
+            selectedRoles: selectedRoles,
+            selectedRolesLength: selectedRoles.length,
+            selectedRolesValues: selectedRoles.join(', '),
+            measurementSystem: selectedMeasurement
+        });
+
+        // Validierung
+        if (selectedRoles.length === 0) {
+            alert('Bitte wähle mindestens eine Aktivität aus!');
+            return;
+        }
+
         try {
-            const profile = await createProfile({
+            // Versuche zuerst nur mit 'roles' (Backend erwartet möglicherweise nur dieses Feld)
+            const requestData = {
                 language: selectedLanguage,
-                activityRole: selectedRoles,
+                // activityRole: selectedRoles, // Auskommentiert - Backend kennt dieses Feld noch nicht
+                roles: selectedRoles, // Backend erwartet 'roles'
                 measurementSystem: selectedMeasurement
-            });
+            };
+            console.log('[CreateProfile] Sending request:', JSON.stringify(requestData, null, 2));
 
-            updateSessionProfile(profile);
+            const profile = await createProfile(requestData);
 
-            const langCode = selectedLanguage === Language.DE ? 'de' : 'en';
-            changeLanguage(langCode);
+            console.log('[CreateProfile] Profile created successfully:', profile);
 
-            router.replace('/map');
+            if (profile) {
+                updateSessionProfile(profile);
+                console.log('[CreateProfile] Profile saved to session');
+
+                const langCode = selectedLanguage === Language.DE ? 'de' : 'en';
+                changeLanguage(langCode);
+
+                router.replace('/map');
+            } else {
+                console.error('[CreateProfile] No profile returned from API');
+                alert('Fehler: Profil konnte nicht erstellt werden (keine Daten erhalten)');
+            }
         } catch (error) {
-            console.error('Failed to create profile:', error);
+            console.error('[CreateProfile] Failed to create profile:', error);
+            alert(`Fehler beim Erstellen des Profils: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
         }
     };
 
@@ -208,7 +239,7 @@ export default function CreateProfileScreen() {
 
                             <YStack gap="$3" paddingTop="$2">
                                 {selectedRoles.length === 0 && (
-                                    <Card backgroundColor="$warning2" borderRadius="$4" padding="$3" borderWidth={1}
+                                    <Card borderRadius="$4" backgroundColor={"$orange6"} padding="$3" borderWidth={1}
                                           borderColor="$warning5">
                                         <Text textAlign="center" color="$warning10" fontSize={14}>
                                             {t('profile.validation.selectAtLeastOneActivity')}
@@ -221,7 +252,8 @@ export default function CreateProfileScreen() {
                                         size="$4"
                                         backgroundColor="$accent7"
                                         color="white"
-                                        pressStyle={{backgroundColor: "$accent8"}}
+                                        pressStyle={{backgroundColor: "$accent6"}}
+                                        hoverStyle={{backgroundColor: "$accent4"}}
                                         disabled={isLoading || selectedRoles.length === 0}
                                         onPress={handleSubmit}
                                         icon={isLoading ? <Spinner color="white"/> : undefined}

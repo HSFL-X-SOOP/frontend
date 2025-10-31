@@ -2,8 +2,7 @@ export interface UserProfile {
     id: number;
     userId: number;
     language: Language;
-    activityRole: ActivityRole[];
-    authorityRole: AuthorityRole;
+    roles: ActivityRole[];
     measurementSystem: MeasurementSystem;
     createdAt: string;
     updatedAt?: string;
@@ -11,7 +10,7 @@ export interface UserProfile {
 
 export interface UpdateProfileRequest {
     language?: Language;
-    activityRole?: ActivityRole[];
+    roles?: ActivityRole[];
     measurementSystem?: MeasurementSystem;
 }
 

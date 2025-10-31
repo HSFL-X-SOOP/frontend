@@ -1,4 +1,4 @@
-import { UserProfile } from './profile';
+import {AuthorityRole, UserProfile} from './profile';
 
 export interface LoginRequest {
     email: string;
@@ -10,6 +10,7 @@ export interface LoginResponse {
     accessToken: string;
     refreshToken: string | null;
     profile: UserProfile | null;
+    role?: AuthorityRole | null;
 }
 
 export interface MagicLinkLoginRequest {
