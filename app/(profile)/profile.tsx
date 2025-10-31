@@ -32,6 +32,7 @@ export default function ProfileScreen() {
     const toast = useToast();
 
     const [isEditing, setIsEditing] = useState(false);
+    const [activeTab, setActiveTab] = useState("profile");
 
     const [selectedLanguage, setSelectedLanguage] = useState<Language>(Language.DE);
     const [selectedRoles, setSelectedRoles] = useState<ActivityRole[]>([]);
@@ -163,6 +164,8 @@ export default function ProfileScreen() {
                     <YStack padding="$4" gap="$4" paddingBottom="$8" paddingTop="$6">
                         <Tabs
                             defaultValue="profile"
+                            value={activeTab}
+                            onValueChange={setActiveTab}
                             orientation="horizontal"
                             flexDirection="column"
                             width="100%"
@@ -170,36 +173,75 @@ export default function ProfileScreen() {
                             overflow="hidden"
                         >
                             <Tabs.List
-                                separator={<Separator vertical/>}
+                                separator={<Separator vertical borderColor="$borderColor" opacity={0.3}/>}
                                 disablePassBorderRadius="bottom"
-                                backgroundColor="$content1"
-                                borderRadius="$4"
+                                backgroundColor="$conten1"
+                                borderRadius="$6"
                                 padding="$2"
+                                borderWidth={2}
+                                borderColor="$borderColor"
+                                elevation="$3"
                             >
                                 <Tabs.Tab
                                     flex={1}
                                     value="profile"
-                                    backgroundColor="$content1"
                                     borderRadius="$4"
-                                    pressStyle={{backgroundColor: "$accent2"}}
-                                    hoverStyle={{backgroundColor: "$accent2"}}
+                                    paddingVertical="$3.5"
+                                    paddingHorizontal="$4"
+                                    backgroundColor={activeTab === "profile" ? "$accent7" : "transparent"}
+                                    borderWidth={activeTab === "profile" ? 2 : 0}
+                                    borderColor={activeTab === "profile" ? "$accent8" : "transparent"}
+                                    elevation={activeTab === "profile" ? "$2" : 0}
+                                    pressStyle={{
+                                        backgroundColor: activeTab === "profile" ? "$accent6" : "$accent2",
+                                        scale: 0.98
+                                    }}
+                                    hoverStyle={{backgroundColor: activeTab === "profile" ? "$accent5" : "$content2"}}
+                                    animation="quick"
+                                    scale={activeTab === "profile" ? 1 : 0.95}
                                 >
-                                    <XStack gap="$2" alignItems="center" padding="$2">
-                                        <User size={18} color="$accent7"/>
-                                        <Text color="$accent7" fontWeight="600">{t('profile.tabs.profile')}</Text>
+                                    <XStack gap="$3" alignItems="center" justifyContent="center">
+                                        <User size={activeTab === "profile" ? 22 : 20}
+                                              color={"$accent7"}/>
+                                        <Text
+                                            fontSize={activeTab === "profile" ? "$5" : "$4"}
+                                            fontWeight={activeTab === "profile" ? "800" : "600"}
+                                            color={"$accent7"}
+                                            letterSpacing={activeTab === "profile" ? 0.5 : 0}
+                                        >
+                                            {t('profile.tabs.profile')}
+                                        </Text>
                                     </XStack>
                                 </Tabs.Tab>
                                 <Tabs.Tab
                                     flex={1}
                                     value="boats"
-                                    backgroundColor="$content1"
                                     borderRadius="$4"
-                                    pressStyle={{backgroundColor: "$accent2"}}
-                                    hoverStyle={{backgroundColor: "$accent2"}}
+                                    paddingVertical="$3.5"
+                                    paddingHorizontal="$4"
+                                    backgroundColor={activeTab === "boats" ? "$accent7" : "transparent"}
+                                    borderWidth={activeTab === "boats" ? 2 : 0}
+                                    borderColor={activeTab === "boats" ? "$accent8" : "transparent"}
+                                    elevation={activeTab === "boats" ? "$2" : 0}
+                                    pressStyle={{
+                                        backgroundColor: activeTab === "boats" ? "$accent6" : "$accent2",
+                                        scale: 0.98
+                                    }}
+                                    hoverStyle={{backgroundColor: activeTab === "boats" ? "$accent5" : "$content2"}}
+                                    animation="quick"
+                                    scale={activeTab === "boats" ? 1 : 0.95}
                                 >
-                                    <XStack gap="$2" alignItems="center" padding="$2">
-                                        <Anchor size={18} color="$accent7"/>
-                                        <Text color="$accent7" fontWeight="600">{t('profile.tabs.boats')}</Text>
+                                    <XStack gap="$3" alignItems="center" justifyContent="center">
+                                        <Anchor size={activeTab === "boats" ? 22 : 20}
+                                                color={"$accent7"}/>
+                                        <Text
+                                            fontSize={activeTab === "boats" ? "$5" : "$4"}
+                                            fontWeight={activeTab === "boats" ? "800" : "600"}
+                                            color={"$accent7"}
+                                            letterSpacing={activeTab === "boats" ? 0.5 : 0}
+                                        >
+                                            {t('profile.tabs.boats')}
+                                        </Text>
                                     </XStack>
                                 </Tabs.Tab>
                             </Tabs.List>
@@ -434,7 +476,7 @@ export default function ProfileScreen() {
                                                     backgroundColor="$accent7"
                                                     color="white"
                                                     pressStyle={{backgroundColor: "$accent6"}}
-                                                    hoverStyle={{backgroundColor: "$accent4"}}
+                                                    hoverStyle={{backgroundColor: "$accent2"}}
                                                     disabled={updateProfileStatus.loading || selectedRoles.length === 0}
                                                     opacity={updateProfileStatus.loading || selectedRoles.length === 0 ? 0.6 : 1}
                                                     onPress={handleSave}
