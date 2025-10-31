@@ -1,4 +1,4 @@
-import React, {createContext, ReactNode, useContext, useState} from 'react';
+import React, {createContext, ReactNode, useContext} from 'react';
 
 import {useLocalStorage} from '@/hooks/useLocalStorage';
 import {useRouter} from 'expo-router';

@@ -140,7 +140,6 @@
       "title": "Ihre Aktivitäten",
       "noActivities": "Keine Aktivitäten ausgewählt",
       "roles": {
-        "HARBOR_MASTER": "Hafenmeister",
         "SWIMMER": "Schwimmer",
         "SAILOR": "Segler",
         "FISHERMAN": "Fischer"

@@ -26,22 +26,8 @@ export default function NativeMap(props: MapProps) {
         isDark = false
     } = props;
     const {data: content, loading} = useSensorDataNew();
-    // Helpers
-    const clampZoom = (z: number, min: number, max: number) => Math.max(min, Math.min(max, Math.round(z)));
-    const clampFloat = (z: number, min: number, max: number) => Math.max(min, Math.min(max, z));
-    const nearlyEqual = (a: number, b: number, eps = 1e-4) => Math.abs(a - b) < eps;
-    const normalizeBounds = (vb: [number[], number[]]) => {
-        const [p1, p2] = vb;
-        const swLon = Math.min(p1[0], p2[0]);
-        const neLon = Math.max(p1[0], p2[0]);
-        const swLat = Math.min(p1[1], p2[1]);
-        const neLat = Math.max(p1[1], p2[1]);
-        return [swLon, swLat, neLon, neLat] as [number, number, number, number];
-    };
-
     const mapRef = useRef<any>(null);
     const bottomSheetRef = useRef<MapSensorBottomSheetRef>(null);
-    const scheduleApplyRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const homeCoordinate: [number, number] = [9.26, 54.47926];
     const minMaxZoomLevel = {min: 3, max: 18};
@@ -63,14 +49,6 @@ export default function NativeMap(props: MapProps) {
         mapBoundariesLongLat.ne[1]
     ]);
 
-    const handleSetZoomLevel = (newZoom: number | ((prev: number) => number)) => {
-        const actualNewZoom = typeof newZoom === 'function' ? newZoom(zoomLevel) : newZoom;
-        setZoomLevel(actualNewZoom);
-    };
-
-    const handleSetCurrentCoordinate = (newCoord: [number, number]) => {
-        setCurrentCoordinate(newCoord);
-    };
 
     const bounds: [number, number, number, number] = useMemo(() => viewportBounds, [viewportBounds]);
 
@@ -108,8 +86,8 @@ export default function NativeMap(props: MapProps) {
         const {lat, lon} = sensor.location.coordinates;
         setHighlightedSensorId(sensor.location.id);
 
-        handleSetZoomLevel(Math.max(zoomLevel, 12));
-        handleSetCurrentCoordinate([lon, lat]);
+        setZoomLevel(Math.max(zoomLevel, 12));
+        setCurrentCoordinate([lon, lat]);
 
         bottomSheetRef.current?.snapToPeek();
 
@@ -118,14 +96,10 @@ export default function NativeMap(props: MapProps) {
         }, 3000);
     };
 
-    const integerZoom = useMemo(
-        () => clampZoom(zoomLevel, minMaxZoomLevel.min, minMaxZoomLevel.max),
-        [zoomLevel]
-    );
     const {clusters, getClusterExpansionZoom} = useSupercluster(
         filteredContent,
         bounds,
-        integerZoom
+        zoomLevel
     );
 
     const mapStyle = useMemo(() => {
@@ -149,8 +123,8 @@ export default function NativeMap(props: MapProps) {
                         clusterId={cluster.id as number}
                         onPress={() => {
                             const expansionZoom = getClusterExpansionZoom(cluster.id as number);
-                            handleSetZoomLevel(expansionZoom);
-                            handleSetCurrentCoordinate([longitude, latitude]);
+                            setZoomLevel(expansionZoom);
+                            setCurrentCoordinate([longitude, latitude]);
                         }}
                     />
                 );
@@ -165,42 +139,6 @@ export default function NativeMap(props: MapProps) {
         });
     }, [clusters, getClusterExpansionZoom]);
 
-    // Centralized map state sync
-    const applyMapState = async () => {
-        try {
-            const z = await mapRef.current?.getZoom?.();
-            const center = await mapRef.current?.getCenter?.();
-            const vb = await mapRef.current?.getVisibleBounds?.();
-            if (typeof z === 'number') {
-                const clampedZ = clampFloat(z, minMaxZoomLevel.min, minMaxZoomLevel.max);
-                if (!nearlyEqual(clampedZ, zoomLevel)) setZoomLevel(clampedZ);
-            }
-            if (Array.isArray(center) && center.length === 2) {
-                const [lng, lat] = center;
-                const [curLng, curLat] = currentCoordinate;
-                if (!nearlyEqual(lng, curLng) || !nearlyEqual(lat, curLat)) {
-                    setCurrentCoordinate([lng, lat]);
-                }
-            }
-            if (Array.isArray(vb) && vb.length === 2) {
-                const next = normalizeBounds(vb as [number[], number[]]);
-                const [b0, b1, b2, b3] = viewportBounds;
-                if (
-                    !nearlyEqual(next[0], b0) ||
-                    !nearlyEqual(next[1], b1) ||
-                    !nearlyEqual(next[2], b2) ||
-                    !nearlyEqual(next[3], b3)
-                ) {
-                    setViewportBounds(next);
-                }
-            }
-        } catch {}
-    };
-
-    const scheduleApply = () => {
-        if (scheduleApplyRef.current) clearTimeout(scheduleApplyRef.current);
-        scheduleApplyRef.current = setTimeout(() => { void applyMapState(); }, 100);
-    };
 
     return (
         <View style={{flex: 1, backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5'}}>
@@ -211,15 +149,35 @@ export default function NativeMap(props: MapProps) {
                 compassEnabled={true}
                 zoomEnabled={true}
                 onRegionIsChanging={(region: any) => {
-                    // Snap sheet to peek during map movement (like web onMove)
+                    // Snap sheet to peek during map movement
                     if (bottomSheetRef.current) {
                         bottomSheetRef.current.snapToPeek();
                     }
-                    setBearing(region.heading);
-                    setPitch(region.pitch);
+                    setBearing(region.heading || 0);
+                    setPitch(region.pitch || 0);
                 }}
-                onRegionDidChange={() => {
-                    scheduleApply();
+                onRegionDidChange={async () => {
+                    // Update bounds directly when region changes
+                    try {
+                        const bounds = await mapRef.current?.getVisibleBounds();
+                        if (bounds && bounds.length === 2) {
+                            // MapLibre native returns bounds as [[northeast], [southwest]]
+                            const [[east, north], [west, south]] = bounds;
+                            setViewportBounds([west, south, east, north]);
+                        }
+
+                        const zoom = await mapRef.current?.getZoom();
+                        if (typeof zoom === 'number') {
+                            setZoomLevel(zoom);
+                        }
+
+                        const center = await mapRef.current?.getCenter();
+                        if (center && center.length === 2) {
+                            setCurrentCoordinate(center);
+                        }
+                    } catch (error) {
+                        // Silently handle errors
+                    }
                 }}
             >
                 <Camera
@@ -227,7 +185,7 @@ export default function NativeMap(props: MapProps) {
                     centerCoordinate={currentCoordinate}
                     maxZoomLevel={18}
                     minZoomLevel={3}
-                    animationDuration={0}
+                    animationDuration={500}
                     pitch={pitch}
                     heading={bearing}
                 />
@@ -237,8 +195,8 @@ export default function NativeMap(props: MapProps) {
             <MapZoomControl
                 zoomLevel={zoomLevel}
                 minMaxZoomLevel={minMaxZoomLevel}
-                setZoomLevel={handleSetZoomLevel}
-                setCurrentCoordinate={handleSetCurrentCoordinate}
+                setZoomLevel={setZoomLevel}
+                setCurrentCoordinate={setCurrentCoordinate}
                 homeCoordinate={homeCoordinate}
                 setBearing={setBearing}
                 setPitch={setPitch}
