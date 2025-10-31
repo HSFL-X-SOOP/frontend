@@ -146,7 +146,7 @@ export default function APIScreen() {
                                                 paddingVertical="$3"
                                                 marginTop="$2"
                                                 alignSelf="flex-start"
-                                                hoverStyle={{backgroundColor: "$accent8"}}
+                                                hoverStyle={{backgroundColor: "$accent4"}}
                                                 onPress={() => Linking.openURL('https://www.marlin-live.com/api/')}
                                             >
                                                 <XStack alignItems="center" gap="$2">
@@ -180,7 +180,7 @@ export default function APIScreen() {
                                 <Link href={"/(other)/prices" as Href}>
                                     <Button backgroundColor="$accent7" color="white" borderRadius="$6"
                                             paddingHorizontal="$6" paddingVertical="$4"
-                                            hoverStyle={{backgroundColor: "$accent8"}}>
+                                            hoverStyle={{backgroundColor: "$accent4"}}>
                                         <Text color="white" fontWeight="600" fontSize={16}>{t('api.viewPricing')}</Text>
                                     </Button>
                                 </Link>

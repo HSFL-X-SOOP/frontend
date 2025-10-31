@@ -138,7 +138,7 @@ export default function LoginScreen() {
                             disabled={loginStatus.loading}
                             opacity={loginStatus.loading ? 0.6 : 1}
                             borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent8"}}
+                            hoverStyle={{backgroundColor: "$accent4"}}
                             pressStyle={{backgroundColor: "$accent6"}}
                         >
                             {loginStatus.loading ? (

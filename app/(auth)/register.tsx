@@ -201,7 +201,7 @@ export default function RegisterScreen() {
                             disabled={!isFormValid || registerStatus.loading}
                             opacity={!isFormValid || registerStatus.loading ? 0.6 : 1}
                             borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent8"}}
+                            hoverStyle={{backgroundColor: "$accent4"}}
                             pressStyle={{backgroundColor: "$accent6"}}
                         >
                             {registerStatus.loading ? (

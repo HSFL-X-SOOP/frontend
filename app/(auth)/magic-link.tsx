@@ -156,7 +156,7 @@ export default function MagicLinkScreen() {
                             size="$4"
                             onPress={handleSendMagicLink}
                             borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent8"}}
+                            hoverStyle={{backgroundColor: "$accent4"}}
                             pressStyle={{backgroundColor: "$accent6"}}
                             disabled={!email || hasErrors() || requestMagicLinkStatus.loading}
                             opacity={!email || hasErrors() || requestMagicLinkStatus.loading ? 0.6 : 1}

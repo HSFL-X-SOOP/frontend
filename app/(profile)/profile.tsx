@@ -144,7 +144,7 @@ export default function ProfileScreen() {
                     <Button
                         size="$4"
                         backgroundColor="$accent7"
-                        color={"white"}
+                        color="white"
                         pressStyle={{backgroundColor: "$accent6"}}
                         hoverStyle={{backgroundColor: "$accent4"}}
                         onPress={() => router.push('/(profile)/create-profile')}
@@ -174,18 +174,32 @@ export default function ProfileScreen() {
                                 disablePassBorderRadius="bottom"
                                 backgroundColor="$content1"
                                 borderRadius="$4"
-                                padding="$1"
+                                padding="$2"
                             >
-                                <Tabs.Tab flex={1} value="profile" backgroundColor="$content1" borderRadius="$4">
-                                    <XStack gap="$2" alignItems="center">
-                                        <User size={16}/>
-                                        <Text>{t('profile.tabs.profile')}</Text>
+                                <Tabs.Tab
+                                    flex={1}
+                                    value="profile"
+                                    backgroundColor="$content1"
+                                    borderRadius="$4"
+                                    pressStyle={{backgroundColor: "$accent2"}}
+                                    hoverStyle={{backgroundColor: "$accent2"}}
+                                >
+                                    <XStack gap="$2" alignItems="center" padding="$2">
+                                        <User size={18} color="$accent7"/>
+                                        <Text color="$accent7" fontWeight="600">{t('profile.tabs.profile')}</Text>
                                     </XStack>
                                 </Tabs.Tab>
-                                <Tabs.Tab flex={1} value="boats" backgroundColor="$content1" borderRadius="$4">
-                                    <XStack gap="$2" alignItems="center">
-                                        <Anchor size={16}/>
-                                        <Text>{t('profile.tabs.boats')}</Text>
+                                <Tabs.Tab
+                                    flex={1}
+                                    value="boats"
+                                    backgroundColor="$content1"
+                                    borderRadius="$4"
+                                    pressStyle={{backgroundColor: "$accent2"}}
+                                    hoverStyle={{backgroundColor: "$accent2"}}
+                                >
+                                    <XStack gap="$2" alignItems="center" padding="$2">
+                                        <Anchor size={18} color="$accent7"/>
+                                        <Text color="$accent7" fontWeight="600">{t('profile.tabs.boats')}</Text>
                                     </XStack>
                                 </Tabs.Tab>
                             </Tabs.List>
@@ -201,7 +215,7 @@ export default function ProfileScreen() {
                                                 backgroundColor="$accent7"
                                                 color="white"
                                                 pressStyle={{backgroundColor: "$accent6"}}
-                                                hoverStyle={{backgroundColor: "$accent8"}}
+                                                hoverStyle={{backgroundColor: "$accent4"}}
                                                 onPress={() => setIsEditing(true)}
                                             >
                                                 {t('profile.edit')}
@@ -209,7 +223,7 @@ export default function ProfileScreen() {
                                         ) : null}
                                     </XStack>
 
-                                    <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5"
+                                    <Card backgroundColor="$content1" borderRadius="$6" padding="$5"
                                           borderWidth={1} borderColor="$borderColor">
                                         <YStack gap="$4">
                                             <XStack alignItems="center" gap="$3">
@@ -262,7 +276,7 @@ export default function ProfileScreen() {
                                         </YStack>
                                     </Card>
 
-                                    <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5"
+                                    <Card backgroundColor="$content1" borderRadius="$6" padding="$5"
                                           borderWidth={1} borderColor="$borderColor">
                                         <YStack gap="$4">
                                             <XStack alignItems="center" gap="$3">
@@ -332,7 +346,7 @@ export default function ProfileScreen() {
                                         </YStack>
                                     </Card>
 
-                                    <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5"
+                                    <Card backgroundColor="$content1" borderRadius="$6" padding="$5"
                                           borderWidth={1} borderColor="$borderColor">
                                         <YStack gap="$4">
                                             <XStack alignItems="center" gap="$3">
@@ -420,8 +434,9 @@ export default function ProfileScreen() {
                                                     backgroundColor="$accent7"
                                                     color="white"
                                                     pressStyle={{backgroundColor: "$accent6"}}
-                                                    hoverStyle={{backgroundColor: "$accent8"}}
+                                                    hoverStyle={{backgroundColor: "$accent4"}}
                                                     disabled={updateProfileStatus.loading || selectedRoles.length === 0}
+                                                    opacity={updateProfileStatus.loading || selectedRoles.length === 0 ? 0.6 : 1}
                                                     onPress={handleSave}
                                                     icon={updateProfileStatus.loading ?
                                                         <Spinner color="white"/> : undefined}
@@ -461,7 +476,7 @@ export default function ProfileScreen() {
                                                 backgroundColor="$accent7"
                                                 color="white"
                                                 pressStyle={{backgroundColor: "$accent6"}}
-                                                hoverStyle={{backgroundColor: "$accent8"}}
+                                                hoverStyle={{backgroundColor: "$accent4"}}
                                                 icon={<Anchor size={16}/>}
                                             >
                                                 {t('profile.boats.addBoat')}
