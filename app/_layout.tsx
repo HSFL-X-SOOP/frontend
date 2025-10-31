@@ -7,7 +7,7 @@ import {
     useFonts
 } from '@expo-google-fonts/oswald'
 import {StatusBar} from 'expo-status-bar'
-import {Platform, View, LogBox} from 'react-native'
+import {Platform, View, LogBox, PermissionsAndroid} from 'react-native'
 import {useEffect} from 'react'
 import 'react-native-reanimated'
 import '../global.css'
@@ -26,14 +26,7 @@ import {ThemeProvider, useThemeContext} from '@/context/ThemeSwitch.tsx'
 import {usePathname, Slot} from 'expo-router'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import type {ToastType} from '@/components/useToast'
-import firebase from '@react-native-firebase/app';
-import messaging from '@react-native-firebase/messaging';
-import { AppRegistry } from 'react-native';
-import { expo as appName } from '../app.json';
-import {PermissionsAndroid} from 'react-native';
 
-//Wird für die Push Notifications benötigt
-PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
 
 function CurrentToast() {
     const currentToast = useToastState()
@@ -175,11 +168,26 @@ export default function RootLayout() {
         Oswald_700Bold,
     })
 
-    async function checkFCM() {
-    const token = await messaging().getToken();
-        console.log('🔥 FCM Token:', token);
-    }
-    checkFCM();
+    useEffect(() => {
+        async function initializeFirebase() {
+            if (Platform.OS !== 'web') {
+                // Request notification permissions on Android
+                if (Platform.OS === 'android') {
+                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+                }
+
+                // Get FCM token
+                const messaging = require('@react-native-firebase/messaging').default;
+                try {
+                    const token = await messaging().getToken();
+                    console.log('🔥 FCM Token:', token);
+                } catch (error) {
+                    console.log('Error getting FCM token:', error);
+                }
+            }
+        }
+        initializeFirebase();
+    }, []);
 
     if (!loaded) return null
 

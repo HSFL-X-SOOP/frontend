@@ -236,8 +236,24 @@ export default function WebMap(props: MapProps) {
                 <MapZoomControl
                     zoomLevel={zoomLevel}
                     minMaxZoomLevel={minMaxZoomLevel}
-                    setZoomLevel={setZoomLevel}
-                    setCurrentCoordinate={setCurrentCoordinate}
+                    setZoomLevel={(newZoom) => {
+                        setZoomLevel(newZoom);
+                        // Update viewState immediately for proper bounds calculation
+                        setViewState({
+                            longitude: currentCoordinate[0],
+                            latitude: currentCoordinate[1],
+                            zoom: newZoom
+                        });
+                    }}
+                    setCurrentCoordinate={(coord) => {
+                        setCurrentCoordinate(coord);
+                        // Update viewState immediately when setting coordinates
+                        setViewState({
+                            longitude: coord[0],
+                            latitude: coord[1],
+                            zoom: zoomLevel
+                        });
+                    }}
                     homeCoordinate={homeCoordinate}
                     setBearing={setBearing}
                     setPitch={setPitch}
