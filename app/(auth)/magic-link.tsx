@@ -48,35 +48,38 @@ export default function MagicLinkScreen() {
     };
 
     useEffect(() => {
-        if (token) {
-            logger.info('Processing magic link token');
-            (async () => {
-                const result = await magicLinkLogin({token});
-                if (result) {
-                    logger.info('Magic link login successful');
-                    logUserIn({
-                        accessToken: result.accessToken,
-                        refreshToken: result.refreshToken,
-                        loggedInSince: new Date(),
-                        lastTokenRefresh: null,
-                        role: result.role || AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
-                        profile: result.profile
-                    });
-                    toast.success(t('auth.magicLink.loginSuccess'), {
-                        message: t('auth.welcomeBack'),
-                        duration: 3000
-                    });
-                    router.replace("/map");
-                } else {
-                    logger.error('Magic link login failed', magicLinkLoginStatus.error);
-                    toast.error(t('auth.magicLink.loginError'), {
-                        message: magicLinkLoginStatus.error?.message || t('auth.magicLink.invalidOrExpired'),
-                        duration: 5000
-                    });
-                }
-            })();
+        if (!token) {
+            return;
         }
-    }, [token]);
+
+        logger.info('Processing magic link token');
+
+        (async () => {
+            const result = await magicLinkLogin({token});
+            if (result) {
+                logger.info('Magic link login successful');
+                logUserIn({
+                    accessToken: result.accessToken,
+                    refreshToken: result.refreshToken,
+                    loggedInSince: new Date(),
+                    lastTokenRefresh: null,
+                    role: result.role ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
+                    profile: result.profile
+                });
+                toast.success(t('auth.magicLink.loginSuccess'), {
+                    message: t('auth.welcomeBack'),
+                    duration: 3000
+                });
+                router.replace("/map");
+            } else {
+                logger.error('Magic link login failed', magicLinkLoginStatus.error);
+                toast.error(t('auth.magicLink.loginError'), {
+                    message: magicLinkLoginStatus.error?.message || t('auth.magicLink.invalidOrExpired'),
+                    duration: 5000
+                });
+            }
+        })();
+    }, [token, logUserIn, magicLinkLogin, magicLinkLoginStatus.error, router, t, toast]);
 
     if (token && magicLinkLoginStatus.loading) {
         return (

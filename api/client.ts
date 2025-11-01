@@ -1,7 +1,7 @@
-import { LoginResponse } from "@/api/models/auth";
-import { useSession } from "@/context/SessionContext";
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { ENV } from "@/config/environment";
+import {LoginResponse} from "@/api/models/auth";
+import {useSession} from "@/context/SessionContext";
+import axios, {AxiosError, InternalAxiosRequestConfig} from "axios";
+import {ENV} from "@/config/environment";
 
 export function useHttpClient() {
     const {session, login, logout} = useSession()
@@ -36,6 +36,7 @@ export function useHttpClient() {
                         loggedInSince: session.loggedInSince,
                         lastTokenRefresh: new Date(),
                         profile: data.profile,
+                        role: data.role ?? null
                     }
 
                     login(newSession)

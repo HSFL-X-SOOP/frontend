@@ -8,7 +8,7 @@ export interface SessionInfo {
     accessToken: string;
     refreshToken: string | null;
     loggedInSince: Date;
-    role: AuthorityRole
+    role: AuthorityRole | null;
     lastTokenRefresh: Date | null;
     profile: UserProfile | null;
 }

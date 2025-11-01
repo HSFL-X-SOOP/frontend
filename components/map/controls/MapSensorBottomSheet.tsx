@@ -52,7 +52,7 @@ const MapSensorBottomSheet = forwardRef<MapSensorBottomSheetRef, MapSensorBottom
                                                                                                  onOpenChange,
                                                                                                  children
                                                                                              }, ref) => {
-    const [position, setPosition] = useState(1);
+    const [, setPosition] = useState(1);
     const imperativeHandleRef = useRef<MapSensorBottomSheetRef | null>(null);
     const pendingSnapRef = useRef(false);
 

@@ -1,6 +1,7 @@
 import {useEffect, useRef} from 'react';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import {useSession} from '@/context/SessionContext';
+import {AuthorityRole} from '@/api/models/profile';
 import {SafeAreaView, Platform} from 'react-native';
 import {YStack, Text, Spinner} from 'tamagui';
 import {createLogger} from '@/utils/logger';
@@ -55,7 +56,8 @@ export default function OAuthCallbackHandler() {
                     refreshToken: refreshToken || null,
                     loggedInSince: new Date(),
                     lastTokenRefresh: null,
-                    profile: null
+                    profile: null,
+                    role: AuthorityRole.USER
                 });
 
                 if (Platform.OS === 'web' && typeof window !== 'undefined') {

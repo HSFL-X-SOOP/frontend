@@ -13,6 +13,7 @@ import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
 import {createLogger} from '@/utils/logger';
+import {AuthorityRole} from '@/api/models/profile';
 
 const logger = createLogger('Auth:Login');
 
@@ -45,7 +46,7 @@ export default function LoginScreen() {
                 refreshToken: res.refreshToken,
                 loggedInSince: new Date(),
                 lastTokenRefresh: null,
-                role: res.role,
+                role: res.role ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
                 profile: res.profile
             });
             toast.success(t('auth.loginSuccess'), {

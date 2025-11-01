@@ -5,7 +5,7 @@ import {LngLatBoundsLike, Map} from '@vis.gl/react-maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import * as React from 'react';
 import {useMemo, useState, useRef} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 import ClusterMarker from './map/markers/web/ClusterMarker';
 import MapZoomControl from './map/controls/MapZoomControl';
 import SensorMarker from './map/markers/web/SensorMarker';

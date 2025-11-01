@@ -175,7 +175,7 @@ export default function NativeMap(props: MapProps) {
                         if (center && center.length === 2) {
                             setCurrentCoordinate(center);
                         }
-                    } catch (error) {
+                    } catch {
                         // Silently handle errors
                     }
                 }}

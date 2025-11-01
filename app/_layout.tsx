@@ -12,7 +12,7 @@ import {useEffect} from 'react'
 import 'react-native-reanimated'
 import '../global.css'
 
-import config from '@/tamagui.config'
+import tamaguiConfig from '@/tamagui.config'
 import {PortalProvider} from '@tamagui/portal'
 import {TamaguiProvider, Theme, XStack, YStack} from 'tamagui'
 import {Toast, ToastProvider, ToastViewport, useToastState} from '@tamagui/toast'
@@ -177,7 +177,8 @@ export default function RootLayout() {
                 }
 
                 // Get FCM token
-                const messaging = require('@react-native-firebase/messaging').default;
+                const messagingModule = await import('@react-native-firebase/messaging');
+                const messaging = messagingModule.default ?? messagingModule;
                 try {
                     const token = await messaging().getToken();
                     console.log('🔥 FCM Token:', token);
@@ -192,7 +193,7 @@ export default function RootLayout() {
     if (!loaded) return null
 
     return (
-        <TamaguiProvider config={config}>
+        <TamaguiProvider config={tamaguiConfig}>
             <PortalProvider shouldAddRootHost>
                 <ThemeProvider>
                     <RootContent/>

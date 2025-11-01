@@ -2,7 +2,7 @@ import {useRouter} from 'expo-router';
 import {useState} from 'react';
 import {SafeAreaView, ScrollView} from 'react-native';
 import {Button, Text, YStack, XStack, H2, H5, Card, RadioGroup, Label, Separator, View, Spinner} from 'tamagui';
-import {User, Globe, Activity, Ruler, Check} from '@tamagui/lucide-icons';
+import {Globe, Activity, Ruler, Check} from '@tamagui/lucide-icons';
 import {useUser} from '@/hooks/useUser';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {useSession} from '@/context/SessionContext';
