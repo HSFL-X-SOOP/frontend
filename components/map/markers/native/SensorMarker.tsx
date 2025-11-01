@@ -4,8 +4,7 @@ import React, {useState} from "react";
 import {Pressable} from "react-native";
 import {SensorPopup} from "../../sensors/MapSensorMeasurements";
 import {SensorMarkerContent} from "../../sensors/MapSensorTemperatureText";
-import {Dialog, YStack, Button, XStack, Adapt, Unspaced} from "tamagui";
-import {useThemeContext} from "@/context/ThemeSwitch";
+import {Dialog, YStack, Button, Unspaced} from "tamagui";
 import {X} from "@tamagui/lucide-icons";
 
 interface SensorMarkerProps {
