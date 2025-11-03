@@ -36,7 +36,7 @@ export function useHttpClient() {
                         loggedInSince: session.loggedInSince,
                         lastTokenRefresh: new Date(),
                         profile: data.profile,
-                        role: data.role ?? null
+                        role: data.profile?.authorityRole ?? null
                     }
 
                     login(newSession)

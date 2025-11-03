@@ -89,7 +89,7 @@ export default function RegisterScreen() {
                 refreshToken: res.refreshToken,
                 loggedInSince: new Date(),
                 lastTokenRefresh: null,
-                role: res.role ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
+                role: res.profile?.authorityRole ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
                 profile: res.profile
             });
             toast.success(t('auth.registerSuccess'), {

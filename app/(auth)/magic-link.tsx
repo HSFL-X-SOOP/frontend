@@ -63,7 +63,7 @@ export default function MagicLinkScreen() {
                     refreshToken: result.refreshToken,
                     loggedInSince: new Date(),
                     lastTokenRefresh: null,
-                    role: result.role ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
+                    role: result.profile?.authorityRole ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
                     profile: result.profile
                 });
                 toast.success(t('auth.magicLink.loginSuccess'), {

@@ -2,7 +2,8 @@ export interface UserProfile {
     id: number;
     userId: number;
     language: Language;
-    roles: ActivityRole[];
+    activityRoles: ActivityRole[];
+    authorityRole: AuthorityRole
     measurementSystem: MeasurementSystem;
     createdAt: string;
     updatedAt?: string;
