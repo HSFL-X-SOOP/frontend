@@ -41,7 +41,6 @@ export function useHttpClient() {
                     login(newSession)
                     config.headers.Authorization = `Bearer ${newSession.accessToken}`
                 } catch (err) {
-                    logout()
                     return config
                 }
             } else {
