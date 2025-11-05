@@ -32,9 +32,6 @@ import { AppRegistry } from 'react-native';
 import { expo as appName } from '../app.json';
 import {PermissionsAndroid} from 'react-native';
 
-//Wird für die Push Notifications benötigt
-PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-
 function CurrentToast() {
     const currentToast = useToastState()
 
@@ -175,11 +172,19 @@ export default function RootLayout() {
         Oswald_700Bold,
     })
 
-    async function checkFCM() {
-    const token = await messaging().getToken();
-        console.log('🔥 FCM Token:', token);
+    //Wird für die Push Notifications benötigt
+    if (Platform.OS === 'android') {
+        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
     }
-    checkFCM();
+
+    //FCM-Token ist nur für Android und iOS relevant
+    if (Platform.OS !== 'web') {
+        async function checkFCM() {
+        const token = await messaging().getToken();
+            console.log('🔥 FCM Token:', token);
+        }
+        checkFCM();
+    }
 
     if (!loaded) return null
 
