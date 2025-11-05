@@ -9,19 +9,19 @@ interface NavigateDashboardDropdownMenuProps {
     router: Router;
     sensorLocations: MarinaNameWithId[];
     isDark?: boolean;
-    selectedMarinaId: number;
+    selectedMarina: string;
 }
 
 export function NavigateDashboardDropdownMenu(props: NavigateDashboardDropdownMenuProps) {
-    const {router, isDark, sensorLocations, selectedMarinaId} = props;
+    const {router, isDark, sensorLocations, selectedMarina} = props;
 
     const handleValueChange = (value: string) => {
-        router.push(`/dashboard/${value}`);
+        router.push({ pathname: '/(dashboard)/marina/[name]', params: { name: value } });
     };
 
     const locationOptions: SelectItem<string>[] = useMemo(() =>
             sensorLocations.map(item => ({
-                value: item.id.toString(),
+                value: item.name,
                 label: item.name
             })),
         [sensorLocations]
@@ -32,7 +32,7 @@ export function NavigateDashboardDropdownMenu(props: NavigateDashboardDropdownMe
             id="location-select"
             name="location"
             items={locationOptions}
-            value={String(selectedMarinaId)}
+            value={selectedMarina}
             onValueChange={handleValueChange}
             placeholder="Select Location"
             triggerProps={{

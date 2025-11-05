@@ -130,8 +130,8 @@ export default function NativeMap(props: MapProps) {
 
     const mapStyle = useMemo(() => {
         return isDark
-            ? require('@/assets/mapStyles/dark_mode.json')
-            : require('@/assets/mapStyles/light_mode.json');
+            ? require('@/assets/mapStyles/dark_mode_new.json')
+            : require('@/assets/mapStyles/light_mode_new.json');
     }, [isDark]);
 
     const pins = useMemo(() => {
