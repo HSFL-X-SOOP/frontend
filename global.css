@@ -4,6 +4,9 @@
     --scrollbar-thumb-hover-light: #04293a;
     --scrollbar-thumb-dark: #5a8f5a;
     --scrollbar-thumb-hover-dark: #6ba06b;
+    /* Dynamic viewport height for mobile browsers */
+    --vh: 1vh;
+    --safe-bottom: 0px;
 }
 
 * {
@@ -71,5 +74,18 @@
 
 [data-theme="light"] *::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover-light);
+}
+
+/* Mobile viewport handling */
+@supports (height: 100dvh) {
+    :root {
+        --vh: 1dvh;
+    }
+}
+
+/* Ensure proper height calculation for mobile browsers */
+.mobile-safe-area {
+    height: calc(100 * var(--vh, 1vh) - var(--safe-bottom, 0px));
+    max-height: calc(100 * var(--vh, 1vh) - var(--safe-bottom, 0px));
 }
 

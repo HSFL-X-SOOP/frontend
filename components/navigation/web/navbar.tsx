@@ -11,6 +11,7 @@ import {PrimaryButton, SecondaryButton} from '@/types/button';
 import {useTranslation} from '@/hooks/useTranslation';
 import {LanguageSelector} from '@/components/common/LanguageSelector';
 import {useIsMobileWeb} from '@/hooks/useIsMobileWeb';
+import {useViewportHeight} from '@/hooks/useViewportHeight';
 
 
 export function NavbarWeb() {
@@ -21,6 +22,7 @@ export function NavbarWeb() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const isMobileWeb = useIsMobileWeb();
     const toast = useToast();
+    const {viewportHeight, safeBottomOffset} = useViewportHeight();
 
     const handleLogout = () => {
         logout();
@@ -256,7 +258,9 @@ export function NavbarWeb() {
                 modal
                 open={isMenuOpen}
                 onOpenChange={setIsMenuOpen}
-                snapPoints={[85, 50]}
+                snapPoints={isMobileWeb && viewportHeight > 0
+                    ? [Math.min(85, ((viewportHeight - safeBottomOffset) / viewportHeight) * 100), 50]
+                    : [85, 50]}
                 dismissOnSnapToBottom
                 animation="medium"
             >
@@ -271,6 +275,9 @@ export function NavbarWeb() {
                     backgroundColor="$background"
                     borderTopLeftRadius="$6"
                     borderTopRightRadius="$6"
+                    maxHeight={isMobileWeb && viewportHeight > 0
+                        ? viewportHeight - safeBottomOffset - 20
+                        : undefined}
                 >
                     <Sheet.Handle backgroundColor="$borderColor"/>
 
