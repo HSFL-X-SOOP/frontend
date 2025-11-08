@@ -183,7 +183,6 @@ export const SpeedDialAction = memo(function SpeedDialAction({
             gap={gap}
             alignItems="center"
             minWidth={100}
-            backgroundColor={"red"}
             justifyContent={"space-between"}
             animation={[
                 'quick',

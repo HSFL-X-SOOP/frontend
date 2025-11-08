@@ -189,56 +189,76 @@ export function SpeedDial({
                 {...stackProps}
                 {...getPositionStyles()}
             >
+                {/* Actions Container */}
                 <StackComponent
+                    position="absolute"
+                    {...(placement.includes('bottom') ? {
+                        bottom: (fabSize === '$4' ? 48 : fabSize === '$5' ? 56 : fabSize === '$6' ? 64 : 72) +
+                            (gap === '$1' ? 4 : gap === '$2' ? 8 : gap === '$3' ? 12 : 16)
+                    } : {
+                        top: (fabSize === '$4' ? 48 : fabSize === '$5' ? 56 : fabSize === '$6' ? 64 : 72) +
+                            (gap === '$1' ? 4 : gap === '$2' ? 8 : gap === '$3' ? 12 : 16)
+                    })}
+                    {...(actualLabelPlacement === 'left' || actualLabelPlacement === 'right'
+                        ? placement.includes('right')
+                            ? { right: -10, paddingRight: 20 }
+                            : { left: -10, paddingLeft: 20 }
+                        : { left: 0, right: 0 }
+                    )}
                     gap={gap}
-                    alignItems={placement?.includes('right') ? 'flex-end' : 'flex-start'}
+                    alignItems={
+                        actualLabelPlacement === 'top' || actualLabelPlacement === 'bottom' || actualLabelPlacement === 'none'
+                            ? 'center'
+                            : placement.includes('right')
+                                ? 'flex-end'
+                                : 'flex-start'
+                    }
                     flexDirection={placement.includes('bottom') ? 'column-reverse' : 'column'}
                 >
-                    {/* Actions */}
                     <AnimatePresence>
                         {open && renderActions()}
                     </AnimatePresence>
-
-                    {/* Floating Action Button */}
-                    <Button
-                        ref={fabRef}
-                        circular
-                        size={fabSize}
-                        disabled={disabled}
-                        onPress={toggleOpen}
-                        testID={testID}
-                        accessibilityLabel={fabAccessibilityLabel}
-                        accessibilityRole="button"
-                        backgroundColor="$accent8"
-                        elevation={elevation}
-                        animation="quick"
-                        animateOnly={['transform']}
-                        rotate={open ? '45deg' : '0deg'}
-                        zIndex={1002}
-                        hoverStyle={{
-                            backgroundColor: "$accent9",
-                            scale: 1.05,
-                        }}
-                        pressStyle={{
-                            backgroundColor: "$accent10",
-                            scale: 0.95,
-                        }}
-                        {...(Platform.OS !== 'web' ? {
-                            accessibilityState: {
-                                expanded: open,
-                                disabled,
-                            }
-                        } : {
-                            'aria-expanded': open,
-                            'aria-disabled': disabled,
-                        })}
-                    >
-                        <FabIcon
-                            size={24}
-                            color="white"
-                        />
-                    </Button>
                 </StackComponent>
+
+                {/* Floating Action Button - Fixed Position */}
+                <Button
+                    ref={fabRef}
+                    circular
+                    size={fabSize}
+                    disabled={disabled}
+                    onPress={toggleOpen}
+                    testID={testID}
+                    accessibilityLabel={fabAccessibilityLabel}
+                    accessibilityRole="button"
+                    backgroundColor="$accent8"
+                    elevation={elevation}
+                    animation="quick"
+                    animateOnly={['transform']}
+                    rotate={open ? '45deg' : '0deg'}
+                    zIndex={1002}
+                    hoverStyle={{
+                        backgroundColor: "$accent9",
+                        scale: 1.05,
+                    }}
+                    pressStyle={{
+                        backgroundColor: "$accent10",
+                        scale: 0.95,
+                    }}
+                    {...(Platform.OS !== 'web' ? {
+                        accessibilityState: {
+                            expanded: open,
+                            disabled,
+                        }
+                    } : {
+                        'aria-expanded': open,
+                        'aria-disabled': disabled,
+                    })}
+                >
+                    <FabIcon
+                        size={24}
+                        color="white"
+                    />
+                </Button>
             </Container>
         </>
     );
