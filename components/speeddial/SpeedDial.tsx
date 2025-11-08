@@ -145,6 +145,26 @@ export function SpeedDial({
     // Icon to show in FAB
     const FabIcon = open && ActiveIcon ? ActiveIcon : Icon;
 
+    // Helper function to convert token sizes to pixel values
+    const getTokenSize = (token: string | number): number => {
+        if (typeof token === 'number') return token;
+        const sizes: Record<string, number> = {
+            '$1': 4,
+            '$2': 8,
+            '$3': 12,
+            '$4': 16,
+            '$5': 20,
+            '$6': 24,
+            '$7': 28,
+            '$8': 32,
+        };
+        return sizes[token] || 24;
+    };
+
+    // Calculate FAB size and gap in pixels
+    const fabSizeInPixels = getTokenSize(fabSize as string) * 2; // FAB is roughly 2x the token size
+    const gapInPixels = getTokenSize(gap as string);
+
     // Render actions
     const renderActions = () => {
         const actionElements = actions.map((action, index) => (
@@ -193,11 +213,9 @@ export function SpeedDial({
                 <StackComponent
                     position="absolute"
                     {...(placement.includes('bottom') ? {
-                        bottom: (fabSize === '$4' ? 48 : fabSize === '$5' ? 56 : fabSize === '$6' ? 64 : 72) +
-                            (gap === '$1' ? 4 : gap === '$2' ? 8 : gap === '$3' ? 12 : 16)
+                        bottom: fabSizeInPixels + gapInPixels
                     } : {
-                        top: (fabSize === '$4' ? 48 : fabSize === '$5' ? 56 : fabSize === '$6' ? 64 : 72) +
-                            (gap === '$1' ? 4 : gap === '$2' ? 8 : gap === '$3' ? 12 : 16)
+                        top: fabSizeInPixels + gapInPixels
                     })}
                     {...(actualLabelPlacement === 'left' || actualLabelPlacement === 'right'
                             ? placement.includes('right')
