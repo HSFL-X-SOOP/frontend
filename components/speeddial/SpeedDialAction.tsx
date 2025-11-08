@@ -1,12 +1,12 @@
 import React, {memo} from 'react';
-import {Button, Text, XStack, YStack, AnimatePresence, View, styled} from 'tamagui';
+import {Button, Text, XStack, YStack, View, styled} from 'tamagui';
 import {Platform} from 'react-native';
-import {SpeedDialActionProps} from './types';
+import {SpeedDialActionProps} from '@/types/speeddial';
 
 const ActionButton = styled(Button, {
     circular: true,
     size: '$4',
-    elevation: '$2',
+    elevation: '$2' as any,
     animation: 'quick',
     backgroundColor: '$background',
     borderWidth: 1,
@@ -39,7 +39,7 @@ const ActionLabel = styled(Text, {
     paddingHorizontal: '$2',
     paddingVertical: '$1',
     borderRadius: '$2',
-    elevation: '$1',
+    elevation: '$1' as any,
     borderWidth: 1,
     borderColor: '$borderColor',
     whiteSpace: 'nowrap',
@@ -48,7 +48,6 @@ const ActionLabel = styled(Text, {
 export const SpeedDialAction = memo(function SpeedDialAction({
                                                                  action,
                                                                  index,
-                                                                 isOpen,
                                                                  labelPlacement,
                                                                  gap,
                                                                  placement,
@@ -58,7 +57,6 @@ export const SpeedDialAction = memo(function SpeedDialAction({
 
     // Calculate animation directions based on placement
     const isBottom = placement.includes('bottom');
-    const isRight = placement.includes('right');
 
     // Stagger delay for each action
     const delay = index * 50;
@@ -135,12 +133,9 @@ export const SpeedDialAction = memo(function SpeedDialAction({
                 'aria-disabled': action.disabled
             })}
             backgroundColor={action.bgToken || '$background'}
-            animation={[
-                'quick',
-                {
-                    delay,
-                },
-            ]}
+            animation="quick"
+            animateOnly={['transform', 'opacity']}
+            {...(delay > 0 ? { animationDelay: delay } : {})}
             {...animationStyles}
         >
             {Icon && (
@@ -158,16 +153,13 @@ export const SpeedDialAction = memo(function SpeedDialAction({
     if (isHorizontalLayout) {
         return (
             <XStack
-                gap={gap}
+                gap={gap as any}
                 minWidth={100}
                 alignItems="center"
                 justifyContent={"space-between"}
-                animation={[
-                    'quick',
-                    {
-                        delay,
-                    },
-                ]}
+                animation="quick"
+                animateOnly={['transform', 'opacity']}
+                {...(delay > 0 ? { animationDelay: delay } : {})}
                 {...animationStyles}
             >
                 {labelPlacement === 'left' && renderLabel()}
@@ -180,16 +172,13 @@ export const SpeedDialAction = memo(function SpeedDialAction({
     // Vertical layout (top/bottom/none)
     return (
         <YStack
-            gap={gap}
+            gap={gap as any}
             alignItems="center"
             minWidth={100}
             justifyContent={"space-between"}
-            animation={[
-                'quick',
-                {
-                    delay,
-                },
-            ]}
+            animation="quick"
+            animateOnly={['transform', 'opacity']}
+            {...(delay > 0 ? { animationDelay: delay } : {})}
             {...animationStyles}
         >
             {labelPlacement === 'top' && renderLabel()}

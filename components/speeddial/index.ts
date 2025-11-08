@@ -6,4 +6,4 @@ export type {
   SpeedDialPlacement,
   SpeedDialLabelPlacement,
   TamaguiIcon,
-} from './types';
+} from '@/types/speeddial';

@@ -13,7 +13,7 @@ import {Plus, X} from '@tamagui/lucide-icons';
 import {BackHandler, Platform, Pressable} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SpeedDialAction} from './SpeedDialAction';
-import {SpeedDialProps, SpeedDialLabelPlacement} from './types';
+import {SpeedDialProps, SpeedDialLabelPlacement} from '@/types/speeddial';
 
 const Backdrop = styled(Pressable, {
     position: 'absolute',
@@ -200,10 +200,10 @@ export function SpeedDial({
                             (gap === '$1' ? 4 : gap === '$2' ? 8 : gap === '$3' ? 12 : 16)
                     })}
                     {...(actualLabelPlacement === 'left' || actualLabelPlacement === 'right'
-                        ? placement.includes('right')
-                            ? { right: -10, paddingRight: 20 }
-                            : { left: -10, paddingLeft: 20 }
-                        : { left: 0, right: 0 }
+                            ? placement.includes('right')
+                                ? {right: -10, paddingRight: 20}
+                                : {left: -10, paddingLeft: 20}
+                            : {left: 0, right: 0}
                     )}
                     gap={gap}
                     alignItems={
