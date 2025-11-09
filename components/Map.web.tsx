@@ -7,14 +7,16 @@ import * as React from 'react';
 import {useMemo, useState, useRef} from 'react';
 import {View} from 'react-native';
 import ClusterMarker from './map/markers/web/ClusterMarker';
-import MapZoomControl from './map/controls/MapZoomControl';
 import SensorMarker from './map/markers/web/SensorMarker';
 import {BoxType, LocationWithBoxes} from '@/api/models/sensor';
 import MapSensorDrawer from './map/drawers/MapSensorDrawer';
 import SensorList from './map/sensors/SensorList';
-import MapDrawerToggle from './map/controls/MapDrawerToggle';
 import MapSensorBottomSheet, {MapSensorBottomSheetRef} from './map/controls/MapSensorBottomSheet';
 import {useIsMobileWeb, useIsMobile} from '@/hooks/useIsMobileWeb';
+import {SpeedDial} from '@/components/speeddial';
+import {Plus, Home, Navigation, ZoomIn, ZoomOut, List, Filter} from '@tamagui/lucide-icons';
+import MapFilterButton from './map/controls/MapFilterButton';
+import {useTranslation} from '@/hooks/useTranslation';
 
 interface MapProps {
     module1Visible?: boolean;
@@ -25,11 +27,16 @@ interface MapProps {
 
 export default function WebMap(props: MapProps) {
     const {
-        module1Visible = true,
-        module2Visible = true,
-        module3Visible = false,
         isDark = false
     } = props;
+    const {t} = useTranslation();
+
+    // Filter states
+    const [module1Visible, setModule1Visible] = useState(props.module1Visible ?? true);
+    const [module2Visible, setModule2Visible] = useState(props.module2Visible ?? true);
+    const [module3Visible, setModule3Visible] = useState(props.module3Visible ?? false);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+
     const {data: content, loading} = useSensorDataNew();
     const mapRef = React.useRef<MapRef>(null);
     const bottomSheetRef = React.useRef<MapSensorBottomSheetRef>(null);
@@ -111,7 +118,6 @@ export default function WebMap(props: MapProps) {
             duration: 1000,
         });
 
-        // Snap bottom sheet to peek position on mobile (web or native)
         if (isMobile) {
             bottomSheetRef.current?.snapToPeek();
         }
@@ -200,8 +206,6 @@ export default function WebMap(props: MapProps) {
                 </MapSensorBottomSheet>
             )}
 
-            <MapDrawerToggle onPress={() => setIsDrawerOpen(!isDrawerOpen)} isOpen={isDrawerOpen}/>
-
             <Map
                 ref={mapRef}
                 initialViewState={viewState}
@@ -233,33 +237,97 @@ export default function WebMap(props: MapProps) {
                 pitch={pitch}
             >
                 {pins}
-                <MapZoomControl
-                    zoomLevel={zoomLevel}
-                    minMaxZoomLevel={minMaxZoomLevel}
-                    setZoomLevel={(newZoom) => {
-                        setZoomLevel(newZoom);
-                        // Update viewState immediately for proper bounds calculation
-                        setViewState({
-                            longitude: currentCoordinate[0],
-                            latitude: currentCoordinate[1],
-                            zoom: newZoom
-                        });
-                    }}
-                    setCurrentCoordinate={(coord) => {
-                        setCurrentCoordinate(coord);
-                        // Update viewState immediately when setting coordinates
-                        setViewState({
-                            longitude: coord[0],
-                            latitude: coord[1],
-                            zoom: zoomLevel
-                        });
-                    }}
-                    homeCoordinate={homeCoordinate}
-                    setBearing={setBearing}
-                    setPitch={setPitch}
-                    bearing={bearing}
-                />
             </Map>
+
+            {/* SpeedDial für Web (Mobile und Desktop) */}
+            <SpeedDial
+                    placement="bottom-right"
+                    labelPlacement="left"
+                    portal={false}
+                    icon={Plus}
+                    actions={[
+                        {
+                            key: 'sensors',
+                            label: t('navigation.sensors'),
+                            icon: List,
+                            onPress: () => setIsDrawerOpen(!isDrawerOpen),
+                        },
+                        {
+                            key: 'filter',
+                            label: t('map.filters'),
+                            icon: Filter,
+                            onPress: () => setIsFilterOpen(true),
+                        },
+                        {
+                            key: 'zoomin',
+                            label: 'Zoom In',
+                            icon: ZoomIn,
+                            onPress: () => {
+                                if (zoomLevel < minMaxZoomLevel.max) {
+                                    const newZoom = zoomLevel + 1;
+                                    setZoomLevel(newZoom);
+                                    setViewState({
+                                        longitude: currentCoordinate[0],
+                                        latitude: currentCoordinate[1],
+                                        zoom: newZoom
+                                    });
+                                }
+                            },
+                        },
+                        {
+                            key: 'zoomout',
+                            label: 'Zoom Out',
+                            icon: ZoomOut,
+                            onPress: () => {
+                                if (zoomLevel > minMaxZoomLevel.min) {
+                                    const newZoom = zoomLevel - 1;
+                                    setZoomLevel(newZoom);
+                                    setViewState({
+                                        longitude: currentCoordinate[0],
+                                        latitude: currentCoordinate[1],
+                                        zoom: newZoom
+                                    });
+                                }
+                            },
+                        },
+                        {
+                            key: 'compass',
+                            label: 'Reset View',
+                            icon: Navigation,
+                            onPress: () => {
+                                setBearing(0);
+                                setPitch(0);
+                            },
+                        },
+                        {
+                            key: 'home',
+                            label: 'Go Home',
+                            icon: Home,
+                            onPress: () => {
+                                setCurrentCoordinate(homeCoordinate);
+                                setViewState({
+                                    longitude: homeCoordinate[0],
+                                    latitude: homeCoordinate[1],
+                                    zoom: zoomLevel
+                                });
+                            },
+                        },
+                    ]}
+                    fabSize="$6"
+                    gap="$2"
+                />
+
+            {/* Filter Sheet - controlled by SpeedDial */}
+            <MapFilterButton
+                module1Visible={module1Visible}
+                setModule1Visible={setModule1Visible}
+                module2Visible={module2Visible}
+                setModule2Visible={setModule2Visible}
+                module3Visible={module3Visible}
+                setModule3Visible={setModule3Visible}
+                isOpen={isFilterOpen}
+                onOpenChange={setIsFilterOpen}
+            />
         </View>
     );
 }

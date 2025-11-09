@@ -9,7 +9,7 @@ import {
     styled,
     Stack,
 } from 'tamagui';
-import {Plus, X} from '@tamagui/lucide-icons';
+import {Plus} from '@tamagui/lucide-icons';
 import {BackHandler, Platform, Pressable} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SpeedDialAction} from './SpeedDialAction';
@@ -164,6 +164,8 @@ export function SpeedDial({
     // Calculate FAB size and gap in pixels
     const fabSizeInPixels = getTokenSize(fabSize as string) * 2; // FAB is roughly 2x the token size
     const gapInPixels = getTokenSize(gap as string);
+    // Add extra spacing between FAB and actions
+    const fabToActionsGap = gapInPixels + 16; // Add 16px extra spacing
 
     // Render actions
     const renderActions = () => {
@@ -213,9 +215,9 @@ export function SpeedDial({
                 <StackComponent
                     position="absolute"
                     {...(placement.includes('bottom') ? {
-                        bottom: fabSizeInPixels + gapInPixels
+                        bottom: fabSizeInPixels + fabToActionsGap
                     } : {
-                        top: fabSizeInPixels + gapInPixels
+                        top: fabSizeInPixels + fabToActionsGap
                     })}
                     {...(actualLabelPlacement === 'left' || actualLabelPlacement === 'right'
                             ? placement.includes('right')

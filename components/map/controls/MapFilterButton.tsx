@@ -1,8 +1,7 @@
-import {StyleSheet, Platform} from "react-native";
-import {Button, Text, XStack, YStack, Sheet, Checkbox, View, useMedia, Popover, Separator} from 'tamagui';
+import {Button, Text, XStack, YStack, Sheet, Checkbox, View, Separator} from 'tamagui';
 import {useState} from 'react';
 import {useTranslation} from '@/hooks/useTranslation';
-import {SlidersHorizontal, X} from '@tamagui/lucide-icons';
+import {X} from '@tamagui/lucide-icons';
 
 interface MapFilterButtonProps {
     module1Visible: boolean;
@@ -11,6 +10,8 @@ interface MapFilterButtonProps {
     setModule2Visible: (value: boolean) => void;
     module3Visible: boolean;
     setModule3Visible: (value: boolean) => void;
+    isOpen?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
 
 export default function MapFilterButton({
@@ -20,15 +21,24 @@ export default function MapFilterButton({
                                             setModule2Visible,
                                             module3Visible,
                                             setModule3Visible,
+                                            isOpen,
+                                            onOpenChange,
                                         }: MapFilterButtonProps) {
     const {t} = useTranslation();
-    const [sheetVisible, setSheetVisible] = useState(false);
-    const [popoverOpen, setPopoverOpen] = useState(false);
-    const media = useMedia();
-    const isWeb = Platform.OS === 'web';
-    const isMobile = media.sm || media.xs;
 
-    const useSheet = !isWeb || isMobile;
+    // Use controlled state if provided, otherwise use internal state
+    const isControlled = isOpen !== undefined;
+    const [internalOpen, setInternalOpen] = useState(false);
+
+    const sheetVisible = isControlled ? isOpen : internalOpen;
+
+    const handleOpenChange = (open: boolean) => {
+        if (isControlled && onOpenChange) {
+            onOpenChange(open);
+        } else {
+            setInternalOpen(open);
+        }
+    };
 
     const FilterContent = () => (
         <YStack gap="$3" padding="$3" minWidth={250}>
@@ -91,99 +101,20 @@ export default function MapFilterButton({
         </YStack>
     );
 
-    const FilterButton = () => (
-        <Button
-            circular
-            size="$5"
-            backgroundColor="$background"
-            borderWidth={2}
-            borderColor="$accent8"
-            onPress={() => {
-                if (useSheet) {
-                    setSheetVisible(true);
-                } else {
-                    setPopoverOpen(!popoverOpen);
-                }
-            }}
-            hoverStyle={{
-                backgroundColor: "$backgroundHover",
-                borderColor: "$accent9"
-            }}
-            pressStyle={{
-                backgroundColor: "$backgroundPress",
-                borderColor: "$accent10",
-                scale: 0.95
-            }}
-        >
-            <SlidersHorizontal size={20} color="$accent8" strokeWidth={2.5} />
-        </Button>
+    return (
+        <Sheet modal open={sheetVisible} onOpenChange={handleOpenChange} snapPointsMode="fit">
+            <Sheet.Overlay animation="quick" enterStyle={{opacity: 0}} exitStyle={{opacity: 0}}/>
+            <Sheet.Handle/>
+            <Sheet.Frame padding="$4" backgroundColor="$background">
+                <XStack alignItems="center" justifyContent="space-between" marginBottom="$4">
+                    <Text fontSize="$6" fontWeight="600">{t('map.filterSettings')}</Text>
+                    <Button size="$3" chromeless circular onPress={() => handleOpenChange(false)}>
+                        <X size={20} color="$color" />
+                    </Button>
+                </XStack>
+                <Separator marginBottom="$3" />
+                <FilterContent />
+            </Sheet.Frame>
+        </Sheet>
     );
-
-    if (useSheet) {
-        return (
-            <View style={styles.buttonContainer}>
-                <FilterButton />
-                <Sheet modal open={sheetVisible} onOpenChange={setSheetVisible} snapPointsMode="fit">
-                    <Sheet.Overlay animation="quick" enterStyle={{opacity: 0}} exitStyle={{opacity: 0}}/>
-                    <Sheet.Handle/>
-                    <Sheet.Frame padding="$4" backgroundColor="$background">
-                        <XStack alignItems="center" justifyContent="space-between" marginBottom="$4">
-                            <Text fontSize="$6" fontWeight="600">{t('map.filterSettings')}</Text>
-                            <Button size="$3" chromeless circular onPress={() => setSheetVisible(false)}>
-                                <X size={20} color="$color" />
-                            </Button>
-                        </XStack>
-                        <Separator marginBottom="$3" />
-                        <FilterContent />
-                    </Sheet.Frame>
-                </Sheet>
-            </View>
-        );
-    } else {
-        return (
-            <Popover open={popoverOpen} onOpenChange={setPopoverOpen} placement="top-end">
-                <Popover.Trigger asChild>
-                    <View style={styles.buttonContainer}>
-                        <FilterButton />
-                    </View>
-                </Popover.Trigger>
-                <Popover.Content
-                    borderWidth={1}
-                    borderColor="$borderColor"
-                    enterStyle={{y: -10, opacity: 0}}
-                    exitStyle={{y: -10, opacity: 0}}
-                    elevate
-                    animation={[
-                        'quick',
-                        {
-                            opacity: {
-                                overshootClamping: true,
-                            },
-                        },
-                    ]}
-                >
-                    <Popover.Arrow borderWidth={1} borderColor="$borderColor"/>
-                    <YStack>
-                        <XStack alignItems="center" justifyContent="space-between" padding="$3" paddingBottom="$2">
-                            <Text fontSize="$5" fontWeight="600">{t('map.filterSettings')}</Text>
-                            <Button size="$2" chromeless circular onPress={() => setPopoverOpen(false)}>
-                                <X size={16} color="$color" />
-                            </Button>
-                        </XStack>
-                        <Separator />
-                        <FilterContent />
-                    </YStack>
-                </Popover.Content>
-            </Popover>
-        );
-    }
 }
-
-const styles = StyleSheet.create({
-    buttonContainer: {
-        position: 'absolute',
-        bottom: 20,
-        right: 20,
-        zIndex: 10,
-    },
-});

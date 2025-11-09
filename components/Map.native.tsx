@@ -5,11 +5,13 @@ import {useMemo, useState, useRef} from "react";
 import {View} from "react-native";
 import SensorMarker from "./map/markers/native/SensorMarker";
 import ClusterMarker from "./map/markers/native/ClusterMarker";
-import MapZoomControl from "./map/controls/MapZoomControl";
 import {BoxType, LocationWithBoxes} from "@/api/models/sensor";
 import MapSensorBottomSheet, {MapSensorBottomSheetRef} from "./map/controls/MapSensorBottomSheet";
 import SensorList from "./map/sensors/SensorList";
-import MapDrawerToggle from "./map/controls/MapDrawerToggle";
+import {SpeedDial} from "@/components/speeddial";
+import {Plus, Home, Navigation, ZoomIn, ZoomOut, List, Filter} from "@tamagui/lucide-icons";
+import MapFilterButton from "./map/controls/MapFilterButton";
+import {useTranslation} from '@/hooks/useTranslation';
 
 interface MapProps {
     module1Visible?: boolean;
@@ -20,11 +22,14 @@ interface MapProps {
 
 export default function NativeMap(props: MapProps) {
     const {
-        module1Visible = true,
-        module2Visible = true,
-        module3Visible = false,
         isDark = false
     } = props;
+    const {t} = useTranslation();
+
+    // Filter states
+    const [module1Visible, setModule1Visible] = useState(props.module1Visible ?? true);
+    const [module2Visible, setModule2Visible] = useState(props.module2Visible ?? true);
+    const [module3Visible, setModule3Visible] = useState(props.module3Visible ?? false);
     const {data: content, loading} = useSensorDataNew();
     const mapRef = useRef<any>(null);
     const bottomSheetRef = useRef<MapSensorBottomSheetRef>(null);
@@ -41,6 +46,7 @@ export default function NativeMap(props: MapProps) {
     const [pitch, setPitch] = useState(0);
     const [currentCoordinate, setCurrentCoordinate] = useState<[number, number]>(homeCoordinate);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [highlightedSensorId, setHighlightedSensorId] = useState<number | null>(null);
     const [viewportBounds, setViewportBounds] = useState<[number, number, number, number]>([
         mapBoundariesLongLat.sw[0],
@@ -192,18 +198,64 @@ export default function NativeMap(props: MapProps) {
                 {pins}
             </MapView>
 
-            <MapZoomControl
-                zoomLevel={zoomLevel}
-                minMaxZoomLevel={minMaxZoomLevel}
-                setZoomLevel={setZoomLevel}
-                setCurrentCoordinate={setCurrentCoordinate}
-                homeCoordinate={homeCoordinate}
-                setBearing={setBearing}
-                setPitch={setPitch}
-                bearing={bearing}
+            {/* SpeedDial mit allen Map-Aktionen */}
+            <SpeedDial
+                placement="bottom-right"
+                labelPlacement="top"
+                portal={false}
+                icon={Plus}
+                actions={[
+                    {
+                        key: 'sensors',
+                        label: t('navigation.sensors'),
+                        icon: List,
+                        onPress: () => setIsDrawerOpen(!isDrawerOpen),
+                    },
+                    {
+                        key: 'filter',
+                        label: t('map.filters'),
+                        icon: Filter,
+                        onPress: () => setIsFilterOpen(true),
+                    },
+                    {
+                        key: 'zoomin',
+                        label: 'Zoom In',
+                        icon: ZoomIn,
+                        onPress: () => {
+                            if (zoomLevel < minMaxZoomLevel.max) {
+                                setZoomLevel(zoomLevel + 1);
+                            }
+                        },
+                    },
+                    {
+                        key: 'zoomout',
+                        label: 'Zoom Out',
+                        icon: ZoomOut,
+                        onPress: () => {
+                            if (zoomLevel > minMaxZoomLevel.min) {
+                                setZoomLevel(zoomLevel - 1);
+                            }
+                        },
+                    },
+                    {
+                        key: 'compass',
+                        label: 'Reset View',
+                        icon: Navigation,
+                        onPress: () => {
+                            setBearing(0);
+                            setPitch(0);
+                        },
+                    },
+                    {
+                        key: 'home',
+                        label: 'Go Home',
+                        icon: Home,
+                        onPress: () => setCurrentCoordinate(homeCoordinate),
+                    },
+                ]}
+                fabSize="$6"
+                gap="$2"
             />
-
-            <MapDrawerToggle onPress={() => setIsDrawerOpen(!isDrawerOpen)} isOpen={isDrawerOpen}/>
 
             <MapSensorBottomSheet
                 ref={bottomSheetRef}
@@ -220,6 +272,18 @@ export default function NativeMap(props: MapProps) {
                     horizontal
                 />
             </MapSensorBottomSheet>
+
+            {/* Filter Sheet */}
+            <MapFilterButton
+                module1Visible={module1Visible}
+                setModule1Visible={setModule1Visible}
+                module2Visible={module2Visible}
+                setModule2Visible={setModule2Visible}
+                module3Visible={module3Visible}
+                setModule3Visible={setModule3Visible}
+                isOpen={isFilterOpen}
+                onOpenChange={setIsFilterOpen}
+            />
         </View>
     );
 }
