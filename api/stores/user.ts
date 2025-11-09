@@ -18,14 +18,10 @@ export function useUserStore() {
         },
 
         createProfile: async (body: UpdateProfileRequest) => {
-            console.log('[API] Creating profile with body:', JSON.stringify(body, null, 2));
             try {
                 const response = await httpClient.post<UserProfile>('/user-profile', body);
-                console.log('[API] Profile created successfully:', response.data);
                 return response.data;
             } catch (error: any) {
-                console.error('[API] Profile creation failed:', error.response?.data || error.message);
-                console.error('[API] Full error object:', error);
                 throw error;
             }
         },
