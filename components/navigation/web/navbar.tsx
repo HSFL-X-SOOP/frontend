@@ -4,7 +4,7 @@ import {useState} from 'react';
 
 import {useToast} from '@/components/useToast';
 import {ThemeSwitch} from '@/context/ThemeSwitch';
-import {LOGO, MapIcon, CloudIcon} from '@/components/ui/Icons';
+import {LOGO, BadgeIcon, MapIcon, CloudIcon} from '@/components/ui/Icons';
 import {User, Languages, Menu, LogOut, LayoutDashboard, BookOpen} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
 import {PrimaryButton, SecondaryButton} from '@/types/button';
@@ -111,7 +111,7 @@ export function NavbarWeb() {
                                 onPress={() => router.push("/(about)/sensors")}
                                 cursor="pointer"
                             >
-                                <LOGO color={t.accent8?.val} size={26}/>
+                                <BadgeIcon color={t.accent8?.val} size={26}/>
                             </Button>
                         </Tooltip.Trigger>
                         <Tooltip.Content
@@ -389,7 +389,7 @@ export function NavbarWeb() {
                                             onPress={() => router.push("/(about)/sensors")}
                                             cursor="pointer"
                                         >
-                                            <LOGO color={t.accent12?.val} size={30}/>
+                                            <BadgeIcon color={t.accent12?.val} size={30}/>
                                         </Button>
                                         <Text
                                             fontSize="$4"
