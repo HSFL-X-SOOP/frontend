@@ -201,7 +201,7 @@ export default function NativeMap(props: MapProps) {
             {/* SpeedDial mit allen Map-Aktionen */}
             <SpeedDial
                 placement="bottom-right"
-                labelPlacement="top"
+                labelPlacement="left"
                 portal={false}
                 icon={Plus}
                 actions={[

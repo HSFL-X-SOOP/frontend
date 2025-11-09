@@ -6,7 +6,7 @@ import {SpeedDialActionProps} from '@/types/speeddial';
 const ActionButton = styled(Button, {
     circular: true,
     size: '$4',
-    elevation: '$2' as any,
+    elevation: 4,
     animation: 'quick',
     backgroundColor: '$background',
     borderWidth: 1,
@@ -33,13 +33,13 @@ const ActionButton = styled(Button, {
 });
 
 const ActionLabel = styled(Text, {
-    fontSize: '$3',
+    fontSize: 12,
     color: '$color',
     backgroundColor: '$background',
-    paddingHorizontal: '$2',
-    paddingVertical: '$1',
-    borderRadius: '$2',
-    elevation: '$1' as any,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    elevation: 2,
     borderWidth: 1,
     borderColor: '$borderColor',
     whiteSpace: 'nowrap',
@@ -150,10 +150,25 @@ export const SpeedDialAction = memo(function SpeedDialAction({
     // Determine layout based on label placement
     const isHorizontalLayout = labelPlacement === 'left' || labelPlacement === 'right';
 
+    // Convert gap token to number
+    const getGapValue = () => {
+        if (typeof gap === 'number') return gap;
+        const gapMap: Record<string, number> = {
+            '$1': 4,
+            '$2': 8,
+            '$3': 12,
+            '$4': 16,
+            '$5': 20,
+        };
+        return gapMap[gap as string] || 8;
+    };
+
+    const gapValue = getGapValue();
+
     if (isHorizontalLayout) {
         return (
             <XStack
-                gap={gap as any}
+                gap={gapValue}
                 minWidth={100}
                 alignItems="center"
                 justifyContent={"space-between"}
@@ -172,7 +187,7 @@ export const SpeedDialAction = memo(function SpeedDialAction({
     // Vertical layout (top/bottom/none)
     return (
         <YStack
-            gap={gap as any}
+            gap={gapValue}
             alignItems="center"
             minWidth={100}
             justifyContent={"space-between"}

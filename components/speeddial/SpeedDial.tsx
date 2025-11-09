@@ -225,7 +225,7 @@ export function SpeedDial({
                                 : {left: -10, paddingLeft: 20}
                             : {left: 0, right: 0}
                     )}
-                    gap={gap}
+                    gap={gapInPixels}
                     alignItems={
                         actualLabelPlacement === 'top' || actualLabelPlacement === 'bottom' || actualLabelPlacement === 'none'
                             ? 'center'
@@ -251,7 +251,7 @@ export function SpeedDial({
                     accessibilityLabel={fabAccessibilityLabel}
                     accessibilityRole="button"
                     backgroundColor="$accent8"
-                    elevation={elevation}
+                    elevation={getTokenSize(elevation as string)}
                     animation="quick"
                     animateOnly={['transform']}
                     rotate={open ? '45deg' : '0deg'}

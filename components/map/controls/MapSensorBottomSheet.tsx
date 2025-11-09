@@ -93,7 +93,7 @@ const MapSensorBottomSheet = forwardRef<MapSensorBottomSheetRef, MapSensorBottom
             modal={false}
             open={isOpen}
             onOpenChange={onOpenChange}
-            snapPoints={[52.5, 17.5]}
+            snapPoints={[55, 17.5]}
             snapPointsMode="percent"
             dismissOnSnapToBottom
             dismissOnOverlayPress={false}
