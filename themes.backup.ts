@@ -35,13 +35,12 @@ const primaryLight = [
 ]
 
 const primaryDark = [
-    '#003d67', '#004d7f', '#005d97', '#0070b0', '#0084c7', '#1798db',
-    '#3aaced', '#5dc0fc', '#80d0ff', '#a3dfff', '#c6ecff', '#e8f7ff',
+    '#1a2f1a', '#243f24', '#2e4f2e', '#396439', '#4e7d4e', '#5a8f5a',
+    '#6ba06b', '#7fb07f', '#94c094', '#a9d0a9', '#bee0be', '#d3f0d3',
 ]
-
 const secondaryLight = [
-    '#003d67', '#004d7f', '#005d97', '#0070b0', '#0084c7', '#1798db',
-    '#3aaced', '#5dc0fc', '#80d0ff', '#a3dfff', '#c6ecff', '#e8f7ff',
+    '#eef9ee', '#d7f2d7', '#bfeabf', '#a7e2a7', '#90da90', '#78d278',
+    '#63ad63', '#4e894e', '#396439', '#243f24', '#1c2f1c', '#142414',
 ]
 
 const secondaryDark = [
@@ -96,16 +95,16 @@ export const themes = createThemes({
                 ...Colors.purple,
                 ...Colors.cyan,
                 ...Colors.red,
-                background: '#ecefff',
+                background: '#fafafa',
                 color: '#1f1f21',
                 borderColor: '#e4e4e7',
                 placeholderColor: '#8a8a8c',
-                focusColor: '#0084c7',
+                focusColor: '#78d278',
                 overlay: '#000000',
                 content1: '#ffffff',
-                content2: '#f5f5f6',
-                content3: '#e4e4e7',
-                content4: '#d1d1d6',
+                content2: '#f9f9fb',
+                content3: '#f4f4f5',
+                content4: '#ebebec',
                 ctaBg: '#5d7a87',
                 ctaBgHover: '#315666',
                 ctaBgPress: '#5d7a87',
@@ -121,8 +120,8 @@ export const themes = createThemes({
                 ...Colors.purpleDark,
                 ...Colors.cyanDark,
                 ...Colors.redDark,
-                background: '#101828',
-                color: '#f0f0f0',
+                background: '#000000',
+                color: '#ffffff',
                 borderColor: '#52525b',
                 placeholderColor: '#8c8c90',
                 focusColor: '#053246',

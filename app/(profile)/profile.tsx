@@ -96,7 +96,7 @@ export default function ProfileScreen() {
 
     return (
         <SafeAreaView style={{flex: 1}}>
-            <YStack flex={1} backgroundColor="$content3">
+            <YStack flex={1} backgroundColor="$content1">
                 <ScrollView>
                     <YStack padding="$4" gap="$4" paddingBottom="$8" paddingTop="$6">
                         <Tabs
@@ -112,7 +112,7 @@ export default function ProfileScreen() {
                             <Tabs.List
                                 separator={<Separator vertical borderColor="$borderColor" opacity={0.3}/>}
                                 disablePassBorderRadius="bottom"
-                                backgroundColor="$conten1"
+                                backgroundColor="$content1"
                                 borderRadius="$6"
                                 padding="$2"
                                 borderWidth={2}

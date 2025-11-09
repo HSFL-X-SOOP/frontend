@@ -78,7 +78,7 @@ export default function SensorListItem({
             marginHorizontal="$3"
             marginVertical="$2"
             height={210}
-            backgroundColor={isHighlighted ? '$accent2' : '$background'}
+            backgroundColor={isHighlighted ? '$accent2' : '$content1'}
             borderColor={isHighlighted ? '$accent8' : '$borderColor'}
             borderWidth={isHighlighted ? 2 : 1}
             onPress={onPress}

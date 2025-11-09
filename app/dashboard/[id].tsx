@@ -250,7 +250,8 @@ export default function DashboardScreen() {
 
     return (
         <SafeAreaView style={{flex: 1}}>
-            <ScrollView style={{flex: 1, backgroundColor: isDark ? '#0a0a0a' : '#ffffff'}}>
+            <YStack flex={1} backgroundColor="$content1">
+            <ScrollView style={{flex: 1}}>
                 <Stack position="relative" width="100%" height={media.lg ? 350 : 250} overflow="hidden">
                     <Image
                         source={{
@@ -307,8 +308,9 @@ export default function DashboardScreen() {
 
                     <Card
                         bordered
+                        padding={2}
                         animation="quick"
-                        backgroundColor={isDark ? '$gray1' : '$background'}
+                        backgroundColor={'$content2'}
                         borderWidth={1}
                         borderColor="$borderColor"
                     >
@@ -390,7 +392,7 @@ export default function DashboardScreen() {
                                     <Card
                                         key={index}
                                         bordered
-                                        backgroundColor={isDark ? '$gray1' : '$background'}
+                                        backgroundColor={'$content2'}
                                         flex={media.md ? undefined : 1}
                                         width={media.md ? "100%" : undefined}
                                         minWidth={250}
@@ -510,6 +512,7 @@ export default function DashboardScreen() {
                     </YStack>
                 </YStack>
             </ScrollView>
+            </YStack>
         </SafeAreaView>
     );
 }

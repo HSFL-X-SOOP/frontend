@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { View } from 'react-native';
 import { Button, Text, Input, YStack } from 'tamagui';
@@ -7,7 +8,7 @@ export default function ProfileSettingsApiScreen() {
   return (
 
     <View style={styles.container}>
-      <YStack space="$4" padding="$4">
+      <YStack gap="$4" padding="$4">
         <Text fontSize="$5">Hier kannst du deinen persönlichen API-Token verwalten:</Text>
         <Input
           placeholder="1234-5678-ABCD-EFGH"

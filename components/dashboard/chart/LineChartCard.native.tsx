@@ -106,7 +106,7 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
         <Card
             elevate
             bordered
-            backgroundColor={isDark ? '$gray1' : '$background'}
+            backgroundColor={"$content2"}
             flex={media.md ? undefined : 1}
             width={media.md ? "100%" : undefined}
             minWidth={280}
