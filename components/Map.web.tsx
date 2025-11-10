@@ -245,6 +245,7 @@ export default function WebMap(props: MapProps) {
                     labelPlacement="left"
                     portal={false}
                     icon={Plus}
+                    closeOnActionPress={true}
                     actions={[
                         {
                             key: 'sensors',
@@ -261,6 +262,7 @@ export default function WebMap(props: MapProps) {
                         {
                             key: 'zoomin',
                             label: 'Zoom In',
+                            closeOnPress: false,
                             icon: ZoomIn,
                             onPress: () => {
                                 if (zoomLevel < minMaxZoomLevel.max) {
@@ -277,6 +279,7 @@ export default function WebMap(props: MapProps) {
                         {
                             key: 'zoomout',
                             label: 'Zoom Out',
+                            closeOnPress: false,
                             icon: ZoomOut,
                             onPress: () => {
                                 if (zoomLevel > minMaxZoomLevel.min) {
@@ -293,6 +296,7 @@ export default function WebMap(props: MapProps) {
                         {
                             key: 'compass',
                             label: 'Reset View',
+                            closeOnPress: false,
                             icon: Navigation,
                             onPress: () => {
                                 setBearing(0);
@@ -302,6 +306,7 @@ export default function WebMap(props: MapProps) {
                         {
                             key: 'home',
                             label: 'Go Home',
+                            closeOnPress: false,
                             icon: Home,
                             onPress: () => {
                                 setCurrentCoordinate(homeCoordinate);
