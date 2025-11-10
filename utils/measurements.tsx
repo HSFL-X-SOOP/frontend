@@ -78,14 +78,17 @@ export const CreateMeasurementDictionary = (
     measurementTimes.forEach((entry: any) => {
         if (!entry.time) return;
 
-        // Use formatTimeToLocal for UTC-aware formatting
-        const label = timeRange === 'last7days' || timeRange === 'last30days'
-            ? formatTimeToLocal(entry.time, 'dd.MM')
-            : formatTimeToLocal(entry.time, 'HH:mm');
+        // Show time (HH:mm) only for today and yesterday
+        // Show date (dd.MM) for all other ranges (7 days, 30 days, 90 days, 180 days, 1 year)
+        const showTimeOnly = timeRange === 'today' || timeRange === 'yesterday';
 
-        const fullDateTime = timeRange === 'last7days' || timeRange === 'last30days'
-            ? formatTimeToLocal(entry.time, 'dd.MM.yyyy HH:mm')
-            : formatTimeToLocal(entry.time, 'HH:mm - dd.MM.yyyy');
+        const label = showTimeOnly
+            ? formatTimeToLocal(entry.time, 'HH:mm')
+            : formatTimeToLocal(entry.time, 'dd.MM');
+
+        const fullDateTime = showTimeOnly
+            ? formatTimeToLocal(entry.time, 'HH:mm - dd.MM.yyyy')
+            : formatTimeToLocal(entry.time, 'dd.MM.yyyy HH:mm');
 
         Object.entries(entry.measurements || {}).forEach(([key, value]) => {
             if (!measurementDict[key]) {
