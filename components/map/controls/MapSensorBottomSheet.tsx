@@ -9,7 +9,11 @@ import {
     useRef,
     useCallback
 } from 'react';
+import {Platform} from 'react-native';
 
+// ==========================================
+// TYPES & INTERFACES
+// ==========================================
 interface MapSensorBottomSheetProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
@@ -20,120 +24,145 @@ export interface MapSensorBottomSheetRef {
     snapToPeek: () => void;
 }
 
-interface SheetImperativeBridgeProps {
-    setLocalPosition: (updater: number | ((prev: number) => number)) => void;
-    register: (handle: MapSensorBottomSheetRef | null) => void;
-}
-
-const SheetImperativeBridge = ({setLocalPosition, register}: SheetImperativeBridgeProps) => {
-    const sheet = useSheet();
-
-    const snapToPeek = useCallback(() => {
-        setLocalPosition(prev => (prev === 1 ? prev : 1));
-
-        sheet?.setPositionImmediate?.(1);
-        sheet?.setPosition?.(1);
-    }, [setLocalPosition, sheet]);
-
-    useEffect(() => {
-        const handle: MapSensorBottomSheetRef = {
-            snapToPeek
-        };
-
-        register(handle);
-        return () => register(null);
-    }, [register, snapToPeek]);
-
-    return null;
+// ==========================================
+// CONSTANTS
+// ==========================================
+const SHEET_CONFIG = {
+    snapPoints: [55, 17.5], // [expanded%, collapsed%]
+    defaultPosition: 1,     // Start at collapsed position
+    animationMode: 'medium' as const,
+    throttleMs: 50,        // Min time between snap calls
 };
 
-const MapSensorBottomSheet = forwardRef<MapSensorBottomSheetRef, MapSensorBottomSheetProps>(({
-                                                                                                 isOpen,
-                                                                                                 onOpenChange,
-                                                                                                 children
-                                                                                             }, ref) => {
-    const [, setPosition] = useState(1);
-    const imperativeHandleRef = useRef<MapSensorBottomSheetRef | null>(null);
-    const pendingSnapRef = useRef(false);
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
+const MapSensorBottomSheet = forwardRef<MapSensorBottomSheetRef, MapSensorBottomSheetProps>(
+    ({isOpen, onOpenChange, children}, ref) => {
+        // ==========================================
+        // STATE & REFS
+        // ==========================================
+        const [position, setPosition] = useState(SHEET_CONFIG.defaultPosition);
+        const sheetRef = useRef<any>(null);
+        const lastSnapTime = useRef(0);
 
-    const registerImperativeHandle = useCallback((handle: MapSensorBottomSheetRef | null) => {
-        imperativeHandleRef.current = handle;
+        // ==========================================
+        // SNAP TO PEEK FUNCTION
+        // ==========================================
+        const snapToPeek = useCallback(() => {
+            // Throttle to prevent too frequent updates
+            const now = Date.now();
+            if (now - lastSnapTime.current < SHEET_CONFIG.throttleMs) {
+                return;
+            }
+            lastSnapTime.current = now;
 
-        if (handle && pendingSnapRef.current) {
-            pendingSnapRef.current = false;
-            handle.snapToPeek();
-        }
-    }, []);
+            // Update local state
+            setPosition(SHEET_CONFIG.defaultPosition);
 
-    const runSnapToPeek = useCallback(() => {
-        const handle = imperativeHandleRef.current;
+            // Use Tamagui's sheet hook if available
+            const sheet = sheetRef.current;
+            if (!sheet) return;
 
-        if (!handle) {
-            pendingSnapRef.current = true;
-            return;
-        }
+            // Platform-specific approach
+            if (Platform.OS === 'web') {
+                // Web handles animations better with regular setPosition
+                sheet.setPosition?.(SHEET_CONFIG.defaultPosition);
+            } else {
+                // Native platforms need immediate update to avoid animation queue issues
+                if (sheet.setPositionImmediate) {
+                    sheet.setPositionImmediate(SHEET_CONFIG.defaultPosition);
+                } else {
+                    // Fallback to regular setPosition
+                    sheet.setPosition?.(SHEET_CONFIG.defaultPosition);
+                }
+            }
+        }, []);
 
-        handle.snapToPeek();
-    }, []);
+        // ==========================================
+        // EXPOSE METHODS TO PARENT
+        // ==========================================
+        useImperativeHandle(ref, () => ({
+            snapToPeek
+        }), [snapToPeek]);
 
-    useImperativeHandle(ref, () => ({
-        snapToPeek: runSnapToPeek
-    }), [runSnapToPeek]);
+        // ==========================================
+        // AUTO-SNAP ON OPEN
+        // ==========================================
+        useEffect(() => {
+            if (isOpen) {
+                // When sheet opens, snap to peek position
+                snapToPeek();
+            }
+        }, [isOpen, snapToPeek]);
 
-    useEffect(() => {
-        if (isOpen) {
-            runSnapToPeek();
-        } else {
-            pendingSnapRef.current = false;
-        }
-    }, [isOpen, runSnapToPeek]);
+        // ==========================================
+        // SHEET HOOK INTEGRATION
+        // ==========================================
+        const SheetHookBridge = () => {
+            const sheet = useSheet();
 
-    return (
-        <Sheet
-            modal={false}
-            open={isOpen}
-            onOpenChange={onOpenChange}
-            snapPoints={[55, 17.5]}
-            snapPointsMode="percent"
-            dismissOnSnapToBottom
-            dismissOnOverlayPress={false}
-            animation="medium"
-            zIndex={100000}
-            defaultPosition={1}
-            onPositionChange={setPosition}
-            forceRemoveScrollEnabled={false}
-        >
-            <SheetImperativeBridge
-                setLocalPosition={setPosition}
-                register={registerImperativeHandle}
-            />
-            <Sheet.Overlay
-                animation="lazy"
-                enterStyle={{opacity: 0}}
-                exitStyle={{opacity: 0}}
-                backgroundColor="$colorTransparent"
-                pointerEvents="none"
-                style={{pointerEvents: 'none'}}
-            />
+            // Store sheet reference for snapToPeek to use
+            useEffect(() => {
+                sheetRef.current = sheet;
+            }, [sheet]);
 
-            <Sheet.Handle
-                backgroundColor="$borderColor"
-                pointerEvents="auto"
-            />
+            return null;
+        };
 
-            <Sheet.Frame
-                padding="$0"
-                backgroundColor="$background"
-                borderTopLeftRadius="$6"
-                borderTopRightRadius="$6"
+        // ==========================================
+        // RENDER
+        // ==========================================
+        return (
+            <Sheet
+                modal={false}
+                open={isOpen}
+                onOpenChange={onOpenChange}
+                snapPoints={SHEET_CONFIG.snapPoints}
+                snapPointsMode="percent"
+                dismissOnSnapToBottom
+                dismissOnOverlayPress={false}
+                animation={SHEET_CONFIG.animationMode}
+                zIndex={100000}
+                defaultPosition={SHEET_CONFIG.defaultPosition}
+                position={position}
+                onPositionChange={setPosition}
+                forceRemoveScrollEnabled={false}
             >
-                <YStack flex={1}>
-                    {children}
-                </YStack>
-            </Sheet.Frame>
-        </Sheet>
-    );
-});
+                {/* Bridge component to access sheet hook */}
+                <SheetHookBridge />
+
+                {/* Transparent overlay - no interaction blocking */}
+                <Sheet.Overlay
+                    animation="lazy"
+                    enterStyle={{opacity: 0}}
+                    exitStyle={{opacity: 0}}
+                    backgroundColor="$colorTransparent"
+                    pointerEvents="none"
+                    style={{pointerEvents: 'none'}}
+                />
+
+                {/* Draggable handle */}
+                <Sheet.Handle
+                    backgroundColor="$borderColor"
+                    pointerEvents="auto"
+                />
+
+                {/* Sheet content */}
+                <Sheet.Frame
+                    padding="$0"
+                    backgroundColor="$background"
+                    borderTopLeftRadius="$6"
+                    borderTopRightRadius="$6"
+                >
+                    <YStack flex={1}>
+                        {children}
+                    </YStack>
+                </Sheet.Frame>
+            </Sheet>
+        );
+    }
+);
 
 MapSensorBottomSheet.displayName = 'MapSensorBottomSheet';
 

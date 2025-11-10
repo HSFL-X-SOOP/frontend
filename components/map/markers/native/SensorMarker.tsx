@@ -48,10 +48,10 @@ export default function SensorMarker({locationWithBoxes}: SensorMarkerProps) {
 
                     <Dialog.Content
                         bordered
-                        elevate
                         key="content"
+                        borderColor={"transparent"}
                         animateOnly={['transform', 'opacity']}
-                        backgroundColor={"$content1"}
+                        backgroundColor={"transparent"}
                         animation={[
                             'quick',
                             {

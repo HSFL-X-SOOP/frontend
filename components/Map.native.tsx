@@ -13,6 +13,9 @@ import {Plus, Home, Navigation, ZoomIn, ZoomOut, List, Filter} from "@tamagui/lu
 import MapFilterButton from "./map/controls/MapFilterButton";
 import {useTranslation} from '@/hooks/useTranslation';
 
+// ==========================================
+// TYPES & INTERFACES
+// ==========================================
 interface MapProps {
     module1Visible?: boolean;
     module2Visible?: boolean;
@@ -20,44 +23,83 @@ interface MapProps {
     isDark?: boolean;
 }
 
+// ==========================================
+// CONSTANTS
+// ==========================================
+const MAP_CONSTANTS = {
+    homeCoordinate: [9.26, 54.47926] as [number, number],
+    zoomLevels: {
+        min: 3,
+        max: 18,
+        default: 7,
+        sensorDetail: 12
+    },
+    boundaries: {
+        ne: [49.869301, 71.185001],
+        sw: [-31.266001, 27.560001]
+    },
+    highlightDuration: 3000, // ms
+    animationDuration: 500   // ms
+};
+
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
 export default function NativeMap(props: MapProps) {
-    const {
-        isDark = false
-    } = props;
+    const {isDark = false} = props;
     const {t} = useTranslation();
 
-    // Filter states
-    const [module1Visible, setModule1Visible] = useState(props.module1Visible ?? true);
-    const [module2Visible, setModule2Visible] = useState(props.module2Visible ?? true);
-    const [module3Visible, setModule3Visible] = useState(props.module3Visible ?? false);
-    const {data: content, loading} = useSensorDataNew();
+    // ==========================================
+    // REFS
+    // ==========================================
     const mapRef = useRef<any>(null);
     const bottomSheetRef = useRef<MapSensorBottomSheetRef>(null);
 
-    const homeCoordinate: [number, number] = [9.26, 54.47926];
-    const minMaxZoomLevel = {min: 3, max: 18};
-    const mapBoundariesLongLat = {
-        ne: [49.869301, 71.185001],
-        sw: [-31.266001, 27.560001]
-    };
+    // ==========================================
+    // DATA FETCHING
+    // ==========================================
+    const {data: content, loading} = useSensorDataNew();
 
-    const [zoomLevel, setZoomLevel] = useState(7);
+    // ==========================================
+    // FILTER STATES
+    // ==========================================
+    const [module1Visible, setModule1Visible] = useState(props.module1Visible ?? true);
+    const [module2Visible, setModule2Visible] = useState(props.module2Visible ?? true);
+    const [module3Visible, setModule3Visible] = useState(props.module3Visible ?? false);
+
+    // ==========================================
+    // MAP VIEW STATES
+    // ==========================================
+    const [zoomLevel, setZoomLevel] = useState(MAP_CONSTANTS.zoomLevels.default);
     const [bearing, setBearing] = useState(0);
     const [pitch, setPitch] = useState(0);
-    const [currentCoordinate, setCurrentCoordinate] = useState<[number, number]>(homeCoordinate);
+    const [currentCoordinate, setCurrentCoordinate] = useState<[number, number]>(MAP_CONSTANTS.homeCoordinate);
+    const [viewportBounds, setViewportBounds] = useState<[number, number, number, number]>([
+        MAP_CONSTANTS.boundaries.sw[0],
+        MAP_CONSTANTS.boundaries.sw[1],
+        MAP_CONSTANTS.boundaries.ne[0],
+        MAP_CONSTANTS.boundaries.ne[1]
+    ]);
+
+    // ==========================================
+    // UI STATES
+    // ==========================================
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [highlightedSensorId, setHighlightedSensorId] = useState<number | null>(null);
-    const [viewportBounds, setViewportBounds] = useState<[number, number, number, number]>([
-        mapBoundariesLongLat.sw[0],
-        mapBoundariesLongLat.sw[1],
-        mapBoundariesLongLat.ne[0],
-        mapBoundariesLongLat.ne[1]
-    ]);
 
-
+    // ==========================================
+    // COMPUTED VALUES
+    // ==========================================
     const bounds: [number, number, number, number] = useMemo(() => viewportBounds, [viewportBounds]);
 
+    const mapStyle = useMemo(() => {
+        return isDark
+            ? require('@/assets/mapStyles/dark_mode_new.json')
+            : require('@/assets/mapStyles/light_mode_new.json');
+    }, [isDark]);
+
+    // Filter sensors based on module visibility
     const filteredContent = useMemo(() => {
         if (!content) return [];
 
@@ -71,11 +113,10 @@ export default function NativeMap(props: MapProps) {
 
             if (module1Visible && hasWaterBoxes) return true;
             return module2Visible && hasAirBoxes;
-
-
         });
     }, [content, module1Visible, module2Visible, module3Visible]);
 
+    // Filter sensors visible in current viewport
     const visibleSensors = useMemo(() => {
         return filteredContent.filter(sensor => {
             const {lat, lon} = sensor.location.coordinates;
@@ -88,32 +129,16 @@ export default function NativeMap(props: MapProps) {
         });
     }, [filteredContent, bounds]);
 
-    const handleSensorSelect = (sensor: LocationWithBoxes) => {
-        const {lat, lon} = sensor.location.coordinates;
-        setHighlightedSensorId(sensor.location.id);
-
-        setZoomLevel(Math.max(zoomLevel, 12));
-        setCurrentCoordinate([lon, lat]);
-
-        bottomSheetRef.current?.snapToPeek();
-
-        setTimeout(() => {
-            setHighlightedSensorId(null);
-        }, 3000);
-    };
-
+    // ==========================================
+    // CLUSTERING
+    // ==========================================
     const {clusters, getClusterExpansionZoom} = useSupercluster(
         filteredContent,
         bounds,
         zoomLevel
     );
 
-    const mapStyle = useMemo(() => {
-        return isDark
-            ? require('@/assets/mapStyles/dark_mode_new.json')
-            : require('@/assets/mapStyles/light_mode_new.json');
-    }, [isDark]);
-
+    // Create markers from clusters
     const pins = useMemo(() => {
         return clusters.map((cluster) => {
             const [longitude, latitude] = cluster.geometry.coordinates;
@@ -127,11 +152,7 @@ export default function NativeMap(props: MapProps) {
                         longitude={longitude}
                         pointCount={point_count!}
                         clusterId={cluster.id as number}
-                        onPress={() => {
-                            const expansionZoom = getClusterExpansionZoom(cluster.id as number);
-                            setZoomLevel(expansionZoom);
-                            setCurrentCoordinate([longitude, latitude]);
-                        }}
+                        onPress={() => handleClusterPress(longitude, latitude, cluster.id as number)}
                     />
                 );
             }
@@ -145,118 +166,170 @@ export default function NativeMap(props: MapProps) {
         });
     }, [clusters, getClusterExpansionZoom]);
 
+    // ==========================================
+    // EVENT HANDLERS
+    // ==========================================
 
+    /**
+     * Handle sensor selection from the list
+     */
+    const handleSensorSelect = (sensor: LocationWithBoxes) => {
+        const {lat, lon} = sensor.location.coordinates;
+        setHighlightedSensorId(sensor.location.id);
+
+        // Zoom in if needed
+        setZoomLevel(Math.max(zoomLevel, MAP_CONSTANTS.zoomLevels.sensorDetail));
+        setCurrentCoordinate([lon, lat]);
+
+        // Snap bottom sheet to peek position
+        bottomSheetRef.current?.snapToPeek();
+
+        // Clear highlight after duration
+        setTimeout(() => {
+            setHighlightedSensorId(null);
+        }, MAP_CONSTANTS.highlightDuration);
+    };
+
+    /**
+     * Handle cluster press to expand
+     */
+    const handleClusterPress = (longitude: number, latitude: number, clusterId: number) => {
+        const expansionZoom = getClusterExpansionZoom(clusterId);
+        setZoomLevel(expansionZoom);
+        setCurrentCoordinate([longitude, latitude]);
+    };
+
+    /**
+     * Handle map region changes
+     */
+    const handleRegionIsChanging = (region: any) => {
+        // Snap bottom sheet immediately when map starts moving
+        bottomSheetRef.current?.snapToPeek();
+
+        setBearing(region.heading || 0);
+        setPitch(region.pitch || 0);
+    };
+
+    /**
+     * Handle when map region change completes
+     */
+    const handleRegionDidChange = async () => {
+        try {
+            // Update viewport bounds
+            const bounds = await mapRef.current?.getVisibleBounds();
+            if (bounds && bounds.length === 2) {
+                const [[east, north], [west, south]] = bounds;
+                setViewportBounds([west, south, east, north]);
+            }
+
+            // Update zoom level
+            const zoom = await mapRef.current?.getZoom();
+            if (typeof zoom === 'number') {
+                setZoomLevel(zoom);
+            }
+
+            // Update center coordinate
+            const center = await mapRef.current?.getCenter();
+            if (center && center.length === 2) {
+                setCurrentCoordinate(center);
+            }
+        } catch {
+            // Silently handle errors
+        }
+    };
+
+    // ==========================================
+    // SPEED DIAL ACTIONS
+    // ==========================================
+    const speedDialActions = [
+        {
+            key: 'sensors',
+            label: t('navigation.sensors'),
+            icon: List,
+            onPress: () => setIsDrawerOpen(!isDrawerOpen),
+        },
+        {
+            key: 'filter',
+            label: t('map.filters'),
+            icon: Filter,
+            onPress: () => setIsFilterOpen(true),
+        },
+        {
+            key: 'zoomin',
+            label: 'Zoom In',
+            icon: ZoomIn,
+            onPress: () => {
+                if (zoomLevel < MAP_CONSTANTS.zoomLevels.max) {
+                    setZoomLevel(zoomLevel + 1);
+                }
+            },
+        },
+        {
+            key: 'zoomout',
+            label: 'Zoom Out',
+            icon: ZoomOut,
+            onPress: () => {
+                if (zoomLevel > MAP_CONSTANTS.zoomLevels.min) {
+                    setZoomLevel(zoomLevel - 1);
+                }
+            },
+        },
+        {
+            key: 'compass',
+            label: 'Reset View',
+            icon: Navigation,
+            onPress: () => {
+                setBearing(0);
+                setPitch(0);
+            },
+        },
+        {
+            key: 'home',
+            label: 'Go Home',
+            icon: Home,
+            onPress: () => setCurrentCoordinate(MAP_CONSTANTS.homeCoordinate),
+        },
+    ];
+
+    // ==========================================
+    // RENDER
+    // ==========================================
     return (
         <View style={{flex: 1, backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5'}}>
+            {/* Main Map View */}
             <MapView
                 ref={mapRef}
                 style={{flex: 1}}
                 mapStyle={mapStyle}
                 compassEnabled={true}
                 zoomEnabled={true}
-                onRegionIsChanging={(region: any) => {
-                    // Snap sheet to peek during map movement
-                    if (bottomSheetRef.current) {
-                        bottomSheetRef.current.snapToPeek();
-                    }
-                    setBearing(region.heading || 0);
-                    setPitch(region.pitch || 0);
-                }}
-                onRegionDidChange={async () => {
-                    // Update bounds directly when region changes
-                    try {
-                        const bounds = await mapRef.current?.getVisibleBounds();
-                        if (bounds && bounds.length === 2) {
-                            // MapLibre native returns bounds as [[northeast], [southwest]]
-                            const [[east, north], [west, south]] = bounds;
-                            setViewportBounds([west, south, east, north]);
-                        }
-
-                        const zoom = await mapRef.current?.getZoom();
-                        if (typeof zoom === 'number') {
-                            setZoomLevel(zoom);
-                        }
-
-                        const center = await mapRef.current?.getCenter();
-                        if (center && center.length === 2) {
-                            setCurrentCoordinate(center);
-                        }
-                    } catch {
-                        // Silently handle errors
-                    }
-                }}
+                onRegionIsChanging={handleRegionIsChanging}
+                onRegionDidChange={handleRegionDidChange}
             >
                 <Camera
                     zoomLevel={zoomLevel}
                     centerCoordinate={currentCoordinate}
-                    maxZoomLevel={18}
-                    minZoomLevel={3}
-                    animationDuration={500}
+                    maxZoomLevel={MAP_CONSTANTS.zoomLevels.max}
+                    minZoomLevel={MAP_CONSTANTS.zoomLevels.min}
+                    animationDuration={MAP_CONSTANTS.animationDuration}
                     pitch={pitch}
                     heading={bearing}
                 />
                 {pins}
             </MapView>
 
-            {/* SpeedDial mit allen Map-Aktionen */}
+            {/* Floating Action Button with Speed Dial */}
             <SpeedDial
                 placement="bottom-right"
                 labelPlacement="left"
                 portal={false}
                 icon={Plus}
-                actions={[
-                    {
-                        key: 'sensors',
-                        label: t('navigation.sensors'),
-                        icon: List,
-                        onPress: () => setIsDrawerOpen(!isDrawerOpen),
-                    },
-                    {
-                        key: 'filter',
-                        label: t('map.filters'),
-                        icon: Filter,
-                        onPress: () => setIsFilterOpen(true),
-                    },
-                    {
-                        key: 'zoomin',
-                        label: 'Zoom In',
-                        icon: ZoomIn,
-                        onPress: () => {
-                            if (zoomLevel < minMaxZoomLevel.max) {
-                                setZoomLevel(zoomLevel + 1);
-                            }
-                        },
-                    },
-                    {
-                        key: 'zoomout',
-                        label: 'Zoom Out',
-                        icon: ZoomOut,
-                        onPress: () => {
-                            if (zoomLevel > minMaxZoomLevel.min) {
-                                setZoomLevel(zoomLevel - 1);
-                            }
-                        },
-                    },
-                    {
-                        key: 'compass',
-                        label: 'Reset View',
-                        icon: Navigation,
-                        onPress: () => {
-                            setBearing(0);
-                            setPitch(0);
-                        },
-                    },
-                    {
-                        key: 'home',
-                        label: 'Go Home',
-                        icon: Home,
-                        onPress: () => setCurrentCoordinate(homeCoordinate),
-                    },
-                ]}
+                actions={speedDialActions}
                 fabSize="$6"
                 gap="$2"
             />
 
+            {/* Bottom Sheet for Sensor List */}
             <MapSensorBottomSheet
                 ref={bottomSheetRef}
                 isOpen={isDrawerOpen}
@@ -273,7 +346,7 @@ export default function NativeMap(props: MapProps) {
                 />
             </MapSensorBottomSheet>
 
-            {/* Filter Sheet */}
+            {/* Filter Modal */}
             <MapFilterButton
                 module1Visible={module1Visible}
                 setModule1Visible={setModule1Visible}

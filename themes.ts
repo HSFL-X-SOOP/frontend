@@ -96,7 +96,7 @@ export const themes = createThemes({
                 ...Colors.purple,
                 ...Colors.cyan,
                 ...Colors.red,
-                background: '#f3f4ff',
+                background: '#f8f8ff',
                 color: '#1f1f21',
                 borderColor: '#e4e4e7',
                 placeholderColor: '#8a8a8c',
