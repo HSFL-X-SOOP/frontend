@@ -42,13 +42,13 @@ export default function LoginScreen() {
         logger.info('Login attempt', {email, rememberMe});
         const res = await login({email, password, rememberMe});
         if (res) {
-            logger.info('Login successful');
+            console.log('Login successful', res);
             logUserIn({
                 accessToken: res.accessToken,
                 refreshToken: res.refreshToken,
                 loggedInSince: new Date(),
                 lastTokenRefresh: null,
-                role: res.profile?.authorityRole ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
+                role: res.profile?.authorityRole ?? AuthorityRole.USER,
                 profile: res.profile
             });
             toast.success(t('auth.loginSuccess'), {

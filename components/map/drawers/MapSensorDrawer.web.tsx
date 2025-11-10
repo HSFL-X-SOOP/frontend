@@ -5,6 +5,7 @@ import {LocationWithBoxes} from '@/api/models/sensor';
 import {SmallBadgeIcon} from "@/components/ui/Icons.tsx";
 import {useIsMobileWeb} from '@/hooks/useIsMobileWeb';
 import {useViewportHeight} from '@/hooks/useViewportHeight';
+import {useThemeContext} from "@/context/ThemeSwitch.tsx";
 
 interface MapSensorDrawerProps {
     isOpen: boolean;
@@ -26,6 +27,7 @@ export default function MapSensorDrawer({
                                         }: MapSensorDrawerProps) {
     const isMobileWeb = useIsMobileWeb();
     const t = useTheme();
+    const {isDark} = useThemeContext()
     const {viewportHeight, safeBottomOffset} = useViewportHeight();
 
     const drawerWidth = isOpen
@@ -124,7 +126,7 @@ export default function MapSensorDrawer({
                                     chromeless
                                     padding="$2"
                                     onPress={() => onSensorSelect?.(sensor)}
-                                    backgroundColor="$content2"
+                                    backgroundColor={isDark ? "$content2" : "$content1"}
                                     borderRadius="$2"
                                     hoverStyle={{
                                         backgroundColor: "$accent1"
