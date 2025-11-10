@@ -87,9 +87,15 @@ export function SpeedDial({
         onOpenChange?.(newOpen);
     }, [isControlled, onOpenChange]);
 
-    // Close on action press if configured
-    const handleActionPress = useCallback(() => {
-        if (closeOnActionPress) {
+    // Close on action press if configured (can be overridden per action)
+    const handleActionPress = useCallback((action: any) => {
+        // Check if this specific action should close the dial
+        // Priority: action.closeOnPress > global closeOnActionPress
+        const shouldClose = action.closeOnPress !== undefined
+            ? action.closeOnPress
+            : closeOnActionPress;
+
+        if (shouldClose) {
             handleOpenChange(false);
         }
     }, [closeOnActionPress, handleOpenChange]);
@@ -178,7 +184,7 @@ export function SpeedDial({
                 labelPlacement={actualLabelPlacement}
                 gap={gap}
                 placement={placement}
-                onPress={handleActionPress}
+                onPress={() => handleActionPress(action)}
             />
         ));
 

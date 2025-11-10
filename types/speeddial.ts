@@ -16,6 +16,7 @@ export interface SpeedDialActionItem {
   bgToken?: string;
   testID?: string;
   accessibilityLabel?: string;
+  closeOnPress?: boolean; // Override global closeOnActionPress for this action
 }
 
 export interface SpeedDialProps extends Omit<StackProps, 'children'> {

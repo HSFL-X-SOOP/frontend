@@ -99,6 +99,7 @@ export const SpeedDialAction = memo(function SpeedDialAction({
     const handlePress = async () => {
         if (!action.disabled) {
             await action.onPress();
+            // Call parent's onPress which will handle closing logic
             onPress();
         }
     };
