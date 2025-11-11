@@ -7,12 +7,12 @@ import {
     useFonts
 } from '@expo-google-fonts/oswald'
 import {StatusBar} from 'expo-status-bar'
-import {Platform, View, LogBox} from 'react-native'
+import {Platform, View, LogBox, PermissionsAndroid} from 'react-native'
 import {useEffect} from 'react'
 import 'react-native-reanimated'
 import '../global.css'
 
-import config from '@/tamagui.config'
+import tamaguiConfig from '@/tamagui.config'
 import {PortalProvider} from '@tamagui/portal'
 import {TamaguiProvider, Theme, XStack, YStack} from 'tamagui'
 import {Toast, ToastProvider, ToastViewport, useToastState} from '@tamagui/toast'
@@ -26,11 +26,7 @@ import {ThemeProvider, useThemeContext} from '@/context/ThemeSwitch.tsx'
 import {usePathname, Slot} from 'expo-router'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import type {ToastType} from '@/components/useToast'
-import firebase from '@react-native-firebase/app';
-import messaging from '@react-native-firebase/messaging';
-import { AppRegistry } from 'react-native';
-import { expo as appName } from '../app.json';
-import {PermissionsAndroid} from 'react-native';
+
 
 function CurrentToast() {
     const currentToast = useToastState()
@@ -172,24 +168,32 @@ export default function RootLayout() {
         Oswald_700Bold,
     })
 
-    //Wird für die Push Notifications benötigt
-    if (Platform.OS === 'android') {
-        PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-    }
+    useEffect(() => {
+        async function initializeFirebase() {
+            if (Platform.OS !== 'web') {
+                // Request notification permissions on Android
+                if (Platform.OS === 'android') {
+                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+                }
 
-    //FCM-Token ist nur für Android und iOS relevant
-    if (Platform.OS !== 'web') {
-        async function checkFCM() {
-        const token = await messaging().getToken();
-            console.log('🔥 FCM Token:', token);
+                // Get FCM token
+                const messagingModule = await import('@react-native-firebase/messaging');
+                const messaging = messagingModule.default ?? messagingModule;
+                try {
+                    const token = await messaging().getToken();
+                    console.log('🔥 FCM Token:', token);
+                } catch (error) {
+                    console.log('Error getting FCM token:', error);
+                }
+            }
         }
-        checkFCM();
-    }
+        initializeFirebase();
+    }, []);
 
     if (!loaded) return null
 
     return (
-        <TamaguiProvider config={config}>
+        <TamaguiProvider config={tamaguiConfig}>
             <PortalProvider shouldAddRootHost>
                 <ThemeProvider>
                     <RootContent/>

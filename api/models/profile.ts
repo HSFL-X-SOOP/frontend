@@ -2,7 +2,8 @@ export interface UserProfile {
     id: number;
     userId: number;
     language: Language;
-    roles: ActivityRole[];
+    activityRoles: ActivityRole[];
+    authorityRole: AuthorityRole
     measurementSystem: MeasurementSystem;
     createdAt: string;
     updatedAt?: string;
@@ -20,10 +21,15 @@ export enum Language {
 }
 
 export enum ActivityRole {
-    HARBOR_MASTER = "HARBOR_MASTER",
     SWIMMER = "SWIMMER",
     SAILOR = "SAILOR",
     FISHERMAN = "FISHERMAN"
+}
+
+export enum AuthorityRole {
+    ADMIN = "ADMIN",
+    USER = "USER",
+    HARBOURMASTER = "HARBOURMASTER"
 }
 
 export enum MeasurementSystem {

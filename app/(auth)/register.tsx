@@ -1,5 +1,6 @@
 import {useSession} from '@/context/SessionContext';
 import {useAuth} from '@/hooks/useAuth';
+import {AuthorityRole} from '@/api/models/profile';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native';
@@ -88,6 +89,7 @@ export default function RegisterScreen() {
                 refreshToken: res.refreshToken,
                 loggedInSince: new Date(),
                 lastTokenRefresh: null,
+                role: res.profile?.authorityRole ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
                 profile: res.profile
             });
             toast.success(t('auth.registerSuccess'), {
@@ -199,7 +201,7 @@ export default function RegisterScreen() {
                             disabled={!isFormValid || registerStatus.loading}
                             opacity={!isFormValid || registerStatus.loading ? 0.6 : 1}
                             borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent8"}}
+                            hoverStyle={{backgroundColor: "$accent4"}}
                             pressStyle={{backgroundColor: "$accent6"}}
                         >
                             {registerStatus.loading ? (

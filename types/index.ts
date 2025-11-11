@@ -7,3 +7,6 @@ export * from './button';
 
 // Select types
 export * from './select';
+
+// SpeedDial types
+export * from './speeddial';

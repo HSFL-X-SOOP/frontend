@@ -1,7 +1,7 @@
 import {useThemeContext} from "@/context/ThemeSwitch";
 import {useTranslation} from "@/hooks/useTranslation";
 import {Activity} from "@tamagui/lucide-icons";
-import {useMemo, useState, useRef, useEffect, useLayoutEffect} from "react";
+import {useMemo, useState, useEffect} from "react";
 import {Card, H3, Text, useMedia, XStack, YStack} from "tamagui";
 
 export type LineChartCardProps = {
@@ -140,7 +140,7 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
         <Card
             elevate
             bordered
-            backgroundColor={isDark ? '$gray1' : '$background'}
+            backgroundColor={"$content2"}
             width="100%"
             minWidth={280}
         >

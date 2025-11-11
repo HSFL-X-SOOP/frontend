@@ -1,13 +1,14 @@
-import React, {createContext, ReactNode, useContext, useState} from 'react';
+import React, {createContext, ReactNode, useContext} from 'react';
 
 import {useLocalStorage} from '@/hooks/useLocalStorage';
 import {useRouter} from 'expo-router';
-import {UserProfile} from '@/api/models/profile';
+import {AuthorityRole, UserProfile} from '@/api/models/profile';
 
 export interface SessionInfo {
     accessToken: string;
     refreshToken: string | null;
     loggedInSince: Date;
+    role: AuthorityRole | null;
     lastTokenRefresh: Date | null;
     profile: UserProfile | null;
 }

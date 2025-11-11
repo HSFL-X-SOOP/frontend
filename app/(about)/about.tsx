@@ -197,7 +197,7 @@ export default function AboutScreen() {
                                 <Link href={"https://projekt.marlin-live.com" as Href} style={{textDecorationLine: 'none'}}>
                                     <Button backgroundColor="$accent7" color="white" borderRadius="$6"
                                             paddingHorizontal="$6" paddingVertical="$4"
-                                            hoverStyle={{backgroundColor: "$accent8"}}>
+                                            hoverStyle={{backgroundColor: "$accent4"}}>
                                         <XStack alignItems="center" gap="$3">
                                             <ExternalLink size={20} color="white"/>
                                             <Text color="white" fontWeight="600" fontSize={16}>{t('about.visitWebsite')}</Text>

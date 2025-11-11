@@ -1,5 +1,5 @@
-import { LocationWithBoxes } from '@/api/models/sensor';
-import { useMemo } from 'react';
+import {LocationWithBoxes} from '@/api/models/sensor';
+import {useMemo} from 'react';
 import Supercluster from 'supercluster';
 
 export type ClusterProperties = {
@@ -29,8 +29,9 @@ export function useSupercluster(
 
     const supercluster = useMemo(() => {
         const cluster = new Supercluster<ClusterProperties>({
-            radius: 75,
-            maxZoom: 16,
+            radius: 60,
+            maxZoom: 18,
+            minZoom: 3,
             ...options,
         });
 
@@ -63,9 +64,8 @@ export function useSupercluster(
         }
 
         try {
-            return supercluster.getClusters(bounds, Math.floor(safeZoom));
+            return supercluster.getClusters(bounds, Math.round(safeZoom));
         } catch (error) {
-            // Silently handle errors during initial render
             return [];
         }
     }, [supercluster, bounds, safeZoom, hasLocations]);
@@ -78,5 +78,5 @@ export function useSupercluster(
         return supercluster.getLeaves(clusterId, limit || 10);
     };
 
-    return { clusters, getClusterExpansionZoom, getClusterLeaves };
+    return {clusters, getClusterExpansionZoom, getClusterLeaves};
 }

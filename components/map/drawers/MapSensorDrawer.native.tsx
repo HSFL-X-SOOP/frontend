@@ -1,5 +1,5 @@
 import {ChevronDown, ChevronUp} from '@tamagui/lucide-icons';
-import {Button, ScrollView, Sheet, View, XStack, YStack, Image, Text} from 'tamagui';
+import {Button, ScrollView, Sheet, XStack, YStack} from 'tamagui';
 import {ReactNode} from 'react';
 import {LocationWithBoxes} from '@/api/models/sensor';
 
@@ -31,51 +31,6 @@ export default function MapSensorDrawer({isOpen, onToggle, children, sensors = [
             />
 
             <Sheet.Handle backgroundColor="$borderColor"/>
-
-            {/* Compact horizontal sensor list in the peeking part */}
-            <View position="absolute" top={16} left={0} right={0} zIndex={1} height={80}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                    <XStack gap="$2" paddingHorizontal="$3">
-                        {sensors.slice(0, 10).map((sensor) => (
-                            <Button
-                                key={sensor.location.id}
-                                size="$2"
-                                chromeless
-                                padding="$2"
-                                onPress={() => onSensorSelect?.(sensor)}
-                                backgroundColor="$content2"
-                                borderRadius="$2"
-                                pressStyle={{
-                                    backgroundColor: "$accent5",
-                                    scale: 0.95
-                                }}
-                                animation="quick"
-                                width={60}
-                                height={70}
-                            >
-                                <YStack gap="$1" alignItems="center" width="100%">
-                                    <Image
-                                        source={require('@/assets/markers/Single.svg')}
-                                        width={16}
-                                        height={30}
-                                        resizeMode="contain"
-                                    />
-                                    <Text
-                                        fontSize={8}
-                                        color="$color"
-                                        textAlign="center"
-                                        numberOfLines={2}
-                                        width="100%"
-                                        lineHeight={9}
-                                    >
-                                        {sensor.location.name}
-                                    </Text>
-                                </YStack>
-                            </Button>
-                        ))}
-                    </XStack>
-                </ScrollView>
-            </View>
 
             <Sheet.Frame
                 padding="$0"

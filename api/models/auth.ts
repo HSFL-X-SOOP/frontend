@@ -1,4 +1,4 @@
-import { UserProfile } from './profile';
+import {UserProfile} from './profile';
 
 export interface LoginRequest {
     email: string;
