@@ -20,17 +20,41 @@ import {useTranslation} from '@/hooks/useTranslation';
 import {ProfileTab} from '@/components/profile/ProfileTab';
 import {BoatsTab} from '@/components/profile/BoatsTab';
 import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
+import {useLocationStore} from '@/api/stores/locationStore';
 
 export default function ProfileScreen() {
     const router = useRouter();
     const {t} = useTranslation();
     const {session, updateProfile: updateSessionProfile} = useSession();
     const {getProfile, getProfileStatus} = useUser();
+    const locationStore = useLocationStore();
 
     const [activeTab, setActiveTab] = useState("profile");
+    const [harborLocation, setHarborLocation] = useState<any>(null);
+    const [isLoadingHarbor, setIsLoadingHarbor] = useState(false);
 
     const isHarborMaster = session?.role === AuthorityRole.HARBOURMASTER;
-    const harborName = "IM Jaich";
+
+ 
+    useEffect(() => {
+        const loadHarborInfo = async () => {
+            if (isHarborMaster && !harborLocation) {
+                setIsLoadingHarbor(true);
+                try {
+                    const locationData = await locationStore.getHarborMasterLocation();
+                    if (locationData) {
+                        setHarborLocation(locationData);
+                    }
+                } catch (error) {
+                    console.error('Failed to load harbor info:', error);
+                } finally {
+                    setIsLoadingHarbor(false);
+                }
+            }
+        };
+
+        loadHarborInfo();
+    }, [isHarborMaster]);
 
     useEffect(() => {
         const loadProfile = async () => {
@@ -209,7 +233,7 @@ export default function ProfileScreen() {
                                                 color={"$accent7"}
                                                 letterSpacing={activeTab === "harbor" ? 0.5 : 0}
                                             >
-                                                {harborName}
+                                                {isLoadingHarbor ? '...' : (harborLocation?.name || t('harbor.title'))}
                                             </Text>
                                         </XStack>
                                     </Tabs.Tab>
@@ -229,8 +253,8 @@ export default function ProfileScreen() {
                             {isHarborMaster && (
                                 <Tabs.Content value="harbor" padding="$0" marginTop="$4">
                                     <HarborMasterTab
-                                        harborId={4}
-                                        harborName={harborName}
+                                        initialLocationData={harborLocation}
+                                        isLoadingInitial={isLoadingHarbor}
                                     />
                                 </Tabs.Content>
                             )}

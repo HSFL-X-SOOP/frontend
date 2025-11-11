@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
     YStack,
     XStack,
@@ -29,81 +29,153 @@ import {
     Phone,
     Mail,
     Globe,
-    MessageCircle
+    MessageCircle,
+    RefreshCw,
+    AlertCircle
 } from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/useTranslation';
 import {useToast} from '@/components/useToast';
 import {Platform} from 'react-native';
-
-interface HarborInfo {
-    id: number;
-    name: string;
-    image: string;
-    address: string;
-    openingHours: string;
-    description: string;
-    contact?: {
-        phone?: string;
-        email?: string;
-        website?: string;
-    };
-}
+import {useLocationInfo} from '@/hooks/useLocationInfo';
+import {UpdateLocationRequest, DetailedLocationDTO} from '@/api/models/location';
 
 interface HarborMasterTabProps {
-    harborId?: number;
-    harborName?: string;
+    initialLocationData?: DetailedLocationDTO | null;
+    isLoadingInitial?: boolean;
 }
 
 export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
-    harborId = 4,
-    harborName = "IM Jaich"
+    initialLocationData,
+    isLoadingInitial = false
 }) => {
     const {t} = useTranslation();
     const toast = useToast();
+
+    // Pass initial data to avoid duplicate API call
+    const {
+        locationData,
+        locationId,
+        isLoading,
+        error,
+        isHarborMaster,
+        updateLocation,
+        refetch,
+        clearError,
+        getImageUrl
+    } = useLocationInfo(initialLocationData);
 
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [harborInfo, setHarborInfo] = useState<HarborInfo>({
-        id: harborId,
-        name: harborName,
-        image: "https://www.im-jaich.de/wp-content/uploads/2022/07/im-jaich-Flensburg-2019-0196-Kristina-Steiner.jpg",
-        address: "Fahrensodde 20, 24937 Flensburg",
-        openingHours: "Mo-Fr: 08:00 - 18:00\nSa-So: 09:00 - 17:00",
-        description: "Der Hafen IM Jaich ist ein moderner Yachthafen im Herzen von Flensburg mit erstklassigen Einrichtungen und Services.",
-        contact: {
-            phone: "+49 461 123456",
-            email: "info@im-jaich.de",
-            website: "https://www.im-jaich.de"
-        }
+    // Initialize edited info from API data
+    const [editedInfo, setEditedInfo] = useState<UpdateLocationRequest>({
+        name: '',
+        address: '',
+        description: null,
+        openingHours: null,
+        contact: null,
+        image: null
     });
 
-    const [editedInfo, setEditedInfo] = useState<HarborInfo>(harborInfo);
+    // State for current image URL (either from API or uploaded)
+    const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
+
+    // Initialize editedInfo when locationData first loads
+    useEffect(() => {
+        if (locationData && !isEditing) {
+            // Only set editedInfo if we're not currently editing
+            // This prevents overwriting user changes
+            setEditedInfo({
+                name: locationData.name || '',
+                address: locationData.address || '',
+                description: locationData.description || null,
+                openingHours: locationData.openingHours || null,
+                contact: locationData.contact || null,
+                image: null
+            });
+        }
+
+        // Set image URL using the helper function
+        if (getImageUrl) {
+            setCurrentImageUrl(getImageUrl());
+        }
+    }, [locationData, getImageUrl, isEditing]);
 
     const handleEdit = () => {
-        setEditedInfo(harborInfo);
+        if (locationData) {
+            setEditedInfo({
+                name: locationData.name || '',
+                address: locationData.address || '',
+                description: locationData.description || null,
+                openingHours: locationData.openingHours || null,
+                contact: locationData.contact || null,
+                image: null
+            });
+        }
         setIsEditing(true);
     };
 
     const handleCancel = () => {
-        setEditedInfo(harborInfo);
+        if (locationData) {
+            setEditedInfo({
+                name: locationData.name || '',
+                address: locationData.address || '',
+                description: locationData.description || null,
+                openingHours: locationData.openingHours || null,
+                contact: locationData.contact || null,
+                image: null
+            });
+        }
         setIsEditing(false);
+        // Reset image URL to original
+        if (getImageUrl) {
+            setCurrentImageUrl(getImageUrl());
+        }
     };
 
     const handleSave = async () => {
+        if (!updateLocation) {
+            toast.error(t('harbor.noPermission'), {
+                message: t('harbor.noPermissionMessage'),
+                duration: 5000
+            });
+            return;
+        }
+
         setIsSaving(true);
         try {
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            setHarborInfo(editedInfo);
-            setIsEditing(false);
-
-            toast.success(t('harbor.saveSuccess'), {
-                message: t('harbor.infoUpdated'),
-                duration: 3000
+            // Debug log to see what we're sending
+            console.log('Updating location with data:', {
+                ...editedInfo,
+                image: editedInfo.image ? {
+                    hasBase64: !!editedInfo.image.base64,
+                    contentType: editedInfo.image.contentType
+                } : null
             });
+
+            const result = await updateLocation(editedInfo);
+
+            if (result) {
+                setIsEditing(false);
+                toast.success(t('harbor.saveSuccess'), {
+                    message: t('harbor.infoUpdated'),
+                    duration: 3000
+                });
+
+                // Refresh data to get updated info including new image
+                if (refetch) {
+                    await refetch();
+                }
+
+                // Update image URL to show the new image
+                if (getImageUrl) {
+                    setCurrentImageUrl(getImageUrl());
+                }
+            } else {
+                throw new Error('Update failed');
+            }
         } catch (error) {
             console.error('Failed to save harbor info:', error);
             toast.error(t('harbor.saveError'), {
@@ -133,11 +205,25 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
             return;
         }
 
-        // Read file and create data URL
+        // Read file and convert to base64
         const reader = new FileReader();
         reader.onload = (e) => {
             const dataUrl = e.target?.result as string;
-            setEditedInfo({...editedInfo, image: dataUrl});
+            // Extract base64 string from data URL
+            const base64 = dataUrl.split(',')[1];
+            const mimeType = dataUrl.split(':')[1].split(';')[0];
+
+            setEditedInfo({
+                ...editedInfo,
+                image: {
+                    base64: base64,
+                    contentType: mimeType
+                }
+            });
+
+            // Update preview
+            setCurrentImageUrl(dataUrl);
+
             toast.success(t('harbor.imageUploaded'), {
                 message: file.name,
                 duration: 2000
@@ -188,6 +274,63 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
         }
     };
 
+    const handleRefresh = async () => {
+        if (refetch) {
+            clearError();
+            await refetch();
+        }
+    };
+
+    // Show loading state (either initial loading from profile or refetch)
+    if ((isLoadingInitial || isLoading) && !locationData) {
+        return (
+            <YStack flex={1} alignItems="center" justifyContent="center" padding="$8">
+                <Spinner size="large" color="$accent7"/>
+                <Text marginTop="$4" color="$gray11">{t('harbor.loading')}</Text>
+            </YStack>
+        );
+    }
+
+    // Show error state
+    if (error && !locationData) {
+        return (
+            <YStack flex={1} alignItems="center" justifyContent="center" padding="$8" gap="$4">
+                <AlertCircle size={48} color="$red10"/>
+                <Text fontSize="$5" fontWeight="600" color="$color">{t('harbor.errorLoading')}</Text>
+                <Text color="$gray11" textAlign="center">{error}</Text>
+                <Button
+                    size="$3"
+                    backgroundColor="$accent7"
+                    color="white"
+                    onPress={handleRefresh}
+                    icon={<RefreshCw size={20}/>}
+                >
+                    {t('harbor.retry')}
+                </Button>
+            </YStack>
+        );
+    }
+
+    // Show no permission state
+    if (!isHarborMaster) {
+        return (
+            <YStack flex={1} alignItems="center" justifyContent="center" padding="$8" gap="$4">
+                <AlertCircle size={48} color="$orange10"/>
+                <Text fontSize="$5" fontWeight="600" color="$color">{t('harbor.noAccess')}</Text>
+                <Text color="$gray11" textAlign="center">{t('harbor.noAccessMessage')}</Text>
+            </YStack>
+        );
+    }
+
+    // Use locationData if available, otherwise use defaults
+    const displayData = locationData || {
+        name: '',
+        address: '',
+        openingHours: '',
+        description: '',
+        contact: null
+    };
+
     return (
         <ScrollView showsVerticalScrollIndicator={false}>
             <YStack gap="$4">
@@ -201,18 +344,31 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             {t('harbor.manageDescription')}
                         </Text>
                     </YStack>
-                    {!isEditing && (
-                        <Button
-                            size="$3"
-                            backgroundColor="$accent7"
-                            color="white"
-                            pressStyle={{backgroundColor: "$accent6"}}
-                            hoverStyle={{backgroundColor: "$accent4"}}
-                            onPress={handleEdit}
-                        >
-                            {t('profile.edit')}
-                        </Button>
-                    )}
+                    <XStack gap="$2">
+                        {error && (
+                            <Button
+                                size="$3"
+                                variant="outlined"
+                                onPress={handleRefresh}
+                                icon={<RefreshCw size={18}/>}
+                            >
+                                {t('harbor.retry')}
+                            </Button>
+                        )}
+                        {!isEditing && (
+                            <Button
+                                size="$3"
+                                backgroundColor="$accent7"
+                                color="white"
+                                pressStyle={{backgroundColor: "$accent6"}}
+                                hoverStyle={{backgroundColor: "$accent4"}}
+                                onPress={handleEdit}
+                                disabled={isLoading}
+                            >
+                                {t('profile.edit')}
+                            </Button>
+                        )}
+                    </XStack>
                 </XStack>
 
                 {/* Harbor Image Section */}
@@ -269,10 +425,10 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                                 transition: 'all 0.2s ease'
                                             }}
                                         >
-                                        {editedInfo.image ? (
+                                        {currentImageUrl ? (
                                             <YStack width="100%" height="100%" gap="$2">
                                                 <Image
-                                                    source={{uri: editedInfo.image}}
+                                                    source={{uri: currentImageUrl}}
                                                     width="100%"
                                                     height={160}
                                                     borderRadius="$3"
@@ -326,10 +482,10 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                             minHeight={200}
                                             onPress={triggerFileInput}
                                         >
-                                        {editedInfo.image ? (
+                                        {currentImageUrl ? (
                                             <YStack width="100%" height="100%" gap="$2">
                                                 <Image
-                                                    source={{uri: editedInfo.image}}
+                                                    source={{uri: currentImageUrl}}
                                                     width="100%"
                                                     height={160}
                                                     borderRadius="$3"
@@ -368,29 +524,10 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                         )}
                                         </View>
                                     )}
-
-                                    <YStack gap="$2">
-                                        <XStack alignItems="center" gap="$2">
-                                            <Separator flex={1}/>
-                                            <Text fontSize="$2" color="$gray11">{t('harbor.or')}</Text>
-                                            <Separator flex={1}/>
-                                        </XStack>
-                                        <Label htmlFor="image-url" color="$color" fontSize="$3">
-                                            {t('harbor.imageUrl')}
-                                        </Label>
-                                        <Input
-                                            id="image-url"
-                                            value={editedInfo.image?.startsWith('data:') ? '' : editedInfo.image}
-                                            onChangeText={(text) => setEditedInfo({...editedInfo, image: text})}
-                                            placeholder={t('harbor.imageUrlPlaceholder')}
-                                            backgroundColor="$background"
-                                            borderColor="$borderColor"
-                                        />
-                                    </YStack>
                                 </YStack>
                             ) : (
                                 <Image
-                                    source={{uri: harborInfo.image}}
+                                    source={{uri: currentImageUrl}}
                                     width="100%"
                                     height={200}
                                     borderRadius="$4"
@@ -438,7 +575,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                     />
                                 ) : (
                                     <Text color="$color" fontSize="$4" paddingLeft="$2">
-                                        {harborInfo.name}
+                                        {displayData.name || '-'}
                                     </Text>
                                 )}
                             </YStack>
@@ -461,7 +598,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                     />
                                 ) : (
                                     <Text color="$color" fontSize="$4" paddingLeft="$2">
-                                        {harborInfo.address}
+                                        {displayData.address || '-'}
                                     </Text>
                                 )}
                             </YStack>
@@ -491,7 +628,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
 
                         {isEditing ? (
                             <TextArea
-                                value={editedInfo.openingHours}
+                                value={editedInfo.openingHours || ''}
                                 onChangeText={(text) => setEditedInfo({...editedInfo, openingHours: text})}
                                 placeholder={t('harbor.openingHoursPlaceholder')}
                                 backgroundColor="$background"
@@ -500,7 +637,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             />
                         ) : (
                             <Text color="$color" fontSize="$4" paddingLeft="$2" whiteSpace="pre-line">
-                                {harborInfo.openingHours}
+                                {displayData.openingHours || '-'}
                             </Text>
                         )}
                     </YStack>
@@ -528,7 +665,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
 
                         {isEditing ? (
                             <TextArea
-                                value={editedInfo.description}
+                                value={editedInfo.description || ''}
                                 onChangeText={(text) => setEditedInfo({...editedInfo, description: text})}
                                 placeholder={t('harbor.descriptionPlaceholder')}
                                 backgroundColor="$background"
@@ -537,7 +674,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             />
                         ) : (
                             <Text color="$color" fontSize="$4" paddingLeft="$2">
-                                {harborInfo.description}
+                                {displayData.description || '-'}
                             </Text>
                         )}
                     </YStack>
@@ -586,7 +723,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                     />
                                 ) : (
                                     <Text color="$color" fontSize="$4" paddingLeft="$2">
-                                        {harborInfo.contact?.phone || '-'}
+                                        {displayData.contact?.phone || '-'}
                                     </Text>
                                 )}
                             </YStack>
@@ -614,7 +751,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                     />
                                 ) : (
                                     <Text color="$color" fontSize="$4" paddingLeft="$2">
-                                        {harborInfo.contact?.email || '-'}
+                                        {displayData.contact?.email || '-'}
                                     </Text>
                                 )}
                             </YStack>
@@ -641,7 +778,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                     />
                                 ) : (
                                     <Text color="$color" fontSize="$4" paddingLeft="$2">
-                                        {harborInfo.contact?.website || '-'}
+                                        {displayData.contact?.website || '-'}
                                     </Text>
                                 )}
                             </YStack>
