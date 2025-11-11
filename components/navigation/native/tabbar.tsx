@@ -145,7 +145,7 @@ export function TabBarNative() {
                                     </XStack>
                                 </Link>
 
-                                <Link href={"/dashboard/5" as Href} onPress={closeMenu} asChild>
+                                <Link href={'/marina/Stadthafen Flensburg "Im Jaich"' as Href} onPress={closeMenu} asChild>
                                     <XStack
                                         alignItems="center"
                                         gap="$3"

@@ -15,13 +15,13 @@ export function useHttpClient() {
         async (config: InternalAxiosRequestConfig) => {
             if (!session) return config
 
-            const threeHoursMS = 3 * 60 * 60 * 1000
+            const expMS = 15 * 60 * 1000
             const toleranceMS = 60 * 1000;
             const now = Date.now()
             const age = now - new Date(session.loggedInSince).getTime()
 
             const needsRefresh =
-                session.refreshToken && age >= (threeHoursMS - toleranceMS);
+                session.refreshToken && age >= (expMS - toleranceMS);
 
             if (needsRefresh) {
                 try {
@@ -42,7 +42,6 @@ export function useHttpClient() {
                     login(newSession)
                     config.headers.Authorization = `Bearer ${newSession.accessToken}`
                 } catch (err) {
-                    logout()
                     return config
                 }
             } else {

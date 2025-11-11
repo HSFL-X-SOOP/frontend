@@ -56,11 +56,13 @@ export default function DashboardScreen() {
     const [showInfo, setShowInfo] = useState(false);
     const [infoContentHeight, setInfoContentHeight] = useState(0);
     const infoHeight = useRef(new Animated.Value(0)).current;
-    let {id} = useLocalSearchParams();
+    let {name} = useLocalSearchParams();
+    let [marinaID, setMarinaID] = useState<number | null>(null);
 
-    if (!id) {
-        id = "4";
+    if (!name) {
+        name = 'Stadthafen Flensburg "Im Jaich"';
     }
+
     const [timeRange, setTimeRange] = useState<ChartTimeRange>('today');
 
     const {data: allSensorData} = useSensorDataNew();
@@ -84,6 +86,21 @@ export default function DashboardScreen() {
         () => GetAllAvailableSensorLocations(allSensorData),
         [allSensorData]
     );
+
+    const GetMarinaID = (name: string, sensorLocations: MarinaNameWithId[]): number | null => {
+        for (const location of sensorLocations) {
+            if (location.name === name) {
+                return location.id;
+            }
+        }
+        return null;
+    }
+
+    useEffect(() => {
+        const id = GetMarinaID(name as string, sensorLocations);
+        setMarinaID(id);
+    }, [sensorLocations]);
+
 
     const isAdmin = false;
 
@@ -119,9 +136,9 @@ export default function DashboardScreen() {
         }
     }, [timeRange]);
 
-    const {data: timeRangeData} = useSensorDataTimeRange(Number(id), apiTimeRange);
+    const {data: timeRangeData} = useSensorDataTimeRange(Number(marinaID), apiTimeRange);
 
-    const name = useMemo(() => timeRangeData?.location.name || "", [timeRangeData]);
+    const harbourName = useMemo(() => timeRangeData?.location.name || "", [timeRangeData]);
 
     useEffect(() => {
         if (timeRangeData) {
@@ -284,14 +301,14 @@ export default function DashboardScreen() {
                             textShadowOffset={{width: 0, height: 1}}
                             textShadowRadius={2}
                         >
-                            {name || t('dashboard.loading')}
+                            {harbourName || t('dashboard.loading')}
                         </H1>
                         <View style={{width: 300}}>
                             <NavigateDashboardDropdownMenu
                                 isDark={isDark}
                                 router={router}
                                 sensorLocations={sensorLocations}
-                                selectedMarinaId={Number(id)}
+                                selectedMarina={harbourName}
                             />
                         </View>
                     </Stack>
@@ -329,7 +346,7 @@ export default function DashboardScreen() {
                                     </Stack>
                                     <YStack flex={1}>
                                         <Text color="$gray11" fontSize="$2">{t('dashboard.harbor')}</Text>
-                                        <H3 fontSize="$6" fontWeight="600">{name}</H3>
+                                        <H3 fontSize="$6" fontWeight="600">{harbourName}</H3>
                                     </YStack>
                                 </XStack>
                                 <Button
