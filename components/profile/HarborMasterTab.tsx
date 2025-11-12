@@ -81,6 +81,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
 
     // State for current image URL (either from API or uploaded)
     const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
+    const [imageKey, setImageKey] = useState<number>(0);
 
     // Initialize editedInfo when locationData first loads
     useEffect(() => {
@@ -95,11 +96,11 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                 contact: locationData.contact || null,
                 image: null
             });
-        }
 
-        // Set image URL using the helper function
-        if (getImageUrl) {
-            setCurrentImageUrl(getImageUrl());
+            // Set image URL using the helper function only when not editing
+            if (getImageUrl) {
+                setCurrentImageUrl(getImageUrl());
+            }
         }
     }, [locationData, getImageUrl, isEditing]);
 
@@ -157,25 +158,23 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
 
             const result = await updateLocation(editedInfo);
 
-            if (result) {
-                setIsEditing(false);
-                toast.success(t('harbor.saveSuccess'), {
-                    message: t('harbor.infoUpdated'),
-                    duration: 3000
-                });
+            if (!result) throw new Error('Update failed');
 
-                // Refresh data to get updated info including new image
-                if (refetch) {
-                    await refetch();
-                }
+            toast.success(t('harbor.saveSuccess'), {
+                message: t('harbor.infoUpdated'),
+                duration: 3000
+            });
 
-                // Update image URL to show the new image
-                if (getImageUrl) {
-                    setCurrentImageUrl(getImageUrl());
-                }
-            } else {
-                throw new Error('Update failed');
+            // Refresh data to get updated info
+            if (refetch) {
+                await refetch();
             }
+
+            // Increment imageKey to force image reload from server
+            setImageKey(prev => prev + 1);
+
+            // Set isEditing to false - useEffect will handle updating currentImageUrl
+            setIsEditing(false);
         } catch (error) {
             console.error('Failed to save harbor info:', error);
             toast.error(t('harbor.saveError'), {
@@ -338,7 +337,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                 <XStack justifyContent="space-between" alignItems="center">
                     <YStack>
                         <H4 color="$accent7" fontFamily="$oswald">
-                            {t('harbor.manageHarbor')}
+                            {displayData.name || t('harbor.manageHarbor')}
                         </H4>
                         <Text color="$gray11" fontSize="$2">
                             {t('harbor.manageDescription')}
@@ -428,6 +427,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                         {currentImageUrl ? (
                                             <YStack width="100%" height="100%" gap="$2">
                                                 <Image
+                                                    key={imageKey}
                                                     source={{uri: currentImageUrl}}
                                                     width="100%"
                                                     height={160}
@@ -437,7 +437,10 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                                 <Button
                                                     size="$2"
                                                     variant="outlined"
-                                                    onPress={triggerFileInput}
+                                                    onPress={(e) => {
+                                                        e.stopPropagation();
+                                                        triggerFileInput();
+                                                    }}
                                                     icon={<Upload size={16}/>}
                                                 >
                                                     {t('harbor.changeImage')}
@@ -485,6 +488,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                         {currentImageUrl ? (
                                             <YStack width="100%" height="100%" gap="$2">
                                                 <Image
+                                                    key={imageKey}
                                                     source={{uri: currentImageUrl}}
                                                     width="100%"
                                                     height={160}
@@ -494,7 +498,10 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                                 <Button
                                                     size="$2"
                                                     variant="outlined"
-                                                    onPress={triggerFileInput}
+                                                    onPress={(e) => {
+                                                        e.stopPropagation();
+                                                        triggerFileInput();
+                                                    }}
                                                     icon={<Upload size={16}/>}
                                                 >
                                                     {t('harbor.changeImage')}
@@ -527,6 +534,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                 </YStack>
                             ) : (
                                 <Image
+                                    key={imageKey}
                                     source={{uri: currentImageUrl}}
                                     width="100%"
                                     height={200}

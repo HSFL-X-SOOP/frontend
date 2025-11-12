@@ -85,8 +85,6 @@ export default function WebMap(props: MapProps) {
 
             if (module1Visible && hasWaterBoxes) return true;
             return module2Visible && hasAirBoxes;
-
-
         });
     }, [content, module1Visible, module2Visible, module3Visible]);
 

@@ -1,3 +1,4 @@
+import {DetailedLocationDTO} from '@/api/models/location';
 import {LocationWithBoxes} from '@/api/models/sensor';
 import {LineChartCard} from '@/components/dashboard/chart/LineChartCard';
 import {ChartTimeRange, TimeRangeDropdown} from '@/components/dashboard/chart/TimeRangeDropdown';
@@ -8,6 +9,7 @@ import {useSensorDataNew, useSensorDataTimeRange} from '@/hooks/useSensors';
 import {useTranslation} from '@/hooks/useTranslation';
 import {ChartDataPoint} from '@/types/chart';
 import {MarinaNameWithId} from '@/types/marina';
+import {useLocationStore} from '@/api/stores/locations';
 import {
     CreateMeasurementDictionary,
     GetLatestMeasurements,
@@ -48,74 +50,59 @@ import {
     useMedia
 } from 'tamagui';
 
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+const GetMarinaID = (name: string, locations: LocationWithBoxes[]): number | null => {
+    for (const locationData of locations) {
+        if (locationData.location?.name === name && locationData.location?.id) {
+            return locationData.location.id;
+        }
+    }
+    return null;
+}
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
 export default function DashboardScreen() {
+    // ----------------------------------------------------------------------------
+    // Hooks - Context & Router
+    // ----------------------------------------------------------------------------
     const media = useMedia();
     const router = useRouter();
     const {t} = useTranslation();
     const {isDark} = useThemeContext();
-    const [showInfo, setShowInfo] = useState(false);
-    const [infoContentHeight, setInfoContentHeight] = useState(0);
-    const infoHeight = useRef(new Animated.Value(0)).current;
     let {name} = useLocalSearchParams();
-    let [marinaID, setMarinaID] = useState<number | null>(null);
 
     if (!name) {
         name = 'Stadthafen Flensburg "Im Jaich"';
     }
 
+    // ----------------------------------------------------------------------------
+    // State
+    // ----------------------------------------------------------------------------
+    const [marinaID, setMarinaID] = useState<number | null>(null);
     const [timeRange, setTimeRange] = useState<ChartTimeRange>('today');
+    const [showInfo, setShowInfo] = useState(false);
+    const [infoContentHeight, setInfoContentHeight] = useState(0);
+    const [chartWaterTemperature, setChartWaterTemperature] = useState<ChartDataPoint[]>([]);
+    const [chartTide, setChartTide] = useState<ChartDataPoint[]>([]);
+    const [chartWaveHeight, setChartWaveHeight] = useState<ChartDataPoint[]>([]);
 
+    // ----------------------------------------------------------------------------
+    // Refs
+    // ----------------------------------------------------------------------------
+    const infoHeight = useRef(new Animated.Value(0)).current;
+
+    // ----------------------------------------------------------------------------
+    // API Data Fetching
+    // ----------------------------------------------------------------------------
     const {data: allSensorData} = useSensorDataNew();
-
-    const GetAllAvailableSensorLocations = (data: LocationWithBoxes[]): MarinaNameWithId[] => {
-        const locationMap = new Map<number, MarinaNameWithId>();
-
-        data.forEach((element) => {
-            if (element.location?.id && element.location?.name) {
-                locationMap.set(element.location.id, {
-                    id: element.location.id,
-                    name: element.location.name
-                });
-            }
-        });
-
-        return Array.from(locationMap.values());
-    }
-
-    const sensorLocations = useMemo(
-        () => GetAllAvailableSensorLocations(allSensorData),
-        [allSensorData]
-    );
-
-    const GetMarinaID = (name: string, sensorLocations: MarinaNameWithId[]): number | null => {
-        for (const location of sensorLocations) {
-            if (location.name === name) {
-                return location.id;
-            }
-        }
-        return null;
-    }
-
-    useEffect(() => {
-        const id = GetMarinaID(name as string, sensorLocations);
-        setMarinaID(id);
-    }, [sensorLocations]);
-
-
-    const isAdmin = false;
-
-    const excludedMeasurements = useMemo(() => {
-        const excluded = ["Standard deviation"];
-        if (!isAdmin) {
-            excluded.push("Battery, voltage");
-        }
-        return excluded;
-    }, [isAdmin]);
-
-
-    const [chartWaterTemperature, setChartWaterTemperature] = useState<ChartDataPoint[]>([])
-    const [chartTide, setChartTide] = useState<ChartDataPoint[]>([])
-    const [chartWaveHeight, setChartWaveHeight] = useState<ChartDataPoint[]>([])
+    const locationStore = useLocationStore();
+    const [detailedLocation, setDetailedLocation] = useState<DetailedLocationDTO | null>(null);
 
     const apiTimeRange = useMemo(() => {
         switch (timeRange) {
@@ -138,20 +125,34 @@ export default function DashboardScreen() {
 
     const {data: timeRangeData} = useSensorDataTimeRange(Number(marinaID), apiTimeRange);
 
-    const harbourName = useMemo(() => timeRangeData?.location.name || "", [timeRangeData]);
+    // ----------------------------------------------------------------------------
+    // Computed Values - Sensor Locations & Marina
+    // ----------------------------------------------------------------------------
+    const sensorLocations = useMemo(() => {
+        return allSensorData
+            .filter(data => data.location?.id != null)
+            .map(data => ({
+                id: data.location!.id,
+                name: data.location!.name || ''
+            }));
+    }, [allSensorData]);
 
-    useEffect(() => {
-        if (timeRangeData) {
-            const measurementDict = CreateMeasurementDictionary(timeRangeData, timeRange);
+    const harbourName = useMemo(() => {
+        return detailedLocation?.name || "";
+    }, [detailedLocation]);
 
-            const tideData = measurementDict["tide"]?.reverse() || [];
-            const waveData = measurementDict["waveHeight"]?.reverse() || [];
-            const tempData = measurementDict["waterTemperature"]?.reverse() || [];
-            setChartTide(tideData);
-            setChartWaveHeight(waveData);
-            setChartWaterTemperature(tempData);
-        }
-    }, [timeRangeData, timeRange])
+    // Get location image URL
+    const locationImageUrl = useMemo(() => {
+        if (!marinaID) return "https://fastly.picsum.photos/id/17/2500/1667.jpg?hmac=HD-JrnNUZjFiP2UZQvWcKrgLoC_pc_ouUSWv8kHsJJY";
+        return `https://test.marlin-live.com/api/location/${marinaID}/image`;
+    }, [marinaID]);
+
+    // ----------------------------------------------------------------------------
+    // Computed Values - Measurements
+    // ----------------------------------------------------------------------------
+    const excludedMeasurements = useMemo(() => {
+        return ["Standard deviation", "Battery, voltage"];
+    }, []);
 
     const filteredMeasurements = useMemo(() => {
         if (!timeRangeData?.boxes) return [];
@@ -195,8 +196,47 @@ export default function DashboardScreen() {
         return measurement?.value;
     }, [filteredMeasurements]);
 
-    const infoItemWidth = media.md ? '48%' : '100%';
+    // ----------------------------------------------------------------------------
+    // Effects
+    // ----------------------------------------------------------------------------
+    useEffect(() => {
+        const id = GetMarinaID(name as string, allSensorData);
+        setMarinaID(id);
+    }, [name, allSensorData]);
 
+    useEffect(() => {
+        if (!marinaID) return;
+
+        const fetchDetailedLocation = async () => {
+            const result = await locationStore.getLocationById(marinaID);
+            setDetailedLocation(result);
+        };
+
+        void fetchDetailedLocation();
+    }, [marinaID]);
+
+    useEffect(() => {
+        if (timeRangeData) {
+            const measurementDict = CreateMeasurementDictionary(timeRangeData, timeRange);
+
+            const tideData = measurementDict["tide"]?.reverse() || [];
+            const waveData = measurementDict["waveHeight"]?.reverse() || [];
+            const tempData = measurementDict["waterTemperature"]?.reverse() || [];
+            setChartTide(tideData);
+            setChartWaveHeight(waveData);
+            setChartWaterTemperature(tempData);
+        }
+    }, [timeRangeData, timeRange]);
+
+    // ----------------------------------------------------------------------------
+    // UI Computed Values
+    // ----------------------------------------------------------------------------
+    const infoItemWidth = media.md ? '48%' : '100%';
+    const latestTime = timeRangeData?.boxes[0]?.measurementTimes[0]?.time || new Date().toISOString();
+
+    // ----------------------------------------------------------------------------
+    // Callbacks
+    // ----------------------------------------------------------------------------
     const renderHarborInfoContent = useCallback((extraProps?: Partial<ComponentProps<typeof Card.Footer>>) => (
         <Card.Footer
             padded
@@ -216,7 +256,7 @@ export default function DashboardScreen() {
                     <MapPin size={18} color="$gray10"/>
                     <YStack>
                         <Text fontSize="$1" color="$gray11">{t('dashboard.address')}</Text>
-                        <Text fontSize="$3">{t('dashboard.addressValue')}</Text>
+                        <Text fontSize="$3">{detailedLocation?.address || t('dashboard.addressValue')}</Text>
                     </YStack>
                 </XStack>
                 <XStack
@@ -229,12 +269,12 @@ export default function DashboardScreen() {
                     <Clock size={18} color="$gray10"/>
                     <YStack>
                         <Text fontSize="$1" color="$gray11">{t('dashboard.openingHours')}</Text>
-                        <Text fontSize="$3">{t('dashboard.openingHoursValue')}</Text>
+                        <Text fontSize="$3">{detailedLocation?.openingHours || t('dashboard.openingHoursValue')}</Text>
                     </YStack>
                 </XStack>
             </XStack>
         </Card.Footer>
-    ), [infoItemWidth, t]);
+    ), [infoItemWidth, t, detailedLocation]);
 
     const handleInfoLayout = useCallback((event: LayoutChangeEvent) => {
         const {height} = event.nativeEvent.layout;
@@ -253,7 +293,7 @@ export default function DashboardScreen() {
         }
     }, [infoContentHeight, infoHeight, showInfo]);
 
-    const toggleInfo = () => {
+    const toggleInfo = useCallback(() => {
         const nextShow = !showInfo;
         setShowInfo(nextShow);
         Animated.timing(infoHeight, {
@@ -261,274 +301,277 @@ export default function DashboardScreen() {
             duration: 300,
             useNativeDriver: false,
         }).start();
-    };
+    }, [showInfo, infoHeight, infoContentHeight]);
 
-    const latestTime = timeRangeData?.boxes[0]?.measurementTimes[0]?.time || new Date().toISOString();
-
+    // ----------------------------------------------------------------------------
+    // Render
+    // ----------------------------------------------------------------------------
     return (
         <SafeAreaView style={{flex: 1}}>
             <YStack flex={1} backgroundColor="$content1">
-            <ScrollView style={{flex: 1}}>
-                <Stack position="relative" width="100%" height={media.lg ? 350 : 250} overflow="hidden">
-                    <Image
-                        source={{
-                            uri: "https://www.im-jaich.de/wp-content/uploads/2022/07/im-jaich-Flensburg-2019-0196-Kristina-Steiner.jpg",
-                        }}
-                        width="100%"
-                        height="100%"
-                    />
+                <ScrollView style={{flex: 1}}>
+                    {/* Header Image with Gradient */}
+                    <Stack position="relative" width="100%" height={media.lg ? 350 : 250} overflow="hidden">
+                        <Image
+                            source={{uri: locationImageUrl}}
+                            width="100%"
+                            height="100%"
+                        />
 
-                    <LinearGradient
-                        colors={['transparent', 'rgba(0,0,0,0.6)']}
-                        style={{
-                            position: 'absolute',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            height: '60%',
-                        }}
-                    />
-
-                    <Stack position="absolute" bottom="$4" left="$4" right="$4">
-                        <Text color="white" fontSize="$3" opacity={0.9} marginBottom="$1">
-                            {t('dashboard.title')}
-                        </Text>
-                        <H1
-                            color="white"
-                            fontSize={media.lg ? "$10" : "$8"}
-                            fontWeight="700"
-                            textShadowColor="rgba(0,0,0,0.2)"
-                            textShadowOffset={{width: 0, height: 1}}
-                            textShadowRadius={2}
-                        >
-                            {harbourName || t('dashboard.loading')}
-                        </H1>
-                        <View style={{width: 300}}>
-                            <NavigateDashboardDropdownMenu
-                                isDark={isDark}
-                                router={router}
-                                sensorLocations={sensorLocations}
-                                selectedMarina={harbourName}
-                            />
-                        </View>
-                    </Stack>
-                </Stack>
-
-                <YStack
-                    padding={media.md ? "$3" : "$4"}
-                    gap={media.md ? "$4" : "$5"}
-                    maxWidth={1800}
-                    width="100%"
-                    alignSelf="center"
-                    marginTop={media.md ? -20 : -30}
-                >
-
-                    <Card
-                        bordered
-                        padding={2}
-                        animation="quick"
-                        backgroundColor={'$content2'}
-                        borderWidth={1}
-                        borderColor="$borderColor"
-                    >
-                        <Card.Header padded>
-                            <XStack justifyContent="space-between" alignItems="center">
-                                <XStack gap="$3" alignItems="center" flex={1}>
-                                    <Stack
-                                        width={44}
-                                        height={44}
-                                        borderRadius="$3"
-                                        backgroundColor={isDark ? '$gray8' : '$gray3'}
-                                        alignItems="center"
-                                        justifyContent="center"
-                                    >
-                                        <Home size={24} color="$gray10"/>
-                                    </Stack>
-                                    <YStack flex={1}>
-                                        <Text color="$gray11" fontSize="$2">{t('dashboard.harbor')}</Text>
-                                        <H3 fontSize="$6" fontWeight="600">{harbourName}</H3>
-                                    </YStack>
-                                </XStack>
-                                <Button
-                                    size="$3"
-                                    variant="outlined"
-                                    icon={showInfo ? ChevronUp : ChevronDown}
-                                    onPress={toggleInfo}
-                                    circular
-                                />
-                            </XStack>
-                        </Card.Header>
-
-                        <View
+                        <LinearGradient
+                            colors={['transparent', 'rgba(0,0,0,0.6)']}
                             style={{
                                 position: 'absolute',
-                                opacity: 0,
-                                pointerEvents: 'none',
-                                width: '100%',
-                                top: 0,
+                                bottom: 0,
                                 left: 0,
                                 right: 0,
+                                height: '60%',
                             }}
-                            onLayout={handleInfoLayout}
+                        />
+
+                        <Stack position="absolute" bottom="$4" left="$4" right="$4">
+                            <Text color="white" fontSize="$3" opacity={0.9} marginBottom="$1">
+                                {t('dashboard.title')}
+                            </Text>
+                            <H1
+                                color="white"
+                                fontSize={media.lg ? "$10" : "$8"}
+                                fontWeight="700"
+                                textShadowColor="rgba(0,0,0,0.2)"
+                                textShadowOffset={{width: 0, height: 1}}
+                                textShadowRadius={2}
+                            >
+                                {harbourName || t('dashboard.loading')}
+                            </H1>
+                            <View style={{width: 300}}>
+                                <NavigateDashboardDropdownMenu
+                                    isDark={isDark}
+                                    router={router}
+                                    sensorLocations={sensorLocations}
+                                    selectedMarina={harbourName}
+                                />
+                            </View>
+                        </Stack>
+                    </Stack>
+
+                    {/* Main Content */}
+                    <YStack
+                        padding={media.md ? "$3" : "$4"}
+                        gap={media.md ? "$4" : "$5"}
+                        maxWidth={1800}
+                        width="100%"
+                        alignSelf="center"
+                        marginTop={media.md ? -20 : -30}
+                    >
+                        {/* Harbor Info Card */}
+                        <Card
+                            bordered
+                            padding={2}
+                            animation="quick"
+                            backgroundColor={'$content2'}
+                            borderWidth={1}
+                            borderColor="$borderColor"
                         >
-                            {renderHarborInfoContent()}
-                        </View>
+                            <Card.Header padded>
+                                <XStack justifyContent="space-between" alignItems="center">
+                                    <XStack gap="$3" alignItems="center" flex={1}>
+                                        <Stack
+                                            width={44}
+                                            height={44}
+                                            borderRadius="$3"
+                                            backgroundColor={isDark ? '$gray8' : '$gray3'}
+                                            alignItems="center"
+                                            justifyContent="center"
+                                        >
+                                            <Home size={24} color="$gray10"/>
+                                        </Stack>
+                                        <YStack flex={1}>
+                                            <Text color="$gray11" fontSize="$2">{t('dashboard.harbor')}</Text>
+                                            <H3 fontSize="$6" fontWeight="600">{harbourName}</H3>
+                                        </YStack>
+                                    </XStack>
+                                    <Button
+                                        size="$3"
+                                        variant="outlined"
+                                        icon={showInfo ? ChevronUp : ChevronDown}
+                                        onPress={toggleInfo}
+                                        circular
+                                    />
+                                </XStack>
+                            </Card.Header>
 
-                        <Animated.View
-                            style={{
-                                overflow: "hidden",
-                                height: infoHeight,
-                            }}
-                        >
-                            {renderHarborInfoContent({
-                                pointerEvents: showInfo ? 'auto' : 'none',
-                                style: {opacity: showInfo ? 1 : 0},
-                            })}
-                        </Animated.View>
-                    </Card>
+                            {/* Hidden Info Layout Measurer */}
+                            <View
+                                style={{
+                                    position: 'absolute',
+                                    opacity: 0,
+                                    pointerEvents: 'none',
+                                    width: '100%',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                }}
+                                onLayout={handleInfoLayout}
+                            >
+                                {renderHarborInfoContent()}
+                            </View>
 
-                    <YStack gap="$3">
-                        <XStack alignItems="center" justifyContent="space-between">
-                            <H3 fontSize="$5" fontWeight="600">{t('dashboard.currentMeasurements')}</H3>
-                            <XStack gap="$1" alignItems="center">
-                                <Stack width={6} height={6} borderRadius="$5" backgroundColor="$green9"/>
-                                <Text fontSize="$2" color="$gray11">
-                                    {(timeRange === 'today' || timeRange === 'yesterday') ? t('dashboard.live') : t('last.measurement')} {formatTimeToLocal(latestTime)}
-                                </Text>
-                            </XStack>
-                        </XStack>
-                        <XStack
-                            gap="$3"
-                            width="100%"
-                            flexWrap={media.md ? "wrap" : "nowrap"}
-                            justifyContent={media.md ? "center" : "space-between"}
-                        >
-                            {filteredMeasurements
-                                .slice(0, 3)
-                                .map((measurement, index) => (
-                                    <Card
-                                        key={index}
-                                        bordered
-                                        backgroundColor={'$content2'}
-                                        flex={media.md ? undefined : 1}
-                                        width={media.md ? "100%" : undefined}
-                                        minWidth={250}
-                                        borderWidth={1}
-                                        borderColor="$borderColor"
-                                    >
-                                        <Card.Header padded>
-                                            <YStack gap="$3" alignItems="center">
-                                                <Stack
-                                                    width={56}
-                                                    height={56}
-                                                    borderRadius="$4"
-                                                    alignItems="center"
-                                                    justifyContent="center"
-                                                >
-                                                    {getMeasurementIcon(measurement.measurementType, 32)}
-                                                </Stack>
-                                                <YStack alignItems="center" gap="$2">
-                                                    <Text
-                                                        color="$gray11"
-                                                        fontSize="$4"
-                                                        fontWeight="600"
-                                                        textAlign="center"
-                                                    >
-                                                        {getTextFromMeasurementType(measurement.measurementType, t)}
-                                                    </Text>
-                                                    <XStack alignItems="baseline" gap="$2">
-                                                        <H2 fontSize="$10" fontWeight="700"
-                                                            color={getMeasurementColor(measurement.measurementType)}>
-                                                            {formatMeasurementValue(measurement.value)}
-                                                        </H2>
-                                                        <Text fontSize="$6"
-                                                              color={getMeasurementColor(measurement.measurementType)}
-                                                              fontWeight="600">
-                                                            {getMeasurementTypeSymbol(measurement.measurementType, t)}
-                                                        </Text>
-                                                    </XStack>
-                                                </YStack>
-                                            </YStack>
-                                        </Card.Header>
-                                    </Card>
-                                ))}
-                        </XStack>
-                    </YStack>
+                            {/* Animated Info Content */}
+                            <Animated.View
+                                style={{
+                                    overflow: "hidden",
+                                    height: infoHeight,
+                                }}
+                            >
+                                {renderHarborInfoContent({
+                                    pointerEvents: showInfo ? 'auto' : 'none',
+                                    style: {opacity: showInfo ? 1 : 0},
+                                })}
+                            </Animated.View>
+                        </Card>
 
-
-                    {filteredMeasurements.length > 3 && (
+                        {/* Current Measurements Section */}
                         <YStack gap="$3">
-                            <H2 fontSize="$6">{t('dashboard.furtherMeasurements')}</H2>
+                            <XStack alignItems="center" justifyContent="space-between">
+                                <H3 fontSize="$5" fontWeight="600">{t('dashboard.currentMeasurements')}</H3>
+                                <XStack gap="$1" alignItems="center">
+                                    <Stack width={6} height={6} borderRadius="$5" backgroundColor="$green9"/>
+                                    <Text fontSize="$2" color="$gray11">
+                                        {(timeRange === 'today' || timeRange === 'yesterday') ? t('dashboard.live') : t('last.measurement')} {formatTimeToLocal(latestTime)}
+                                    </Text>
+                                </XStack>
+                            </XStack>
                             <XStack
-                                flexWrap="wrap"
                                 gap="$3"
-                                justifyContent={media.lg ? 'flex-start' : 'center'}
+                                width="100%"
+                                flexWrap={media.md ? "wrap" : "nowrap"}
+                                justifyContent={media.md ? "center" : "space-between"}
                             >
                                 {filteredMeasurements
-                                    .slice(3)
-                                    .map((a, index) => (
-                                        <MeasurementCard
+                                    .slice(0, 3)
+                                    .map((measurement, index) => (
+                                        <Card
                                             key={index}
-                                            measurementType={a.measurementType}
-                                            value={formatMeasurementValue(a.value)}
-                                        />
+                                            bordered
+                                            backgroundColor={'$content2'}
+                                            flex={media.md ? undefined : 1}
+                                            width={media.md ? "100%" : undefined}
+                                            minWidth={250}
+                                            borderWidth={1}
+                                            borderColor="$borderColor"
+                                        >
+                                            <Card.Header padded>
+                                                <YStack gap="$3" alignItems="center">
+                                                    <Stack
+                                                        width={56}
+                                                        height={56}
+                                                        borderRadius="$4"
+                                                        alignItems="center"
+                                                        justifyContent="center"
+                                                    >
+                                                        {getMeasurementIcon(measurement.measurementType, 32)}
+                                                    </Stack>
+                                                    <YStack alignItems="center" gap="$2">
+                                                        <Text
+                                                            color="$gray11"
+                                                            fontSize="$4"
+                                                            fontWeight="600"
+                                                            textAlign="center"
+                                                        >
+                                                            {getTextFromMeasurementType(measurement.measurementType, t)}
+                                                        </Text>
+                                                        <XStack alignItems="baseline" gap="$2">
+                                                            <H2 fontSize="$10" fontWeight="700"
+                                                                color={getMeasurementColor(measurement.measurementType)}>
+                                                                {formatMeasurementValue(measurement.value)}
+                                                            </H2>
+                                                            <Text fontSize="$6"
+                                                                  color={getMeasurementColor(measurement.measurementType)}
+                                                                  fontWeight="600">
+                                                                {getMeasurementTypeSymbol(measurement.measurementType, t)}
+                                                            </Text>
+                                                        </XStack>
+                                                    </YStack>
+                                                </YStack>
+                                            </Card.Header>
+                                        </Card>
                                     ))}
                             </XStack>
                         </YStack>
-                    )}
 
-                    <Separator marginVertical="$2"/>
-
-                    <YStack gap="$4">
-                        <XStack alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="$2">
-                            <YStack gap="$1">
-                                <H3 fontSize="$5" fontWeight="600">{t('dashboard.historicalData')}</H3>
-                                <Text fontSize="$2" color="$gray11">
-                                    {timeRange === 'today' ? t('dashboard.timeRange.today') :
-                                        timeRange === 'yesterday' ? t('dashboard.timeRange.yesterday') :
-                                            timeRange === 'last7days' ? t('dashboard.timeRange.last7days') :
-                                                timeRange === 'last30days' ? t('dashboard.timeRange.last30days') :
-                                                    timeRange === 'last90days' ? t('dashboard.timeRange.last90days') :
-                                                        timeRange === 'last180days' ? t('dashboard.timeRange.last180days') :
-                                                            t('dashboard.timeRange.last1year')}
-                                </Text>
+                        {/* Further Measurements Section */}
+                        {filteredMeasurements.length > 3 && (
+                            <YStack gap="$3">
+                                <H2 fontSize="$6">{t('dashboard.furtherMeasurements')}</H2>
+                                <XStack
+                                    flexWrap="wrap"
+                                    gap="$3"
+                                    justifyContent={media.lg ? 'flex-start' : 'center'}
+                                >
+                                    {filteredMeasurements
+                                        .slice(3)
+                                        .map((a, index) => (
+                                            <MeasurementCard
+                                                key={index}
+                                                measurementType={a.measurementType}
+                                                value={formatMeasurementValue(a.value)}
+                                            />
+                                        ))}
+                                </XStack>
                             </YStack>
-                            <TimeRangeDropdown
-                                selectedTimeRange={timeRange}
-                                setTimeRange={setTimeRange}
-                                isDark={isDark}
-                            />
-                        </XStack>
+                        )}
 
-                        <YStack
-                            gap="$3"
-                            width="100%"
-                        >
-                            <LineChartCard
-                                title={t('dashboard.charts.waterTemperature')}
-                                icon={<Thermometer size={20} color="#F97316"/>}
-                                chartData={chartWaterTemperature}
-                                color="#F97316"
-                                currentValue={currentWaterTemp}
-                            />
-                            <LineChartCard
-                                title={t('dashboard.charts.waterLevel')}
-                                icon={<Activity size={20} color="#3B82F6"/>}
-                                chartData={chartTide}
-                                color="#3B82F6"
-                                currentValue={currentWaterLevel}
-                            />
-                            <LineChartCard
-                                title={t('dashboard.charts.waveHeight')}
-                                icon={<Waves size={20} color="#10B981"/>}
-                                chartData={chartWaveHeight}
-                                color="#10B981"
-                                currentValue={currentWaveHeight}
-                            />
+                        <Separator marginVertical="$2"/>
+
+                        {/* Historical Data Section */}
+                        <YStack gap="$4">
+                            <XStack alignItems="center" justifyContent="space-between" flexWrap="wrap" gap="$2">
+                                <YStack gap="$1">
+                                    <H3 fontSize="$5" fontWeight="600">{t('dashboard.historicalData')}</H3>
+                                    <Text fontSize="$2" color="$gray11">
+                                        {timeRange === 'today' ? t('dashboard.timeRange.today') :
+                                            timeRange === 'yesterday' ? t('dashboard.timeRange.yesterday') :
+                                                timeRange === 'last7days' ? t('dashboard.timeRange.last7days') :
+                                                    timeRange === 'last30days' ? t('dashboard.timeRange.last30days') :
+                                                        timeRange === 'last90days' ? t('dashboard.timeRange.last90days') :
+                                                            timeRange === 'last180days' ? t('dashboard.timeRange.last180days') :
+                                                                t('dashboard.timeRange.last1year')}
+                                    </Text>
+                                </YStack>
+                                <TimeRangeDropdown
+                                    selectedTimeRange={timeRange}
+                                    setTimeRange={setTimeRange}
+                                    isDark={isDark}
+                                />
+                            </XStack>
+
+                            {/* Charts */}
+                            <YStack gap="$3" width="100%">
+                                <LineChartCard
+                                    title={t('dashboard.charts.waterTemperature')}
+                                    icon={<Thermometer size={20} color="#F97316"/>}
+                                    chartData={chartWaterTemperature}
+                                    color="#F97316"
+                                    currentValue={currentWaterTemp}
+                                />
+                                <LineChartCard
+                                    title={t('dashboard.charts.waterLevel')}
+                                    icon={<Activity size={20} color="#3B82F6"/>}
+                                    chartData={chartTide}
+                                    color="#3B82F6"
+                                    currentValue={currentWaterLevel}
+                                />
+                                <LineChartCard
+                                    title={t('dashboard.charts.waveHeight')}
+                                    icon={<Waves size={20} color="#10B981"/>}
+                                    chartData={chartWaveHeight}
+                                    color="#10B981"
+                                    currentValue={currentWaveHeight}
+                                />
+                            </YStack>
                         </YStack>
                     </YStack>
-                </YStack>
-            </ScrollView>
+                </ScrollView>
             </YStack>
         </SafeAreaView>
     );

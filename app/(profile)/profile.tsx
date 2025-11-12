@@ -69,7 +69,8 @@ export default function ProfileScreen() {
         };
 
         loadProfile();
-    }, [session?.profile, getProfile, updateSessionProfile]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (!session?.profile && getProfileStatus.loading) {
         return (

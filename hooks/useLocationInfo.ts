@@ -89,12 +89,13 @@ export function useLocationInfo(initialData?: DetailedLocationDTO | null) {
         }
     }, [isHarborMaster]);
 
-    // Update local state when initial data changes
+    // Update local state when initial data changes - only run once on mount
     useEffect(() => {
         if (initialData) {
             setLocationData(initialData);
         }
-    }, [initialData]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return {
         locationData,
