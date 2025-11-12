@@ -29,7 +29,7 @@ export enum ActivityRole {
 export enum AuthorityRole {
     ADMIN = "ADMIN",
     USER = "USER",
-    HARBOURMASTER = "HARBOURMASTER"
+    HARBOURMASTER = "HARBOR_MASTER"  // API returns HARBOR_MASTER with underscore
 }
 
 export enum MeasurementSystem {
