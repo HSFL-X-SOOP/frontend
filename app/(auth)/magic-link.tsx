@@ -1,5 +1,5 @@
 import {Link, useRouter, useLocalSearchParams, Href} from 'expo-router';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {SafeAreaView} from 'react-native';
 import {Button, Text, YStack, XStack, Spinner, ScrollView} from 'tamagui';
 import {Sparkles, CheckCircle, AlertCircle} from '@tamagui/lucide-icons';
@@ -23,6 +23,7 @@ export default function MagicLinkScreen() {
     const {login: logUserIn} = useSession();
     const {t} = useTranslation();
     const toast = useToast();
+    const loginAttemptedRef = useRef(false);
 
     const hasErrors = () => {
         return email.length > 0 && !email.includes('@');
@@ -48,10 +49,11 @@ export default function MagicLinkScreen() {
     };
 
     useEffect(() => {
-        if (!token) {
+        if (!token || loginAttemptedRef.current) {
             return;
         }
 
+        loginAttemptedRef.current = true;
         logger.info('Processing magic link token');
 
         (async () => {
@@ -63,7 +65,7 @@ export default function MagicLinkScreen() {
                     refreshToken: result.refreshToken,
                     loggedInSince: new Date(),
                     lastTokenRefresh: null,
-                    role: result.profile?.authorityRole ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
+                    role: result.profile?.authorityRole ?? AuthorityRole.USER,
                     profile: result.profile
                 });
                 toast.success(t('auth.magicLink.loginSuccess'), {
@@ -79,7 +81,7 @@ export default function MagicLinkScreen() {
                 });
             }
         })();
-    }, [token, logUserIn, magicLinkLogin, magicLinkLoginStatus.error, router, t, toast]);
+    }, [token]);
 
     if (token && magicLinkLoginStatus.loading) {
         return (
