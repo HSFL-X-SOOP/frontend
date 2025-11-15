@@ -11,6 +11,25 @@ export function useHttpClient() {
         timeout: 30_000,
     })
 
+    const refreshAccessToken = async (refreshToken: string): Promise<string> => {
+        const {data} = await axios.post<LoginResponse>(
+            `${ENV.apiUrl}/auth/refresh`,
+            {refreshToken}
+        )
+
+        const newSession = {
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            loggedInSince: session?.loggedInSince ?? new Date(),
+            lastTokenRefresh: new Date(),
+            profile: data.profile,
+            role: data.profile?.authorityRole ?? null
+        }
+
+        login(newSession)
+        return newSession.accessToken
+    }
+
     httpClient.interceptors.request.use(
         async (config: InternalAxiosRequestConfig) => {
             if (!session) return config
@@ -25,22 +44,8 @@ export function useHttpClient() {
 
             if (needsRefresh) {
                 try {
-                    const {data} = await axios.post<LoginResponse>(
-                        `${ENV.apiUrl}/auth/refresh`,
-                        {refreshToken: session.refreshToken}
-                    )
-
-                    const newSession = {
-                        accessToken: data.accessToken,
-                        refreshToken: data.refreshToken,
-                        loggedInSince: session.loggedInSince,
-                        lastTokenRefresh: new Date(),
-                        profile: data.profile,
-                        role: data.profile?.authorityRole ?? null
-                    }
-
-                    login(newSession)
-                    config.headers.Authorization = `Bearer ${newSession.accessToken}`
+                    const accessToken = await refreshAccessToken(session.refreshToken!)
+                    config.headers.Authorization = `Bearer ${accessToken}`
                 } catch (err) {
                     return config
                 }
@@ -57,46 +62,24 @@ export function useHttpClient() {
         async (err: AxiosError) => {
             const originalRequest = err.config;
 
-            // Only handle 401 if we have a valid originalRequest and haven't retried yet
             if (err.response?.status === 401 && originalRequest && !(originalRequest as any)._retry) {
-                // Only try to refresh if we have a refresh token
                 if (session?.refreshToken) {
                     (originalRequest as any)._retry = true;
 
                     try {
-                        // Try to refresh the token
-                        const {data} = await axios.post<LoginResponse>(
-                            `${ENV.apiUrl}/auth/refresh`,
-                            {refreshToken: session.refreshToken}
-                        );
-
-                        const newSession = {
-                            accessToken: data.accessToken,
-                            refreshToken: data.refreshToken,
-                            loggedInSince: session.loggedInSince,
-                            lastTokenRefresh: new Date(),
-                            profile: data.profile,
-                            role: data.profile?.authorityRole ?? null
-                        };
-
-                        login(newSession);
-
-                        // Retry the original request with new token
-                        originalRequest.headers.Authorization = `Bearer ${newSession.accessToken}`;
+                        const accessToken = await refreshAccessToken(session.refreshToken);
+                        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
                         return httpClient(originalRequest);
                     } catch (refreshError) {
-                        // If refresh fails, logout
                         console.error('Token refresh failed:', refreshError);
                         logout();
                         return Promise.reject(refreshError);
                     }
                 } else {
-                    // No refresh token available, logout
                     console.log('No refresh token available, logging out');
                     logout();
                 }
             }
-
             return Promise.reject(err);
         }
     )
