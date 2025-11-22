@@ -25,10 +25,15 @@ import {
     ChevronDown,
     ChevronUp,
     Clock,
+    Heart,
     Home,
     MapPin,
     Thermometer,
-    Waves
+    Waves, 
+    HeartPlus, 
+    HeartMinus,
+    BellOff,
+    Bell 
 } from '@tamagui/lucide-icons';
 import {LinearGradient} from 'expo-linear-gradient';
 import {useLocalSearchParams, useRouter} from 'expo-router';
@@ -49,6 +54,9 @@ import {
     YStack,
     useMedia
 } from 'tamagui';
+
+import { useUserLocations } from '@/hooks/useUserLocations';
+import { UserLocation } from '@/api/models/userLocation';
 
 // ============================================================================
 // Helper Functions
@@ -76,6 +84,7 @@ export default function DashboardScreen() {
     const {t} = useTranslation();
     const {isDark} = useThemeContext();
     let {name} = useLocalSearchParams();
+    const userLocations = useUserLocations();
 
     if (!name) {
         name = 'Stadthafen Flensburg "Im Jaich"';
@@ -91,6 +100,7 @@ export default function DashboardScreen() {
     const [chartWaterTemperature, setChartWaterTemperature] = useState<ChartDataPoint[]>([]);
     const [chartTide, setChartTide] = useState<ChartDataPoint[]>([]);
     const [chartWaveHeight, setChartWaveHeight] = useState<ChartDataPoint[]>([]);
+    const [userLocation, setUserLocation] = useState<UserLocation | undefined>(undefined);
 
     // ----------------------------------------------------------------------------
     // Refs
@@ -216,6 +226,21 @@ export default function DashboardScreen() {
     }, [marinaID]);
 
     useEffect(() => {
+        if (!marinaID) return;
+        const fetchUserLocation = async () => {
+            try {
+                const ul = await userLocations.getUserLocationByUserIdAndLocationId(1, marinaID);
+                setUserLocation(ul);
+            } catch (e) {
+                console.warn('fetchUserLocation failed', e);
+                setUserLocation(undefined);
+            }
+        };
+
+       void fetchUserLocation();
+   }, [marinaID, userLocation]);
+
+    useEffect(() => {
         if (timeRangeData) {
             const measurementDict = CreateMeasurementDictionary(timeRangeData, timeRange);
 
@@ -303,6 +328,34 @@ export default function DashboardScreen() {
         }).start();
     }, [showInfo, infoHeight, infoContentHeight]);
 
+    const createOrDeleteUserLocation = useCallback(async () => {
+        if (!marinaID) return;
+
+        if (userLocation && userLocation.id) {
+            await userLocations.deleteUserLocation(userLocation.id);
+            setUserLocation(undefined);
+        } else {
+            const createdUserLocation = await userLocations.create({
+                userId: 1,
+                locationId: marinaID,
+                sentHarborNotifications: false,
+            });
+            setUserLocation(createdUserLocation);
+        }
+
+    }, [userLocation, userLocations, marinaID]);
+
+    const updateUserLocationSentHarborNotifications = useCallback(async () => {
+        if (!marinaID || !userLocation) return;
+        
+        const updatedUserocation = await userLocations.update(userLocation.id, {
+            userId: 1,
+            locationId: marinaID,
+            sentHarborNotifications: !userLocation.sentHarborNotifications,
+        });
+        setUserLocation(updatedUserocation);
+    }, [userLocation, userLocations, marinaID]);
+
     // ----------------------------------------------------------------------------
     // Render
     // ----------------------------------------------------------------------------
@@ -349,6 +402,20 @@ export default function DashboardScreen() {
                                     router={router}
                                     sensorLocations={sensorLocations}
                                     selectedMarina={harbourName}
+                                />
+                                <Button
+                                    size="$3"
+                                    variant="outlined"
+                                    icon={userLocation ? HeartMinus : HeartPlus}
+                                    onPress={createOrDeleteUserLocation}
+                                    circular
+                                />
+                                <Button
+                                    size="$3"
+                                    variant="outlined"
+                                    icon={userLocation?.sentHarborNotifications ? BellOff : Bell}
+                                    onPress={updateUserLocationSentHarborNotifications}
+                                    circular
                                 />
                             </View>
                         </Stack>
