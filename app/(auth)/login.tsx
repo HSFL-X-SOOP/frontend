@@ -2,7 +2,7 @@ import {useSession} from '@/context/SessionContext';
 import {useAuth} from '@/hooks/useAuth';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
-import {SafeAreaView} from 'react-native';
+import {Platform, SafeAreaView} from 'react-native';
 import {Lock} from '@tamagui/lucide-icons';
 import {Button, Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {useTranslation} from '@/hooks/useTranslation';
@@ -15,7 +15,9 @@ import {PasswordInput} from '@/components/auth/PasswordInput';
 import {createLogger} from '@/utils/logger';
 import {AuthorityRole} from '@/api/models/profile';
 import {useIsMobile} from '@/hooks/useIsMobileWeb';
-
+import messagingModule from '@react-native-firebase/messaging';
+import { PermissionsAndroid } from 'react-native';
+import { useUserDeviceStore } from '@/api/stores/userDevice';
 const logger = createLogger('Auth:Login');
 
 export default function LoginScreen() {
@@ -30,6 +32,27 @@ export default function LoginScreen() {
     const {login, loginStatus} = useAuth();
     const {login: logUserIn, session} = useSession();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
+    const userDeviceStore = useUserDeviceStore();
+    var token = '';
+
+    useEffect(() => {
+        async function initializeFirebase() {
+            userDeviceStore.registerUserDevice({fcmToken: "asajsdajs", userId: 2});
+            if (Platform.OS !== 'web') {
+                if (Platform.OS === 'android') {
+                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+                }
+                
+                try {
+                    token = await messagingModule().getToken();
+                    console.log('🔥 FCM Token:', token);
+                } catch (error) {
+                    console.log('Error getting FCM token:', error);
+                }
+            }
+        }
+        initializeFirebase();
+    }, []);
 
     useEffect(() => {
         if (session) {
@@ -237,6 +260,7 @@ export default function LoginScreen() {
                             </XStack>
                         </Button>
                     </YStack>
+                    
 
                     <YStack alignItems="center">
                         <Text fontSize={14} color="$color">

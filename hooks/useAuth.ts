@@ -6,6 +6,8 @@ import {
     RegisterRequest,
     VerifyEmailRequest,
     GoogleLoginRequest,
+    RegisterUserDeviceRequest,
+    RegisterUserDeviceResponse,
 } from "@/api/models/auth";
 import { useAuthStore } from "@/api/stores/auth";
 import * as AsyncHandler from "@/hooks/core/asyncHandler";
@@ -34,6 +36,9 @@ export const useAuth = () => {
     const [googleLogin, googleLoginStatus] =
         AsyncHandler.useAsync<[GoogleLoginRequest], LoginResponse>(authStore.googleLogin);
 
+    const [registerUserDevice, registerUserDeviceStatus] =
+        AsyncHandler.useAsync<[RegisterUserDeviceRequest], RegisterUserDeviceResponse>(authStore.registerUserDevice);
+
     return {
         register,
         registerStatus,
@@ -55,5 +60,8 @@ export const useAuth = () => {
 
         googleLogin,
         googleLoginStatus,
+
+        registerUserDevice,
+        registerUserDeviceStatus,
     };
 };
