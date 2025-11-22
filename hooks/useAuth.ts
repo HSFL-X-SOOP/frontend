@@ -36,9 +36,6 @@ export const useAuth = () => {
     const [googleLogin, googleLoginStatus] =
         AsyncHandler.useAsync<[GoogleLoginRequest], LoginResponse>(authStore.googleLogin);
 
-    const [registerUserDevice, registerUserDeviceStatus] =
-        AsyncHandler.useAsync<[RegisterUserDeviceRequest], RegisterUserDeviceResponse>(authStore.registerUserDevice);
-
     return {
         register,
         registerStatus,
@@ -60,8 +57,5 @@ export const useAuth = () => {
 
         googleLogin,
         googleLoginStatus,
-
-        registerUserDevice,
-        registerUserDeviceStatus,
     };
 };

@@ -1,8 +1,6 @@
 import {
     LoginRequest, LoginResponse, MagicLinkLoginRequest,
     MagicLinkRequest, RegisterRequest, VerifyEmailRequest, GoogleLoginRequest,
-    RegisterUserDeviceResponse,
-    RegisterUserDeviceRequest,
 } from "@/api/models/auth.ts";
 import { useHttpClient } from "@/api/client.ts";
 
@@ -30,8 +28,5 @@ export function useAuthStore() {
 
         googleLogin: (body: GoogleLoginRequest) =>
             httpClient.post<LoginResponse>("/login/google/android", body).then(r => r.data),
-
-        registerUserDevice: (body: RegisterUserDeviceRequest) =>
-            httpClient.post<RegisterUserDeviceResponse>("/user-device", body).then(r => r.data),
     };
 }

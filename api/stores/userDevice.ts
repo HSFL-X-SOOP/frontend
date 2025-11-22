@@ -1,5 +1,4 @@
 import {useHttpClient} from '@/api/client';
-import {DetailedLocationDTO} from '@/api/models/location';
 import { RegisterUserDeviceRequest, RegisterUserDeviceResponse } from '../models/auth';
 
 export function useUserDeviceStore() {
@@ -9,13 +8,13 @@ export function useUserDeviceStore() {
         /**
          * Register user device
          */
-        registerUserDevice: async (body: RegisterUserDeviceRequest): Promise<RegisterUserDeviceResponse[]> => {
+        registerUserDevice: async (body: RegisterUserDeviceRequest): Promise<RegisterUserDeviceResponse | null> => {
             try {
-                const response = await httpClient.post<RegisterUserDeviceResponse[]>('/user-device', body);
+                const response = await httpClient.post<RegisterUserDeviceResponse>('/user-device', body);
                 return response.data;
             } catch (error) {
                 console.error('Failed to register user device:', error);
-                return [];
+                return null;
             }
         },
     };
