@@ -1,0 +1,59 @@
+name: Initialize Fastlane Match
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup-match:
+    runs-on: macos-latest
+
+    env:
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios
+
+      - name: Setup App Store Connect API Key
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys
+
+          KEY_CONTENT=$(echo "${{ env.APP_STORE_CONNECT_API_KEY_CONTENT }}" | base64 --decode)
+          echo "$KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_${{ env.APP_STORE_CONNECT_API_KEY_ID }}.p8
+
+          cat > ~/.appstoreconnect/api_key.json <<EOF
+          {
+            "key_id": "${{ env.APP_STORE_CONNECT_API_KEY_ID }}",
+            "issuer_id": "${{ env.APP_STORE_CONNECT_API_ISSUER_ID }}",
+            "key": $(echo "$KEY_CONTENT" | jq -Rs .)
+          }
+          EOF
+
+      - name: Initialize Fastlane Match
+        working-directory: ios
+        env:
+          MATCH_READONLY: false
+        run: |
+          bundle exec fastlane match appstore \
+            --readonly false \
+            --api_key_path ~/.appstoreconnect/api_key.json
+
+      - name: Clean up
+        if: always()
+        run: |
+          rm -f ~/.appstoreconnect/private_keys/AuthKey_${{ env.APP_STORE_CONNECT_API_KEY_ID }}.p8
+          rm -f ~/.appstoreconnect/api_key.json

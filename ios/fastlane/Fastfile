@@ -5,6 +5,14 @@ platform :ios do
   lane :testflight_internal do
     ENV['APP_MODE'] = 'test'
 
+    setup_ci if ENV['CI']
+
+    match(
+      type: "appstore",
+      readonly: is_ci,
+      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"]
+    )
+
     cocoapods(
       clean_install: true
     )
@@ -13,11 +21,6 @@ platform :ios do
       scheme: "Marlin",
       workspace: "Marlin.xcworkspace",
       export_method: "app-store",
-      export_options: {
-        provisioningProfiles: {
-          "com.marlin.live" => ENV["IOS_PROVISIONING_PROFILE_NAME"]
-        }
-      },
       output_directory: "./build",
       output_name: "Marlin.ipa"
     )
@@ -36,6 +39,14 @@ platform :ios do
   lane :testflight_external do
     ENV['APP_MODE'] = 'test'
 
+    setup_ci if ENV['CI']
+
+    match(
+      type: "appstore",
+      readonly: is_ci,
+      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"]
+    )
+
     cocoapods(
       clean_install: true
     )
@@ -44,11 +55,6 @@ platform :ios do
       scheme: "Marlin",
       workspace: "Marlin.xcworkspace",
       export_method: "app-store",
-      export_options: {
-        provisioningProfiles: {
-          "com.marlin.live" => ENV["IOS_PROVISIONING_PROFILE_NAME"]
-        }
-      },
       output_directory: "./build",
       output_name: "Marlin.ipa"
     )
@@ -68,6 +74,14 @@ platform :ios do
   lane :app_store do
     ENV['APP_MODE'] = 'prod'
 
+    setup_ci if ENV['CI']
+
+    match(
+      type: "appstore",
+      readonly: is_ci,
+      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"]
+    )
+
     cocoapods(
       clean_install: true
     )
@@ -76,11 +90,6 @@ platform :ios do
       scheme: "Marlin",
       workspace: "Marlin.xcworkspace",
       export_method: "app-store",
-      export_options: {
-        provisioningProfiles: {
-          "com.marlin.live" => ENV["IOS_PROVISIONING_PROFILE_NAME"]
-        }
-      },
       output_directory: "./build",
       output_name: "Marlin.ipa"
     )
