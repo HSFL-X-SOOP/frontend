@@ -8,5 +8,4 @@ app_identifier(["com.marlin.live"])
 username(ENV["APPLE_ID"])
 team_id(ENV["APPLE_TEAM_ID"])
 
-
 readonly(ENV["MATCH_READONLY"] == "true" || (ENV["CI"] == "true" && ENV["MATCH_READONLY"].nil?))
