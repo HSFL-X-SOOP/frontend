@@ -14,6 +14,7 @@ import {
     CreateMeasurementDictionary,
     GetLatestMeasurements,
     formatMeasurementValue,
+    getIDFromMeasurementType,
     getMeasurementColor,
     getMeasurementIcon,
     getMeasurementTypeSymbol,
@@ -33,21 +34,28 @@ import {
     HeartPlus, 
     HeartMinus,
     BellOff,
-    Bell 
+    Bell, 
+    BrickWallFire
 } from '@tamagui/lucide-icons';
 import {LinearGradient} from 'expo-linear-gradient';
 import {useLocalSearchParams, useRouter} from 'expo-router';
-import {useEffect, useMemo, useCallback, useRef, useState} from 'react';
+import {useEffect, useMemo, useCallback, useRef, useState, use} from 'react';
 import type {ComponentProps} from 'react';
 import {Animated, LayoutChangeEvent, SafeAreaView, ScrollView, View} from 'react-native';
 import {
+    Adapt,
     Button,
     Card,
+    Checkbox,
     H1,
     H2,
     H3,
     Image,
+    Input,
+    Label,
+    PopoverProps,
     Separator,
+    Sheet,
     Stack,
     Text,
     XStack,
@@ -57,7 +65,9 @@ import {
 
 import { useUserLocations } from '@/hooks/useUserLocations';
 import { UserLocation } from '@/api/models/userLocation';
-
+import { useNotificationMeasurementRules } from '@/hooks/useNotificationMeasurementRules';
+import { MeasurementType } from '@/api/models/notificationMeasurementRule';
+import { Popover } from 'tamagui';
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -356,6 +366,7 @@ export default function DashboardScreen() {
         setUserLocation(updatedUserocation);
     }, [userLocation, userLocations, marinaID]);
 
+
     // ----------------------------------------------------------------------------
     // Render
     // ----------------------------------------------------------------------------
@@ -397,26 +408,31 @@ export default function DashboardScreen() {
                                 {harbourName || t('dashboard.loading')}
                             </H1>
                             <View style={{width: 300}}>
+                                <XStack gap={20}>
                                 <NavigateDashboardDropdownMenu
                                     isDark={isDark}
                                     router={router}
                                     sensorLocations={sensorLocations}
                                     selectedMarina={harbourName}
                                 />
+                               
                                 <Button
-                                    size="$3"
+                                    size="$5"
                                     variant="outlined"
                                     icon={userLocation ? HeartMinus : HeartPlus}
                                     onPress={createOrDeleteUserLocation}
                                     circular
                                 />
-                                <Button
-                                    size="$3"
-                                    variant="outlined"
-                                    icon={userLocation?.sentHarborNotifications ? BellOff : Bell}
-                                    onPress={updateUserLocationSentHarborNotifications}
-                                    circular
-                                />
+                                {userLocation &&(
+                                    <Button
+                                        size="$5"
+                                        variant="outlined"
+                                        icon={userLocation?.sentHarborNotifications ? BellOff : Bell}
+                                        onPress={updateUserLocationSentHarborNotifications}
+                                        circular
+                                    />
+                                )}
+                                </XStack>
                             </View>
                         </Stack>
                     </Stack>
@@ -529,6 +545,16 @@ export default function DashboardScreen() {
                                         >
                                             <Card.Header padded>
                                                 <YStack gap="$3" alignItems="center">
+                                                {userLocation &&(<SetNotificationMeasurementRuleDialog
+                                                    shouldAdapt={false}
+                                                    placement="right"
+                                                    Icon={Bell}
+                                                    Name={getTextFromMeasurementType(measurement.measurementType, t)}
+                                                    Value={measurement.value}
+                                                    MeasurementType={measurement.measurementType}
+                                                    marinaID={marinaID}
+                                                    userID={1}
+                                                />)}
                                                     <Stack
                                                         width={56}
                                                         height={56}
@@ -642,4 +668,118 @@ export default function DashboardScreen() {
             </YStack>
         </SafeAreaView>
     );
+}
+
+export function SetNotificationMeasurementRuleDialog({
+  Icon,
+  Name,
+  shouldAdapt,
+  userID,
+  marinaID,
+  Value,
+  MeasurementType,
+  ...props
+}: PopoverProps & { Icon?: any; Name?: string; shouldAdapt?: boolean; userID?: number | null; marinaID?: number | null; Value?: number; MeasurementType: string }) {
+    const notificationMeasurementRules = useNotificationMeasurementRules();
+    const [measurementValue, setMeasurementValue] = useState<number>(Value || 0);
+    const [operator, setOperator] = useState<string>('>');
+    const [isActive, setIsActive] = useState<boolean>(true);
+    const createNotificationMeasurementRule = useCallback(async () => {
+        if (!marinaID) return;
+        const existingRule = await notificationMeasurementRules.getNotificationMeasurementRule(
+            userID || 1,
+            marinaID,
+            getIDFromMeasurementType(MeasurementType)
+        );
+        const notificationMeasurementRule = {
+            userId: userID || 1,
+            locationId: marinaID,
+            measurementTypeId: getIDFromMeasurementType(MeasurementType),
+            operator: operator,
+            measurementValue: measurementValue,
+            isActive: isActive,
+        }
+        
+        if (existingRule) {
+            await notificationMeasurementRules.update(existingRule.id, notificationMeasurementRule);
+        } else {
+            await notificationMeasurementRules.create(notificationMeasurementRule);
+        }
+
+    }, [marinaID, operator, isActive]);
+    return (
+    <Popover size="$5" allowFlip stayInFrame offset={15} resize {...props}>
+      <Popover.Trigger asChild>
+        <Button icon={Icon} />
+      </Popover.Trigger>
+
+      {shouldAdapt && (
+        <Adapt platform="touch">
+          <Sheet animation="medium" modal dismissOnSnapToBottom>
+            <Sheet.Frame padding="$4">
+              <Adapt.Contents />
+            </Sheet.Frame>
+            <Sheet.Overlay
+              backgroundColor="$shadowColor"
+              animation="lazy"
+              enterStyle={{ opacity: 0 }}
+              exitStyle={{ opacity: 0 }}
+            />
+          </Sheet>
+        </Adapt>
+      )}
+
+      <Popover.Content
+        borderWidth={1}
+        borderColor="$borderColor"
+        width={300}
+        height={200}
+        enterStyle={{ y: -10, opacity: 0 }}
+        exitStyle={{ y: -10, opacity: 0 }}
+        elevate
+        animation={[
+          'quick',
+          {
+            opacity: {
+              overshootClamping: true,
+            },
+          },
+        ]}
+      >
+        <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
+
+        <YStack gap="$3">
+          <XStack gap="$3">
+            <Label size="$3" htmlFor={Name}>
+              {Name}
+            </Label>
+            <Input f={1} size="$3" id={Name} inputMode="decimal" value={measurementValue.toString()} onChangeText={(text) => setMeasurementValue(Number(text))} />
+            
+          </XStack>
+
+            <XStack gap="$3">
+            <Label size="$3" htmlFor={"operator"}>
+              {"Operator"}
+            </Label>
+            <Input f={1} size="$3" id={"operator"} value={operator} onChangeText={setOperator} />
+            
+          </XStack>
+
+          <Popover.Close asChild>
+            <Button
+              size="$3"
+              onPress={() => {
+                if (!marinaID) {
+                  return;
+                }
+                createNotificationMeasurementRule();
+              }}
+            >
+              Submit
+            </Button>
+          </Popover.Close>
+        </YStack>
+      </Popover.Content>
+    </Popover>
+  )
 }

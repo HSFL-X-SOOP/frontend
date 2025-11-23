@@ -5,6 +5,7 @@ import {
     NotificationMeasurementRule,
 } from "@/api/models/notificationMeasurementRule";
 import { useHttpClient } from "@/api/client.ts";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 export function useNotificationMeasurementRuleStore() {
     const httpClient = useHttpClient();
@@ -15,6 +16,9 @@ export function useNotificationMeasurementRuleStore() {
 
         getAllNotificationMeasurementRulesByUserId: (userId: number) =>
             httpClient.get<NotificationMeasurementRule[]>(`/notification-measurement-rules/user/${userId}`).then(r => r.data),
+
+        getNotificationMeasurementRule: (userId: number, locationId: number, measurementTypeId: number) =>
+            httpClient.get<NotificationMeasurementRule | null>(`/notification-measurement-rules/user/${userId}/location/${locationId}/measurementTypeId/${measurementTypeId}`).then(r => r.data),
 
         createNotificationMeasurementRule: (body: CreateOrUpdateNotificationMeasurementRuleRequest) =>
             httpClient.post<CreateOrUpdateNotificationMeasurementRuleResponse>("/notification-measurement-rules", body).then(r => r.data),

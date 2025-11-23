@@ -15,6 +15,9 @@ export const useNotificationMeasurementRules = () => {
     const [getAllNotificationMeasurementRulesByUserId, getAllNotificationMeasurementRulesByUserIdStatus] =
         AsyncHandler.useAsync<[number], NotificationMeasurementRule[]>(notificationMeasurementRuleStore.getAllNotificationMeasurementRulesByUserId);
 
+    const [getNotificationMeasurementRule, getNotificationMeasurementRuleStatus] =
+        AsyncHandler.useAsync<[number, number, number], NotificationMeasurementRule | null>(notificationMeasurementRuleStore.getNotificationMeasurementRule);
+
     const [create, createStatus] =
         AsyncHandler.useAsync<[CreateOrUpdateNotificationMeasurementRuleRequest], CreateOrUpdateNotificationMeasurementRuleResponse>(notificationMeasurementRuleStore.createNotificationMeasurementRule);
 
@@ -29,6 +32,9 @@ export const useNotificationMeasurementRules = () => {
         getNotificationMeasurementRuleByIdStatus,
         getAllNotificationMeasurementRulesByUserId,
         getAllNotificationMeasurementRulesByUserIdStatus,
+
+        getNotificationMeasurementRule,
+        getNotificationMeasurementRuleStatus,
 
         create,
         createStatus,
