@@ -55,18 +55,7 @@ jobs:
       - name: Setup App Store Connect API Key
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
-
-          KEY_CONTENT=$(echo "${{ env.APP_STORE_CONNECT_API_KEY_CONTENT }}" | base64 --decode)
-          echo "$KEY_CONTENT" > ~/.appstoreconnect/private_keys/AuthKey_${{ env.APP_STORE_CONNECT_API_KEY_ID }}.p8
-
-          cat > ~/.appstoreconnect/api_key.json <<EOF
-          {
-            "key_id": "${{ env.APP_STORE_CONNECT_API_KEY_ID }}",
-            "issuer_id": "${{ env.APP_STORE_CONNECT_API_ISSUER_ID }}",
-            "key": $(echo "$KEY_CONTENT" | jq -Rs .),
-            "in_house": false
-          }
-          EOF
+          echo "${{ env.APP_STORE_CONNECT_API_KEY_CONTENT }}" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${{ env.APP_STORE_CONNECT_API_KEY_ID }}.p8
 
       - name: Install Fastlane dependencies
         working-directory: ios
@@ -95,4 +84,3 @@ jobs:
         if: always()
         run: |
           rm -f ~/.appstoreconnect/private_keys/AuthKey_${{ env.APP_STORE_CONNECT_API_KEY_ID }}.p8
-          rm -f ~/.appstoreconnect/api_key.json
