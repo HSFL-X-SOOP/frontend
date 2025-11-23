@@ -7,10 +7,18 @@ platform :ios do
 
     setup_ci if ENV['CI']
 
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"] || "~/.appstoreconnect/api_key.json",
+      in_house: false
+    )
+
     match(
       type: "appstore",
       readonly: is_ci,
-      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"]
+      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"],
+      api_key: api_key
     )
 
     cocoapods(
@@ -31,7 +39,8 @@ platform :ios do
       app_identifier: "com.marlin.live",
       ipa: "./build/Marlin.ipa",
       distribute_external: false,
-      groups: ["Internal Testers"]
+      groups: ["Main"],
+      api_key: api_key
     )
   end
 
@@ -41,10 +50,18 @@ platform :ios do
 
     setup_ci if ENV['CI']
 
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_filepath: ENV["APP_STORE_CONNECT_API_KEY_PATH"] || "~/.appstoreconnect/api_key.json",
+      in_house: false
+    )
+
     match(
       type: "appstore",
       readonly: is_ci,
-      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"]
+      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"],
+      api_key: api_key
     )
 
     cocoapods(
@@ -65,7 +82,8 @@ platform :ios do
       skip_metadata: false,
       skip_screenshots: false,
       app_identifier: "com.marlin.live",
-      ipa: "./build/Marlin.ipa"
+      ipa: "./build/Marlin.ipa",
+      api_key: api_key
     )
   end
 end
