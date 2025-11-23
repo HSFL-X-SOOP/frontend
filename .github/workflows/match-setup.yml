@@ -39,7 +39,8 @@ jobs:
           {
             "key_id": "${{ env.APP_STORE_CONNECT_API_KEY_ID }}",
             "issuer_id": "${{ env.APP_STORE_CONNECT_API_ISSUER_ID }}",
-            "key": $(echo "$KEY_CONTENT" | jq -Rs .)
+            "key": $(echo "$KEY_CONTENT" | jq -Rs .),
+            "in_house": false
           }
           EOF
 
