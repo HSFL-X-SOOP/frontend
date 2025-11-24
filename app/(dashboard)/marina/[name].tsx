@@ -35,7 +35,8 @@ import {
     HeartMinus,
     BellOff,
     Bell, 
-    BrickWallFire
+    BrickWallFire,
+    MessageSquarePlus
 } from '@tamagui/lucide-icons';
 import {LinearGradient} from 'expo-linear-gradient';
 import {useLocalSearchParams, useRouter} from 'expo-router';
@@ -68,6 +69,7 @@ import { UserLocation } from '@/api/models/userLocation';
 import { useNotificationMeasurementRules } from '@/hooks/useNotificationMeasurementRules';
 import { MeasurementType } from '@/api/models/notificationMeasurementRule';
 import { Popover } from 'tamagui';
+import { useNotificationLocations } from '@/hooks/useNotificationLocations';
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -432,6 +434,14 @@ export default function DashboardScreen() {
                                         circular
                                     />
                                 )}
+                                <HarborMasterBroadcastNotificationPopover
+                                    shouldAdapt={false}
+                                    placement="right"
+                                    Icon={MessageSquarePlus}
+                                    Name={"Harbor Master Notification"}
+                                    userID={1}
+                                    marinaID={marinaID}
+                                    />
                                 </XStack>
                             </View>
                         </Stack>
@@ -545,7 +555,7 @@ export default function DashboardScreen() {
                                         >
                                             <Card.Header padded>
                                                 <YStack gap="$3" alignItems="center">
-                                                {userLocation &&(<SetNotificationMeasurementRuleDialog
+                                                {userLocation &&(<SetNotificationMeasurementRulePopover
                                                     shouldAdapt={false}
                                                     placement="right"
                                                     Icon={Bell}
@@ -670,7 +680,7 @@ export default function DashboardScreen() {
     );
 }
 
-export function SetNotificationMeasurementRuleDialog({
+export function SetNotificationMeasurementRulePopover({
   Icon,
   Name,
   shouldAdapt,
@@ -776,6 +786,115 @@ export function SetNotificationMeasurementRuleDialog({
               }}
             >
               Submit
+            </Button>
+          </Popover.Close>
+        </YStack>
+      </Popover.Content>
+    </Popover>
+  )
+}
+
+export function HarborMasterBroadcastNotificationPopover({
+  Icon,
+  Name,
+  shouldAdapt,
+  userID,
+  marinaID,
+  ...props
+}: PopoverProps & { Icon?: any; Name?: string; shouldAdapt?: boolean; userID?: number | null; marinaID?: number | null}) {
+    const [notificationTitle, setNotificationTitle] = useState<string>('');
+    const [notificationMessage, setNotificationMessage] = useState<string>('');
+    const notificationLocations = useNotificationLocations();
+
+    const createNotificationLocation = useCallback(async () => {
+        if (!marinaID) return;
+
+        const notificationLocation = {
+            locationId: marinaID,
+            notificationTitle: notificationTitle,
+            notificationText: notificationMessage,
+            createdBy: userID || 1,
+        }
+        await notificationLocations.create(notificationLocation);
+    }, [marinaID, notificationTitle, notificationMessage, userID]);
+
+    return (
+    <Popover size="$5" allowFlip stayInFrame offset={15} resize {...props}>
+      <Popover.Trigger asChild>
+        <Button 
+            size="$5"
+            variant="outlined"
+            icon={Icon} 
+            circular
+            />
+      </Popover.Trigger>
+
+      {shouldAdapt && (
+        <Adapt platform="touch">
+          <Sheet animation="medium" modal dismissOnSnapToBottom>
+            <Sheet.Frame padding="$4">
+              <Adapt.Contents />
+            </Sheet.Frame>
+            <Sheet.Overlay
+              backgroundColor="$shadowColor"
+              animation="lazy"
+              enterStyle={{ opacity: 0 }}
+              exitStyle={{ opacity: 0 }}
+            />
+          </Sheet>
+        </Adapt>
+      )}
+
+      <Popover.Content
+        borderWidth={1}
+        borderColor="$borderColor"
+        width={300}
+        height={225}
+        enterStyle={{ y: -10, opacity: 0 }}
+        exitStyle={{ y: -10, opacity: 0 }}
+        elevate
+        animation={[
+          'quick',
+          {
+            opacity: {
+              overshootClamping: true,
+            },
+          },
+        ]}
+      >
+        <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
+
+        <YStack gap="$3">
+            <XStack>
+                <Text fontSize="$6" fontWeight="600">{Name}</Text>
+            </XStack>
+            <XStack gap="$3">
+                <Label size="$3" htmlFor={"Title"}>
+                {"Title"}
+                </Label>
+                <Input f={1} size="$3" id={"Title"} onChangeText={(text) => setNotificationTitle(text)} />
+                
+            </XStack>
+
+            <XStack gap="$3">
+                <Label size="$3" htmlFor={"Message"}>
+                {"Message"}
+                </Label>
+                <Input f={1} size="$3" id={"Message"} onChangeText={(text) => setNotificationMessage(text)} />
+            </XStack>
+
+
+          <Popover.Close asChild>
+            <Button
+              size="$3"
+              onPress={() => {
+                if (!marinaID) {
+                  return;
+                }
+                createNotificationLocation();
+              }}
+            >
+              An alle Subscriber senden
             </Button>
           </Popover.Close>
         </YStack>
