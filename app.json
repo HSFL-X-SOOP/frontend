@@ -10,7 +10,11 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.marlin.live"
+      "bundleIdentifier": "com.marlin.live",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app uses a mapping library that may access location services. Your location is not currently being collected or tracked.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app uses a mapping library that may access location services. Your location is not currently being collected or tracked."
+      }
     },
     "android": {
       "adaptiveIcon": {
