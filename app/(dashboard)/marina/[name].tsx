@@ -70,6 +70,8 @@ import { useNotificationMeasurementRules } from '@/hooks/useNotificationMeasurem
 import { MeasurementType } from '@/api/models/notificationMeasurementRule';
 import { Popover } from 'tamagui';
 import { useNotificationLocations } from '@/hooks/useNotificationLocations';
+import { useSession } from '@/context/SessionContext';
+import { AuthorityRole } from '@/api/models/profile';
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -97,6 +99,19 @@ export default function DashboardScreen() {
     const {isDark} = useThemeContext();
     let {name} = useLocalSearchParams();
     const userLocations = useUserLocations();
+    const session = useSession();
+
+    const [userID, setUserID] = useState<number>(-1);
+    const [isHarborMaster, setIsHarborMaster] = useState(false);
+    useEffect(() => {
+        if (session?.session?.profile?.id) {
+            setUserID(session.session.profile.id);
+            console.log("User Role:", session.session.role);
+            if (session.session.role === AuthorityRole.USER) {
+                setIsHarborMaster(true);
+            }
+        }
+    }, [session?.session?.profile?.id]);
 
     if (!name) {
         name = 'Stadthafen Flensburg "Im Jaich"';
@@ -241,7 +256,7 @@ export default function DashboardScreen() {
         if (!marinaID) return;
         const fetchUserLocation = async () => {
             try {
-                const ul = await userLocations.getUserLocationByUserIdAndLocationId(1, marinaID);
+                const ul = await userLocations.getUserLocationByUserIdAndLocationId(userID, marinaID);
                 setUserLocation(ul);
             } catch (e) {
                 console.warn('fetchUserLocation failed', e);
@@ -348,7 +363,7 @@ export default function DashboardScreen() {
             setUserLocation(undefined);
         } else {
             const createdUserLocation = await userLocations.create({
-                userId: 1,
+                userId: userID,
                 locationId: marinaID,
                 sentHarborNotifications: false,
             });
@@ -361,12 +376,12 @@ export default function DashboardScreen() {
         if (!marinaID || !userLocation) return;
         
         const updatedUserocation = await userLocations.update(userLocation.id, {
-            userId: 1,
+            userId: userID,
             locationId: marinaID,
             sentHarborNotifications: !userLocation.sentHarborNotifications,
         });
         setUserLocation(updatedUserocation);
-    }, [userLocation, userLocations, marinaID]);
+    }, [userLocation, userLocations, marinaID, userID]);
 
 
     // ----------------------------------------------------------------------------
@@ -434,14 +449,15 @@ export default function DashboardScreen() {
                                         circular
                                     />
                                 )}
+                                {isHarborMaster && (
                                 <HarborMasterBroadcastNotificationPopover
                                     shouldAdapt={false}
                                     placement="right"
                                     Icon={MessageSquarePlus}
                                     Name={"Harbor Master Notification"}
-                                    userID={1}
+                                    userID={userID}
                                     marinaID={marinaID}
-                                    />
+                                    />)}
                                 </XStack>
                             </View>
                         </Stack>
@@ -563,7 +579,7 @@ export default function DashboardScreen() {
                                                     Value={measurement.value}
                                                     MeasurementType={measurement.measurementType}
                                                     marinaID={marinaID}
-                                                    userID={1}
+                                                    userID={userID}
                                                 />)}
                                                     <Stack
                                                         width={56}
@@ -697,12 +713,12 @@ export function SetNotificationMeasurementRulePopover({
     const createNotificationMeasurementRule = useCallback(async () => {
         if (!marinaID) return;
         const existingRule = await notificationMeasurementRules.getNotificationMeasurementRule(
-            userID || 1,
+            userID || -1,
             marinaID,
             getIDFromMeasurementType(MeasurementType)
         );
         const notificationMeasurementRule = {
-            userId: userID || 1,
+            userId: userID || -1,
             locationId: marinaID,
             measurementTypeId: getIDFromMeasurementType(MeasurementType),
             operator: operator,
@@ -813,7 +829,7 @@ export function HarborMasterBroadcastNotificationPopover({
             locationId: marinaID,
             notificationTitle: notificationTitle,
             notificationText: notificationMessage,
-            createdBy: userID || 1,
+            createdBy: userID || -1,
         }
         await notificationLocations.create(notificationLocation);
     }, [marinaID, notificationTitle, notificationMessage, userID]);
