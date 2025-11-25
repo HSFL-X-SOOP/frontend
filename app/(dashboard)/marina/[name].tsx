@@ -449,7 +449,7 @@ export default function DashboardScreen() {
                                         circular
                                     />
                                 )}
-                                {isHarborMaster && (
+                                {true && (
                                 <HarborMasterBroadcastNotificationPopover
                                     shouldAdapt={false}
                                     placement="right"

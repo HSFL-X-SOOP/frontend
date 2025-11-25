@@ -33,26 +33,6 @@ export default function LoginScreen() {
     const {login: logUserIn, session} = useSession();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
     const userDeviceStore = useUserDeviceStore();
-    var token = '';
-
-    useEffect(() => {
-        async function initializeFirebase() {
-            userDeviceStore.registerUserDevice({fcmToken: "asajsdajs", userId: 2});
-            if (Platform.OS !== 'web') {
-                if (Platform.OS === 'android') {
-                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-                }
-                
-                try {
-                    token = await messagingModule().getToken();
-                    console.log('🔥 FCM Token:', token);
-                } catch (error) {
-                    console.log('Error getting FCM token:', error);
-                }
-            }
-        }
-        initializeFirebase();
-    }, []);
 
     useEffect(() => {
         if (session) {
@@ -60,6 +40,27 @@ export default function LoginScreen() {
             router.push("/");
         }
     }, [session, router]);
+
+    const handleRegisterUserDevice = async (userId: number) => {
+        const result = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+
+        if (result === PermissionsAndroid.RESULTS.GRANTED) {
+            if (Platform.OS !== 'web') {
+                if (Platform.OS === 'android') {
+                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+                }
+                
+                try {
+                    let token = await messagingModule().getToken();
+                    userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+                } catch (error) {
+                    console.log('Error getting FCM token:', error);
+                }
+            }
+        }
+    }
 
     const handleSubmit = async () => {
         logger.info('Login attempt', {email, rememberMe});
@@ -78,6 +79,7 @@ export default function LoginScreen() {
                 message: t('auth.welcomeBack'),
                 duration: 3000
             });
+            handleRegisterUserDevice(res.profile?.id || 0);
             router.push("/map");
         } else {
             logger.error('Login failed', loginStatus.error);
