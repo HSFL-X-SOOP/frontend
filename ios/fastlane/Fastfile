@@ -39,7 +39,6 @@ platform :ios do
 
     pilot(
       skip_waiting_for_build_processing: true,
-      apple_id: ENV["APPLE_ID"],
       app_identifier: "com.marlin.live",
       ipa: "./build/Marlin.ipa",
       distribute_external: false,
