@@ -30,7 +30,9 @@ platform :ios do
       workspace: "Marlin.xcworkspace",
       export_method: "app-store",
       output_directory: "./build",
-      output_name: "Marlin.ipa"
+      output_name: "Marlin.ipa",
+      verbose: true,
+      xcargs: "-verbose"
     )
 
     pilot(
