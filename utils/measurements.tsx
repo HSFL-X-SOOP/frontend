@@ -2,6 +2,7 @@ import { Box } from "@/api/models/sensor";
 import { LatestMeasurement, MeasurementDictionary } from "@/types/measurement";
 import { Activity, Battery, HelpCircle, Thermometer, Waves } from "@tamagui/lucide-icons";
 import { formatTimeToLocal } from "@/utils/time";
+import { MeasurementType } from "@/api/models/notificationMeasurementRule";
 
 export const GetLatestMeasurements = (boxes: Box[]): LatestMeasurement[] => {
     const measurements: LatestMeasurement[] = [];
@@ -170,6 +171,22 @@ export const getTextFromMeasurementType = (measurementType: string, t: any): str
             return t('dashboard.measurements.batteryVoltage');
         default:
             return measurementType;
+    }
+};
+
+export const getIDFromMeasurementType = (measurementType: string): number => {
+    switch (measurementType) {
+        case "Wave Height":
+            return MeasurementType.WaveHeight;
+        case "Temperature, water":
+        case "WTemp":
+            return MeasurementType.WaterTemperature;
+        case "Tide":
+            return MeasurementType.Tide;
+        case "Battery, voltage":
+            return MeasurementType.BatteryVoltage;
+        default:
+            return 0;
     }
 };
 

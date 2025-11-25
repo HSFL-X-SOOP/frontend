@@ -12,6 +12,17 @@ export interface LoginResponse {
     profile: UserProfile | null;
 }
 
+export interface RegisterUserDeviceRequest {
+    fcmToken: string;
+    userId: number;
+}
+
+export interface RegisterUserDeviceResponse {
+    id: number;
+    fcmToken: string;
+    userId: number;
+}
+
 export interface MagicLinkLoginRequest {
     token: string;
 }
