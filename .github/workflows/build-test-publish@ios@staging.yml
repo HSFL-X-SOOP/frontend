@@ -75,6 +75,29 @@ jobs:
           FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
         run: bundle exec fastlane testflight_internal
 
+      - name: Display full build log on failure
+        if: failure()
+        run: |
+          echo "=== Searching for build logs ==="
+          find ~/Library/Logs/gym -name "*.log" 2>/dev/null || echo "No gym logs found"
+          if [ -f ~/Library/Logs/gym/Marlin-Marlin.log ]; then
+            echo "=== Full build log (last 500 lines) ==="
+            tail -n 500 ~/Library/Logs/gym/Marlin-Marlin.log
+          else
+            echo "Build log not found at expected location"
+          fi
+
+      - name: Upload build logs on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: ios-build-logs-failure
+          path: |
+            ~/Library/Logs/gym/*.log
+            ios/build/logs/*.log
+          retention-days: 7
+          if-no-files-found: warn
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         if: always()

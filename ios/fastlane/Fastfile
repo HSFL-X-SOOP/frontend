@@ -32,7 +32,9 @@ platform :ios do
       output_directory: "./build",
       output_name: "Marlin.ipa",
       verbose: true,
-      xcargs: "-verbose"
+      suppress_xcode_output: false,
+      xcargs: "-verbose",
+      buildlog_path: "./build/logs"
     )
 
     pilot(
