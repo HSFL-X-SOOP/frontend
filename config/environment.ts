@@ -14,11 +14,11 @@ const ENV_CONFIG: Record<AppMode, { apiUrl: string; googleWebClientId: string }>
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
   },
   test: {
-    apiUrl: 'https://test.marlin-live.com/api',
+    apiUrl: 'http://localhost:8080',
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
   },
   prod: {
-    apiUrl: 'https://marlin-live.com/api',
+    apiUrl: 'http://localhost:8080',
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
   },
 };
