@@ -283,6 +283,7 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				CODE_SIGN_ENTITLEMENTS = Marlin/Marlin.entitlements;
+				DEVELOPMENT_TEAM = "$(APPLE_TEAM_ID)";
 			};
 			name = Debug;
 		};
@@ -311,6 +312,7 @@
 				VERSIONING_SYSTEM = "apple-generic";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				CODE_SIGN_ENTITLEMENTS = Marlin/Marlin.entitlements;
+				DEVELOPMENT_TEAM = "$(APPLE_TEAM_ID)";
 			};
 			name = Release;
 		};
