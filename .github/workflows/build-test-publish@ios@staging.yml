@@ -15,7 +15,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: macos-14
+    runs-on: macos-latest
 
     env:
       APPLE_ID: ${{ secrets.APPLE_ID }}

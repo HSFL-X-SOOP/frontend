@@ -64,5 +64,13 @@ target 'Marlin' do
         end
       end
     end
+
+    # --- WORKAROUND: fix React jsitooling modulemap conflict on Xcode 16 ---
+    jsitooling_public_modulemap = "#{installer.sandbox.root}/Headers/Public/react_runtime/React-jsitooling.modulemap"
+
+    if File.exist?(jsitooling_public_modulemap)
+      puts "Removing duplicate React-jsitooling.modulemap to avoid react_runtime redefinition"
+      File.delete(jsitooling_public_modulemap)
+    end
   end
 end
