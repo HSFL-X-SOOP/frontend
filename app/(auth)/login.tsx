@@ -2,7 +2,7 @@ import {useSession} from '@/context/SessionContext';
 import {useAuth} from '@/hooks/useAuth';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
-import {SafeAreaView} from 'react-native';
+import {Platform, SafeAreaView} from 'react-native';
 import {Lock} from '@tamagui/lucide-icons';
 import {Button, Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {useTranslation} from '@/hooks/useTranslation';
@@ -13,7 +13,11 @@ import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
 import {createLogger} from '@/utils/logger';
-
+import {AuthorityRole} from '@/api/models/profile';
+import {useIsMobile} from '@/hooks/useIsMobileWeb';
+import messagingModule from '@react-native-firebase/messaging';
+import { PermissionsAndroid } from 'react-native';
+import { useUserDeviceStore } from '@/api/stores/userDevice';
 const logger = createLogger('Auth:Login');
 
 export default function LoginScreen() {
@@ -23,10 +27,12 @@ export default function LoginScreen() {
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const toast = useToast();
+    const isMobile = useIsMobile();
 
     const {login, loginStatus} = useAuth();
     const {login: logUserIn, session} = useSession();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
+    const userDeviceStore = useUserDeviceStore();
 
     useEffect(() => {
         if (session) {
@@ -35,22 +41,45 @@ export default function LoginScreen() {
         }
     }, [session, router]);
 
+    const handleRegisterUserDevice = async (userId: number) => {
+        const result = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+
+        if (result === PermissionsAndroid.RESULTS.GRANTED) {
+            if (Platform.OS !== 'web') {
+                if (Platform.OS === 'android') {
+                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+                }
+                
+                try {
+                    let token = await messagingModule().getToken();
+                    userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+                } catch (error) {
+                    console.log('Error getting FCM token:', error);
+                }
+            }
+        }
+    }
+
     const handleSubmit = async () => {
         logger.info('Login attempt', {email, rememberMe});
         const res = await login({email, password, rememberMe});
         if (res) {
-            logger.info('Login successful');
+            console.log('Login successful', res);
             logUserIn({
                 accessToken: res.accessToken,
                 refreshToken: res.refreshToken,
                 loggedInSince: new Date(),
                 lastTokenRefresh: null,
+                role: res.profile?.authorityRole ?? AuthorityRole.USER,
                 profile: res.profile
             });
             toast.success(t('auth.loginSuccess'), {
                 message: t('auth.welcomeBack'),
                 duration: 3000
             });
+            handleRegisterUserDevice(res.profile?.id || 0);
             router.push("/map");
         } else {
             logger.error('Login failed', loginStatus.error);
@@ -67,7 +96,7 @@ export default function LoginScreen() {
                 flexGrow: 1,
                 justifyContent: 'center',
                 alignItems: 'center',
-                padding: 16
+                padding: 8
             }}>
                 <AuthCard
                     title={t('auth.signIn')}
@@ -96,38 +125,63 @@ export default function LoginScreen() {
                             />
                         </YStack>
 
-                        {loginStatus.error && (
-                            <Text color="$red10" fontSize="$3" textAlign="center">
-                                {loginStatus.error.message}
-                            </Text>
-                        )}
-
-                        <XStack justifyContent="space-between" alignItems="center" width="100%">
-                            <XStack gap="$2" alignItems="center" pressStyle={{opacity: 0.7}}
-                                    onPress={() => setRememberMe(!rememberMe)}>
-                                <Checkbox
-                                    id="remember-me"
-                                    checked={rememberMe}
-                                    onCheckedChange={(checked) => setRememberMe(checked === true)}
-                                    size="$4"
-                                    borderWidth={2}
-                                    borderColor={rememberMe ? "$accent7" : "$borderColor"}
-                                    backgroundColor={rememberMe ? "$accent7" : "transparent"}
-                                >
-                                    <Checkbox.Indicator>
-                                        <View width="100%" height="100%" alignItems="center" justifyContent="center">
-                                            <Text color="white" fontWeight="bold">✓</Text>
-                                        </View>
-                                    </Checkbox.Indicator>
-                                </Checkbox>
-                                <Text fontSize={14} color="$color">{t('auth.rememberMe')}</Text>
+                        {isMobile ? (
+                            // Vertical layout for mobile devices
+                            <YStack gap="$3" width="100%" alignItems="flex-start">
+                                <XStack gap="$2" alignItems="center" pressStyle={{opacity: 0.7}}
+                                        onPress={() => setRememberMe(!rememberMe)}>
+                                    <Checkbox
+                                        id="remember-me"
+                                        checked={rememberMe}
+                                        onCheckedChange={(checked) => setRememberMe(checked === true)}
+                                        size="$4"
+                                        borderWidth={2}
+                                        borderColor={rememberMe ? "$accent7" : "$borderColor"}
+                                        backgroundColor={rememberMe ? "$accent7" : "transparent"}
+                                    >
+                                        <Checkbox.Indicator>
+                                            <View width="100%" height="100%" alignItems="center" justifyContent="center">
+                                                <Text color="white" fontWeight="bold">✓</Text>
+                                            </View>
+                                        </Checkbox.Indicator>
+                                    </Checkbox>
+                                    <Text fontSize={14} color="$color">{t('auth.rememberMe')}</Text>
+                                </XStack>
+                                <Link href={"/(auth)/magic-link" as Href}>
+                                    <Text color="$accent7" fontSize={14} textDecorationLine="underline">
+                                        {t('auth.forgotPassword')}
+                                    </Text>
+                                </Link>
+                            </YStack>
+                        ) : (
+                            // Horizontal layout for larger screens
+                            <XStack justifyContent="space-between" alignItems="center" width="100%" flexWrap="wrap" gap="$2">
+                                <XStack gap="$2" alignItems="center" pressStyle={{opacity: 0.7}}
+                                        onPress={() => setRememberMe(!rememberMe)} flexShrink={1}>
+                                    <Checkbox
+                                        id="remember-me"
+                                        checked={rememberMe}
+                                        onCheckedChange={(checked) => setRememberMe(checked === true)}
+                                        size="$4"
+                                        borderWidth={2}
+                                        borderColor={rememberMe ? "$accent7" : "$borderColor"}
+                                        backgroundColor={rememberMe ? "$accent7" : "transparent"}
+                                    >
+                                        <Checkbox.Indicator>
+                                            <View width="100%" height="100%" alignItems="center" justifyContent="center">
+                                                <Text color="white" fontWeight="bold">✓</Text>
+                                            </View>
+                                        </Checkbox.Indicator>
+                                    </Checkbox>
+                                    <Text fontSize={14} color="$color" numberOfLines={1}>{t('auth.rememberMe')}</Text>
+                                </XStack>
+                                <Link href={"/(auth)/magic-link" as Href}>
+                                    <Text color="$accent7" fontSize={14} textDecorationLine="underline" numberOfLines={1}>
+                                        {t('auth.forgotPassword')}
+                                    </Text>
+                                </Link>
                             </XStack>
-                            <Link href={"/(auth)/magic-link" as Href}>
-                                <Text color="$accent7" fontSize={14} textDecorationLine="underline">
-                                    {t('auth.forgotPassword')}
-                                </Text>
-                            </Link>
-                        </XStack>
+                        )}
 
                         <Button
                             backgroundColor="$accent7"
@@ -137,7 +191,7 @@ export default function LoginScreen() {
                             disabled={loginStatus.loading}
                             opacity={loginStatus.loading ? 0.6 : 1}
                             borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent8"}}
+                            hoverStyle={{backgroundColor: "$accent4"}}
                             pressStyle={{backgroundColor: "$accent6"}}
                         >
                             {loginStatus.loading ? (
@@ -208,6 +262,7 @@ export default function LoginScreen() {
                             </XStack>
                         </Button>
                     </YStack>
+                    
 
                     <YStack alignItems="center">
                         <Text fontSize={14} color="$color">

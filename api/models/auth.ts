@@ -1,4 +1,4 @@
-import { UserProfile } from './profile';
+import {UserProfile} from './profile';
 
 export interface LoginRequest {
     email: string;
@@ -10,6 +10,17 @@ export interface LoginResponse {
     accessToken: string;
     refreshToken: string | null;
     profile: UserProfile | null;
+}
+
+export interface RegisterUserDeviceRequest {
+    fcmToken: string;
+    userId: number;
+}
+
+export interface RegisterUserDeviceResponse {
+    id: number;
+    fcmToken: string;
+    userId: number;
 }
 
 export interface MagicLinkLoginRequest {

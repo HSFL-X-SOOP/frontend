@@ -1,5 +1,5 @@
 import {LanguageSelector} from '@/components/common/LanguageSelector';
-import {CloudIcon, LOGO, MapIcon, MoonFilledIcon, SunFilledIcon} from '@/components/ui/Icons';
+import {CloudIcon, LOGO, BadgeIcon, MapIcon, MoonFilledIcon, SunFilledIcon} from '@/components/ui/Icons';
 import {useSession} from '@/context/SessionContext';
 import {useThemeContext} from '@/context/ThemeSwitch.tsx';
 import {useTranslation} from '@/hooks/useTranslation';
@@ -145,7 +145,7 @@ export function TabBarNative() {
                                     </XStack>
                                 </Link>
 
-                                <Link href={"/dashboard/5" as Href} onPress={closeMenu} asChild>
+                                <Link href={'/marina/Stadthafen Flensburg "Im Jaich"' as Href} onPress={closeMenu} asChild>
                                     <XStack
                                         alignItems="center"
                                         gap="$3"
@@ -210,7 +210,7 @@ export function TabBarNative() {
                                             chromeless
                                             onPress={() => navigateAndClose('/(about)/sensors')}
                                         >
-                                            <LOGO color={t.accent12?.val} size={30}/>
+                                            <BadgeIcon color={t.accent12?.val} size={30}/>
                                         </Button>
                                         <Text
                                             fontSize="$4"

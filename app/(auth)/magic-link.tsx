@@ -1,10 +1,11 @@
 import {Link, useRouter, useLocalSearchParams, Href} from 'expo-router';
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import {SafeAreaView} from 'react-native';
 import {Button, Text, YStack, XStack, Spinner, ScrollView} from 'tamagui';
 import {Sparkles, CheckCircle, AlertCircle} from '@tamagui/lucide-icons';
 import {useAuth} from '@/hooks/useAuth';
 import {useSession} from '@/context/SessionContext';
+import {AuthorityRole} from '@/api/models/profile';
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {useTranslation} from '@/hooks/useTranslation';
@@ -22,6 +23,7 @@ export default function MagicLinkScreen() {
     const {login: logUserIn} = useSession();
     const {t} = useTranslation();
     const toast = useToast();
+    const loginAttemptedRef = useRef(false);
 
     const hasErrors = () => {
         return email.length > 0 && !email.includes('@');
@@ -47,33 +49,38 @@ export default function MagicLinkScreen() {
     };
 
     useEffect(() => {
-        if (token) {
-            logger.info('Processing magic link token');
-            (async () => {
-                const result = await magicLinkLogin({token});
-                if (result) {
-                    logger.info('Magic link login successful');
-                    logUserIn({
-                        accessToken: result.accessToken,
-                        refreshToken: result.refreshToken,
-                        loggedInSince: new Date(),
-                        lastTokenRefresh: null,
-                        profile: result.profile
-                    });
-                    toast.success(t('auth.magicLink.loginSuccess'), {
-                        message: t('auth.welcomeBack'),
-                        duration: 3000
-                    });
-                    router.replace("/map");
-                } else {
-                    logger.error('Magic link login failed', magicLinkLoginStatus.error);
-                    toast.error(t('auth.magicLink.loginError'), {
-                        message: magicLinkLoginStatus.error?.message || t('auth.magicLink.invalidOrExpired'),
-                        duration: 5000
-                    });
-                }
-            })();
+        if (!token || loginAttemptedRef.current) {
+            return;
         }
+
+        loginAttemptedRef.current = true;
+        logger.info('Processing magic link token');
+
+        (async () => {
+            const result = await magicLinkLogin({token});
+            if (result) {
+                logger.info('Magic link login successful');
+                logUserIn({
+                    accessToken: result.accessToken,
+                    refreshToken: result.refreshToken,
+                    loggedInSince: new Date(),
+                    lastTokenRefresh: null,
+                    role: result.profile?.authorityRole ?? AuthorityRole.USER,
+                    profile: result.profile
+                });
+                toast.success(t('auth.magicLink.loginSuccess'), {
+                    message: t('auth.welcomeBack'),
+                    duration: 3000
+                });
+                router.replace("/map");
+            } else {
+                logger.error('Magic link login failed', magicLinkLoginStatus.error);
+                toast.error(t('auth.magicLink.loginError'), {
+                    message: magicLinkLoginStatus.error?.message || t('auth.magicLink.invalidOrExpired'),
+                    duration: 5000
+                });
+            }
+        })();
     }, [token]);
 
     if (token && magicLinkLoginStatus.loading) {
@@ -154,7 +161,7 @@ export default function MagicLinkScreen() {
                             size="$4"
                             onPress={handleSendMagicLink}
                             borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent8"}}
+                            hoverStyle={{backgroundColor: "$accent4"}}
                             pressStyle={{backgroundColor: "$accent6"}}
                             disabled={!email || hasErrors() || requestMagicLinkStatus.loading}
                             opacity={!email || hasErrors() || requestMagicLinkStatus.loading ? 0.6 : 1}

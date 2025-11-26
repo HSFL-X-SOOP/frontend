@@ -9,7 +9,7 @@ export default function APIScreen() {
 
     return (
         <SafeAreaView style={{flex: 1}}>
-            <YStack flex={1} backgroundColor="$content3">
+            <YStack flex={1} backgroundColor="$content1">
                 <ScrollView
                     showsVerticalScrollIndicator={false}
                     contentInsetAdjustmentBehavior="automatic"
@@ -62,7 +62,7 @@ export default function APIScreen() {
                             </H2>
 
                             <YStack gap="$4">
-                                <Card padding="$5" backgroundColor="$content1" borderRadius="$6" borderWidth={1}
+                                <Card padding="$5" backgroundColor="$content2" borderRadius="$6" borderWidth={1}
                                       borderColor="$borderColor">
                                     <XStack alignItems="flex-start" gap="$4">
                                         <View
@@ -96,7 +96,7 @@ export default function APIScreen() {
                                     </XStack>
                                 </Card>
 
-                                <Card padding="$5" backgroundColor="$content1" borderRadius="$6" borderWidth={1}
+                                <Card padding="$5" backgroundColor="$content2" borderRadius="$6" borderWidth={1}
                                       borderColor="$borderColor">
                                     <XStack alignItems="flex-start" gap="$4">
                                         <View
@@ -119,7 +119,7 @@ export default function APIScreen() {
                                     </XStack>
                                 </Card>
 
-                                <Card padding="$5" backgroundColor="$content1" borderRadius="$6" borderWidth={1}
+                                <Card padding="$5" backgroundColor="$content2" borderRadius="$6" borderWidth={1}
                                       borderColor="$borderColor">
                                     <XStack alignItems="flex-start" gap="$4">
                                         <View
@@ -146,7 +146,7 @@ export default function APIScreen() {
                                                 paddingVertical="$3"
                                                 marginTop="$2"
                                                 alignSelf="flex-start"
-                                                hoverStyle={{backgroundColor: "$accent8"}}
+                                                hoverStyle={{backgroundColor: "$accent4"}}
                                                 onPress={() => Linking.openURL('https://www.marlin-live.com/api/')}
                                             >
                                                 <XStack alignItems="center" gap="$2">
@@ -163,7 +163,7 @@ export default function APIScreen() {
 
                         <Card
                             padding="$6"
-                            backgroundColor="$content1"
+                            backgroundColor="$content2"
                             borderRadius="$6"
                             borderWidth={1}
                             borderColor="$borderColor"
@@ -180,7 +180,7 @@ export default function APIScreen() {
                                 <Link href={"/(other)/prices" as Href}>
                                     <Button backgroundColor="$accent7" color="white" borderRadius="$6"
                                             paddingHorizontal="$6" paddingVertical="$4"
-                                            hoverStyle={{backgroundColor: "$accent8"}}>
+                                            hoverStyle={{backgroundColor: "$accent4"}}>
                                         <Text color="white" fontWeight="600" fontSize={16}>{t('api.viewPricing')}</Text>
                                     </Button>
                                 </Link>

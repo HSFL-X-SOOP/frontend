@@ -1,61 +1,8 @@
 import {useState, useEffect} from 'react';
-import {SensorModule, LocationWithBoxes} from '@/api/models/sensor';
+import {LocationWithBoxes} from '@/api/models/sensor';
 import {useSensorStore} from '@/api/stores/sensors';
 import {useToast} from '@/components/useToast';
 
-/**
- * Hook to fetch sensor data (old API format)
- */
-export function useSensorData() {
-    const [data, setData] = useState<SensorModule[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const sensorStore = useSensorStore();
-    const toast = useToast();
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const result = await sensorStore.getSensorData();
-                setData(result);
-                setError(null);
-            } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : 'Failed to fetch sensor data';
-                setError(errorMessage);
-                setData([]);
-                toast.error('Sensor Data Error', {
-                    message: errorMessage,
-                    duration: 5000
-                });
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, []);
-
-    const refetch = async () => {
-        try {
-            setLoading(true);
-            const result = await sensorStore.getSensorData();
-            setData(result);
-            setError(null);
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch sensor data';
-            setError(errorMessage);
-            toast.error('Sensor Data Error', {
-                message: errorMessage,
-                duration: 5000
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return {data, loading, error, refetch};
-}
 
 /**
  * Hook to fetch sensor data with location boxes (new API format)

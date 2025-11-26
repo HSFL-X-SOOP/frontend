@@ -97,7 +97,7 @@ export type Box =
 };
 
 export interface LocationWithBoxes {
-    location: Location;
+    location?: Location;
     boxes: Box[];
 }
 

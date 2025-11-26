@@ -1,7 +1,7 @@
 import {BoxType, LocationWithBoxes} from '@/api/models/sensor';
 import {useTranslation} from '@/hooks/useTranslation';
 import {formatTimeToLocal} from '@/utils/time';
-import {Activity, MapPin, Thermometer, Waves, Wind} from '@tamagui/lucide-icons';
+import {Activity, MapPin, Thermometer, Wind} from '@tamagui/lucide-icons';
 import {Card, H4, Text, XStack, YStack} from 'tamagui';
 
 interface SensorListItemProps {
@@ -73,13 +73,12 @@ export default function SensorListItem({
 
     return (
         <Card
-            elevate
             bordered
             padding="$3"
             marginHorizontal="$3"
             marginVertical="$2"
             height={210}
-            backgroundColor={isHighlighted ? '$accent2' : '$background'}
+            backgroundColor={isHighlighted ? '$accent2' : '$content1'}
             borderColor={isHighlighted ? '$accent8' : '$borderColor'}
             borderWidth={isHighlighted ? 2 : 1}
             onPress={onPress}
