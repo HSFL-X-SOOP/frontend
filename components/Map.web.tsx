@@ -4,7 +4,7 @@ import type {MapRef} from '@vis.gl/react-maplibre';
 import {LngLatBoundsLike, Map} from '@vis.gl/react-maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import * as React from 'react';
-import {useMemo, useState, useRef} from 'react';
+import {useMemo, useState, useRef, useEffect} from 'react';
 import {View} from 'react-native';
 import ClusterMarker from './map/markers/web/ClusterMarker';
 import SensorMarker from './map/markers/web/SensorMarker';
@@ -17,6 +17,11 @@ import {SpeedDial} from '@/components/speeddial';
 import {Plus, Home, Navigation, ZoomIn, ZoomOut, List, Filter} from '@tamagui/lucide-icons';
 import MapFilterButton from './map/controls/MapFilterButton';
 import {useTranslation} from '@/hooks/useTranslation';
+import * as Location from 'expo-location';
+import {Marker} from "@vis.gl/react-maplibre";
+import { YStack, Text } from 'tamagui';
+import GPSMarker from './map/markers/GPSMarker';
+import GpsPin from './map/markers/GPSMarker';
 
 interface MapProps {
     module1Visible?: boolean;
@@ -166,6 +171,23 @@ export default function WebMap(props: MapProps) {
         });
     }, [clusters, getClusterExpansionZoom, highlightedSensorId]);
 
+    const [location, setLocation] = useState<Location.LocationObject | null>(null);
+    const [errorMsg, setErrorMsg] = useState("");
+
+    useEffect(() => {
+        (async () => {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            setErrorMsg('Permission denied');
+            return;
+        }
+
+        let currentLocation = await Location.getCurrentPositionAsync({});
+        setLocation(currentLocation);
+        console.log('Current Location:', currentLocation);
+        })();
+    }, []);
+
     return (
         <View style={{flex: 1}}>
             {!isMobileWeb && (
@@ -235,6 +257,23 @@ export default function WebMap(props: MapProps) {
                 pitch={pitch}
             >
                 {pins}
+                {location && (
+                    <Marker
+                    key={"user-location"}
+                    longitude={location?.coords.longitude || 0}
+                    latitude={location?.coords.latitude || 0}
+                    anchor="center"
+                >
+                    <YStack
+                        onPress={(e) => {
+                            e.stopPropagation();
+                        }}
+                        cursor="pointer"
+                    >
+                        <GpsPin />
+                    </YStack>
+                </Marker>
+                )}
             </Map>
 
             {/* SpeedDial für Web (Mobile und Desktop) */}
