@@ -184,7 +184,6 @@ export default function WebMap(props: MapProps) {
 
         let currentLocation = await Location.getCurrentPositionAsync({});
         setLocation(currentLocation);
-        console.log('Current Location:', currentLocation);
         })();
     }, []);
 
@@ -264,14 +263,7 @@ export default function WebMap(props: MapProps) {
                     latitude={location?.coords.latitude || 0}
                     anchor="center"
                 >
-                    <YStack
-                        onPress={(e) => {
-                            e.stopPropagation();
-                        }}
-                        cursor="pointer"
-                    >
-                        <GpsPin />
-                    </YStack>
+                    <GpsPin />
                 </Marker>
                 )}
             </Map>
