@@ -5,6 +5,22 @@ platform :ios do
   lane :testflight_internal do
     ENV['APP_MODE'] = 'test'
 
+    setup_ci if ENV['CI']
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.p8"),
+      in_house: false
+    )
+
+    match(
+      type: "appstore",
+      readonly: false,
+      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"],
+      api_key: api_key
+    )
+
     cocoapods(
       clean_install: true
     )
@@ -13,54 +29,21 @@ platform :ios do
       scheme: "Marlin",
       workspace: "Marlin.xcworkspace",
       export_method: "app-store",
-      export_options: {
-        provisioningProfiles: {
-          "com.marlin.live" => ENV["IOS_PROVISIONING_PROFILE_NAME"]
-        }
-      },
       output_directory: "./build",
-      output_name: "Marlin.ipa"
+      output_name: "Marlin.ipa",
+      verbose: true,
+      suppress_xcode_output: false,
+      xcargs: "-verbose",
+      buildlog_path: "./build/logs"
     )
 
     pilot(
       skip_waiting_for_build_processing: true,
-      apple_id: ENV["APPLE_ID"],
       app_identifier: "com.marlin.live",
       ipa: "./build/Marlin.ipa",
       distribute_external: false,
-      groups: ["Internal Testers"]
-    )
-  end
-
-  desc "Build and upload to TestFlight (External Testing)"
-  lane :testflight_external do
-    ENV['APP_MODE'] = 'test'
-
-    cocoapods(
-      clean_install: true
-    )
-
-    gym(
-      scheme: "Marlin",
-      workspace: "Marlin.xcworkspace",
-      export_method: "app-store",
-      export_options: {
-        provisioningProfiles: {
-          "com.marlin.live" => ENV["IOS_PROVISIONING_PROFILE_NAME"]
-        }
-      },
-      output_directory: "./build",
-      output_name: "Marlin.ipa"
-    )
-
-    pilot(
-      skip_waiting_for_build_processing: false,
-      apple_id: ENV["APPLE_ID"],
-      app_identifier: "com.marlin.live",
-      ipa: "./build/Marlin.ipa",
-      distribute_external: true,
-      groups: ["External Testers"],
-      changelog: "Bug fixes and improvements"
+      groups: ["Main"],
+      api_key: api_key
     )
   end
 
@@ -68,6 +51,22 @@ platform :ios do
   lane :app_store do
     ENV['APP_MODE'] = 'prod'
 
+    setup_ci if ENV['CI']
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_ISSUER_ID"],
+      key_filepath: File.expand_path("~/.appstoreconnect/private_keys/AuthKey_#{ENV['APP_STORE_CONNECT_API_KEY_ID']}.p8"),
+      in_house: false
+    )
+
+    match(
+      type: "appstore",
+      readonly: false,
+      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"],
+      api_key: api_key
+    )
+
     cocoapods(
       clean_install: true
     )
@@ -76,11 +75,6 @@ platform :ios do
       scheme: "Marlin",
       workspace: "Marlin.xcworkspace",
       export_method: "app-store",
-      export_options: {
-        provisioningProfiles: {
-          "com.marlin.live" => ENV["IOS_PROVISIONING_PROFILE_NAME"]
-        }
-      },
       output_directory: "./build",
       output_name: "Marlin.ipa"
     )
@@ -91,7 +85,8 @@ platform :ios do
       skip_metadata: false,
       skip_screenshots: false,
       app_identifier: "com.marlin.live",
-      ipa: "./build/Marlin.ipa"
+      ipa: "./build/Marlin.ipa",
+      api_key: api_key
     )
   end
 end
