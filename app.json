@@ -14,6 +14,11 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "This app uses a mapping library that may access location services. Your location is not currently being collected or tracked.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app uses a mapping library that may access location services. Your location is not currently being collected or tracked."
+      },
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "com.googleusercontent.apps.977804708210-9nj0m7buq3qe7mbarilve0s4sfqvib74"
+        }
       }
     },
     "android": {
