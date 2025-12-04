@@ -3,7 +3,7 @@ import {useAuth} from '@/hooks/useAuth';
 import {AuthorityRole} from '@/api/models/profile';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
-import {SafeAreaView} from 'react-native';
+import {PermissionsAndroid, Platform, SafeAreaView} from 'react-native';
 import {Button, Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {User} from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/useTranslation';
@@ -16,6 +16,8 @@ import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
 import {PasswordStrengthIndicator} from '@/components/auth/PasswordStrengthIndicator';
 import {createLogger} from '@/utils/logger';
+import { useUserDeviceStore } from '@/api/stores/userDevice';
+import messagingModule from '@react-native-firebase/messaging';
 
 const logger = createLogger('Auth:Register');
 
@@ -31,7 +33,8 @@ export default function RegisterScreen() {
     const {t} = useTranslation();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
     const toast = useToast();
-
+    const userDeviceStore = useUserDeviceStore();
+    
     const {
         validation: passwordValidation,
         strength: passwordStrength,
@@ -96,6 +99,7 @@ export default function RegisterScreen() {
                 message: t('auth.accountCreated'),
                 duration: 3000
             });
+            handleRegisterUserDevice(res.profile?.id || 0);
             router.push("/");
         } else {
             logger.error('Registration failed', registerStatus.error);
@@ -105,6 +109,27 @@ export default function RegisterScreen() {
             });
         }
     };
+
+    const handleRegisterUserDevice = async (userId: number) => {
+        const result = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+
+        if (result === PermissionsAndroid.RESULTS.GRANTED) {
+            if (Platform.OS !== 'web') {
+                if (Platform.OS === 'android') {
+                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+                }
+                
+                try {
+                    let token = await messagingModule().getToken();
+                    userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+                } catch (error) {
+                    console.log('Error getting FCM token:', error);
+                }
+            }
+        }
+    }
 
     const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
     const isFormValid = isEmailValid && isPasswordValid && passwordsMatch && agreeTermsOfService;
