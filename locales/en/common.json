@@ -267,7 +267,11 @@
     "email": "Email",
     "emailPlaceholder": "harbor@example.com",
     "website": "Website",
-    "websitePlaceholder": "https://www.harbor-website.com"
+    "websitePlaceholder": "https://www.harbor-website.com",
+    "harborMasterNotification": "Harbor Master Notification",
+    "sendToAllSubscribers": "Send to all subscribers",
+    "title": "Title",
+    "message": "Message"
   },
   "dashboard": {
     "dashboard": "Dashboard",
@@ -311,7 +315,13 @@
       "waveHeight": "Wave Height",
       "waterTemperature": "Water Temperature",
       "waterLevel": "Water Level",
-      "batteryVoltage": "Battery Voltage"
+      "batteryVoltage": "Battery Voltage",
+      "notifyMeWhen": "Notify me when…",
+      "lessThanTargetValue": "less than target value",
+      "greaterThanTargetValue": "greater than target value",
+      "targetValue": "Target Value",
+      "active": "Active",
+      "save": "Save"
     },
     "units": {
       "celsius": "°C",
