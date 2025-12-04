@@ -168,28 +168,6 @@ export default function RootLayout() {
         Oswald_700Bold,
     })
 
-    useEffect(() => {
-        async function initializeFirebase() {
-            if (Platform.OS !== 'web') {
-                // Request notification permissions on Android
-                if (Platform.OS === 'android') {
-                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-                }
-
-                // Get FCM token
-                const messagingModule = await import('@react-native-firebase/messaging');
-                const messaging = messagingModule.default ?? messagingModule;
-                try {
-                    const token = await messaging().getToken();
-                    console.log('🔥 FCM Token:', token);
-                } catch (error) {
-                    console.log('Error getting FCM token:', error);
-                }
-            }
-        }
-        initializeFirebase();
-    }, []);
-
     if (!loaded) return null
 
     return (
