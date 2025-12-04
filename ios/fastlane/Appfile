@@ -1,0 +1,2 @@
+app_identifier("com.marlin.live")
+apple_id(ENV["APPLE_ID"])
