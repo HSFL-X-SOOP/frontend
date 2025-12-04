@@ -72,11 +72,12 @@ import {
 import { useUserLocations } from '@/hooks/useUserLocations';
 import { UserLocation } from '@/api/models/userLocation';
 import { useNotificationMeasurementRules } from '@/hooks/useNotificationMeasurementRules';
-import { MeasurementType } from '@/api/models/notificationMeasurementRule';
+import { MeasurementType, NotificationMeasurementRule } from '@/api/models/notificationMeasurementRule';
 import { Popover } from 'tamagui';
 import { useNotificationLocations } from '@/hooks/useNotificationLocations';
 import { useSession } from '@/context/SessionContext';
 import { AuthorityRole } from '@/api/models/profile';
+import { useNotificationMeasurementRuleStore } from '@/api/stores/notificationMeasurementRule';
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -105,18 +106,8 @@ export default function DashboardScreen() {
     let {name} = useLocalSearchParams();
     const userLocations = useUserLocations();
     const session = useSession();
-
-    const [userID, setUserID] = useState<number>(-1);
-    const [isHarborMaster, setIsHarborMaster] = useState(false);
-    useEffect(() => {
-        if (session?.session?.profile?.id) {
-            setUserID(session.session.profile.id);
-            console.log("User Role:", session.session.role);
-            if (session.session.role === AuthorityRole.USER) {
-                setIsHarborMaster(true);
-            }
-        }
-    }, [session?.session?.profile?.id]);
+    const userID = session?.session?.profile?.id ?? -1;
+    const isHarborMaster = session?.session?.role === AuthorityRole.USER;
 
     if (!name) {
         name = 'Stadthafen Flensburg "Im Jaich"';
@@ -244,7 +235,7 @@ export default function DashboardScreen() {
     useEffect(() => {
         const id = GetMarinaID(name as string, allSensorData);
         setMarinaID(id);
-    }, [name, allSensorData]);
+    }, [name, allSensorData, marinaID]);
 
     useEffect(() => {
         if (!marinaID) return;
@@ -255,22 +246,23 @@ export default function DashboardScreen() {
         };
 
         void fetchDetailedLocation();
-    }, [marinaID]);
+    }, [marinaID, detailedLocation]);
 
     useEffect(() => {
         if (!marinaID) return;
+
         const fetchUserLocation = async () => {
             try {
-                const ul = await userLocations.getUserLocationByUserIdAndLocationId(userID, marinaID);
-                setUserLocation(ul);
+                const userLocation = await userLocations.getUserLocationByUserIdAndLocationId(userID, marinaID);
+                setUserLocation(userLocation);
             } catch (e) {
                 console.warn('fetchUserLocation failed', e);
                 setUserLocation(undefined);
             }
         };
 
-       void fetchUserLocation();
-   }, [marinaID, userLocation]);
+        void fetchUserLocation();
+    }, [marinaID]);
 
     useEffect(() => {
         if (timeRangeData) {
@@ -387,7 +379,6 @@ export default function DashboardScreen() {
         });
         setUserLocation(updatedUserocation);
     }, [userLocation, userLocations, marinaID, userID]);
-    console.log(userID)
 
     // ----------------------------------------------------------------------------
     // Render
@@ -728,19 +719,36 @@ export function SetNotificationMeasurementRulePopover({
     const [operator, setOperator] = useState<string>('>');
     const [isActive, setIsActive] = useState<boolean>(true);
     const [open, setOpen] = useState(false)
-    const createNotificationMeasurementRule = useCallback(async () => {
+    const [existingRule, setExistingRule] = useState<NotificationMeasurementRule | null | undefined>(undefined);
+    const TEMPERATURE_MIN_VALUE = -10;
+    const TEMPERATURE_MAX_VALUE = 50;
+    useEffect(() => {
+        if (!marinaID || !userID) return;
+        const fetchNotificationMeasurementRule = async () => {
+            try {
+                const fetchedRule = await notificationMeasurementRules.getNotificationMeasurementRule(userID, marinaID, getIDFromMeasurementType(MeasurementType));
+                setExistingRule(fetchedRule);
+                setMeasurementValue(fetchedRule?.measurementValue || 0);
+                setOperator(fetchedRule?.operator || '>');
+                setIsActive(fetchedRule?.isActive ?? true);
+                console.log('Fetched existing rule:', fetchedRule);
+            } catch (e) {
+                console.warn('fetchUserLocation failed', e);
+                setExistingRule(null);
+            }
+        };
+
+        void fetchNotificationMeasurementRule();
+    }, [marinaID, userID, MeasurementType]);
+    
+    const createNotificationMeasurementRule = useCallback(async (value: number) => {
         if (!marinaID) return;
-        const existingRule = await notificationMeasurementRules.getNotificationMeasurementRule(
-            userID || -1,
-            marinaID,
-            getIDFromMeasurementType(MeasurementType)
-        );
         const notificationMeasurementRule = {
             userId: userID || -1,
             locationId: marinaID,
             measurementTypeId: getIDFromMeasurementType(MeasurementType),
             operator: operator,
-            measurementValue: measurementValue,
+            measurementValue: value,
             isActive: isActive,
         }
         
@@ -750,116 +758,158 @@ export function SetNotificationMeasurementRulePopover({
             await notificationMeasurementRules.create(notificationMeasurementRule);
         }
 
-    }, [marinaID, operator, isActive]);
+    }, [marinaID, operator, isActive, userID, MeasurementType, existingRule]);
     return (
-    <Dialog size="$5" allowFlip stayInFrame offset={15} resize {...props} open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger asChild>
-        <Button icon={Icon} onPress={() => setOpen(true)} />
-      </Dialog.Trigger>
-      
-      <Dialog.Portal>
-        <Dialog.Overlay />
+        <Dialog
+        allowFlip
+        stayInFrame
+        offset={15}
+        {...props}
+        open={open}
+        onOpenChange={setOpen}
+        >
+            <Dialog.Trigger asChild>
+                <Button icon={Icon} onPress={() => setOpen(true)} />
+            </Dialog.Trigger>
 
-      <Dialog.Content
-        borderWidth={1}
-        borderColor="$borderColor"
-        width={650}
-        height={200}
-        enterStyle={{ y: -10, opacity: 0 }}
-        exitStyle={{ y: -10, opacity: 0 }}
-        elevate
-        animation={[
-          'quick',
-          {
-            opacity: {
-              overshootClamping: true,
-            },
-          },
-        ]}
-      >
+            <Dialog.Portal>
+                <Dialog.Overlay 
+                onPress={() => setOpen(false)} 
+                backgroundColor="rgba(0,0,0,0.3)" 
+                />
 
-        <YStack gap="$3">
-            <XStack>
-                <Text fontSize="$6" fontWeight="600">Benachrichtige mich, wenn ...</Text>
-            </XStack>
-
-        <XStack gap={"$3"}>
-          <YStack gap="$3">
-            <XStack alignItems="baseline" gap="$2" width={200}>
-                <Text
-                    color="$gray11"
-                    fontSize="$4"
-                    fontWeight="600"
-                    textAlign="center"
+                <Dialog.Content
+                key={`${measurement.id}-${measurement.measurementType}`}
+                borderWidth={1}
+                borderColor="$borderColor"
+                elevate
+                p="$4"
+                maxWidth="90%"
+                width="100%"
+                borderRadius="$6"
+                animation={[
+                    'quick',
+                    {
+                    opacity: { overshootClamping: true },
+                    },
+                ]}
+                enterStyle={{ opacity: 0, scale: 0.95 }}
+                exitStyle={{ opacity: 0, scale: 0.95 }}
                 >
-                    {getTextFromMeasurementType(measurement.measurementType, t)}
-                </Text>
-            </XStack>
-            <XStack alignItems="baseline" gap="$2">
-                            <H2 fontSize="$10" fontWeight="700"
-                    color={getMeasurementColor(measurement.measurementType)}>
-                    {formatMeasurementValue(measurement.value)}
-                </H2>
-                <Text fontSize="$6"
-                        color={getMeasurementColor(measurement.measurementType)}
-                        fontWeight="600">
-                    {getMeasurementTypeSymbol(measurement.measurementType, t)}
-                </Text>
-            </XStack>
-          </YStack>
 
-            <YStack gap="$3">
-                <Text
-                    color="$gray11"
-                    fontSize="$4"
-                    fontWeight="600"
+                <YStack gap="$4">
+                    
+                    <Text
+                    fontSize="$6"
+                    fontWeight="700"
                     textAlign="center"
-                >
-                    Operator
-                </Text>
+                    >
+                    Benachrichtige mich, wenn …
+                    </Text>
 
+                    {/* Measurement Display */}
+                    <YStack gap="$2" alignItems="center">
+                        <Text fontSize="$4" color="$gray11" fontWeight="600">
+                            {getTextFromMeasurementType(measurement.measurementType, t)}
+                        </Text>
 
-            <Input f={1} size="$3" id={"operator"} value={operator} onChangeText={setOperator} />
-          </YStack>
+                        <XStack alignItems="baseline" gap="$2">
+                            <H2 fontSize="$9" color={getMeasurementColor(measurement.measurementType)}>
+                            {formatMeasurementValue(measurement.value)}
+                            </H2>
+                            <Text fontSize="$5" color={getMeasurementColor(measurement.measurementType)}>
+                            {getMeasurementTypeSymbol(measurement.measurementType, t)}
+                            </Text>
+                        </XStack>
+                    </YStack>
 
-          <YStack gap="$3">
-            <XStack alignItems="baseline" gap="$2" width={200}>
-                <Text
-                    color="$gray11"
-                    fontSize="$4"
-                    fontWeight="600"
-                    textAlign="center"
-                >
-                    {getTextFromMeasurementType(measurement.measurementType, t)}
-                </Text>
-            </XStack>
-            <XStack alignItems="baseline" gap="$2">
-                <Input f={1} size="$3" id={Name} inputMode='decimal' value={measurementValue.toString()} onChangeText={(text) => setMeasurementValue(Number(text))} />
-                <Text fontSize="$6"
-                        color={getMeasurementColor(measurement.measurementType)}
-                        fontWeight="600">
-                    {getMeasurementTypeSymbol(measurement.measurementType, t)}
-                </Text>
-            </XStack>
-          </YStack>
-        </XStack>
-          <Dialog.Close asChild>
-            <Button
-              size="$3"
-              onPress={() => {
-                if (!marinaID) {
-                  return;
-                }
-                createNotificationMeasurementRule();
-              }}
-            >
-              Submit
-            </Button>
-          </Dialog.Close>
-        </YStack>
-      </Dialog.Content>
-        </Dialog.Portal>
-    </Dialog>
+                    {/* Operator Value Selector */}
+                    <XStack gap="$2" justifyContent="center">
+                    <Button
+                        size="$3"
+                        theme={operator === "<" ? "active" : "gray"}
+                        onPress={() => setOperator("<")}
+                    >
+                        {"kleiner als Zielwert"}
+                    </Button>
+
+                    <Button
+                        size="$3"
+                        theme={operator === ">" ? "active" : "gray"}
+                        onPress={() => setOperator(">")}
+                    >
+                        {"größer als Zielwert"}
+                    </Button>
+                    </XStack>
+
+                    {/* Measurement Value Input */}
+                    <YStack gap="$2" alignItems="center">
+                    <Text fontSize="$4" fontWeight="600" color="$gray11">
+                        Zielwert
+                    </Text>
+
+                    <XStack gap="$2" alignItems="center">
+                        <Input
+                        size="$3"
+                        width={90}
+                        keyboardType="decimal-pad"
+                        inputMode="decimal"
+                        value={measurementValue.toString()}
+                        onChangeText={(text) => {
+                            if (/^-?\d*\.?\d*$/.test(text)) {
+                                let value = text === "" ? 0 : parseFloat(text);
+
+                                if (value < TEMPERATURE_MIN_VALUE) value = TEMPERATURE_MIN_VALUE;
+                                if (value > TEMPERATURE_MAX_VALUE) value = TEMPERATURE_MAX_VALUE;
+
+                                setMeasurementValue(value);
+                            }
+                        }}
+                        />
+                        <Text fontSize="$5" fontWeight="600" color={getMeasurementColor(measurement.measurementType)}>
+                        {getMeasurementTypeSymbol(measurement.measurementType, t)}
+                        </Text>
+                    </XStack>
+                    </YStack>
+
+                    {/* Checkbox */}
+                    <YStack gap="$2" alignItems="center">
+                        <XStack alignItems="center" gap="$2">
+                            <Checkbox
+                            checked={isActive}
+                            onCheckedChange={(checked: boolean | "indeterminate") => {
+                                setIsActive(checked === true);
+                            }}
+                            size="$4"
+                            borderColor="$gray7"
+                            >
+                                <Checkbox.Indicator>
+                                    <Text fontSize="$4">✓</Text>
+                                </Checkbox.Indicator>
+                            </Checkbox>
+                            <Text fontSize="$4" fontWeight="600" color="$gray11">
+                                Aktiv
+                            </Text>
+                        </XStack>
+                    </YStack>
+
+                    <Dialog.Close asChild>
+                        <Button
+                            size="$4"
+                            width="100%"
+                            onPress={() => {
+                            if (!marinaID) return;
+                            createNotificationMeasurementRule(measurementValue);
+                            }}
+                        >
+                            Speichern
+                        </Button>
+                    </Dialog.Close>
+                
+                </YStack>
+                </Dialog.Content>
+            </Dialog.Portal>
+        </Dialog>
   )
 }
 
