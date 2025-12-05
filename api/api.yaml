@@ -1,0 +1,4051 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "API",
+    "version" : "latest"
+  },
+  "externalDocs" : {
+    "url" : "/"
+  },
+  "servers" : [ {
+    "url" : "https://test.marlin-live.com/api"
+  } ],
+  "tags" : [ ],
+  "paths" : {
+    "/login/google" : {
+      "get" : {
+        "tags" : [ "auth" ],
+        "description" : "Redirects the user to Google's OAuth consent screen for authentication. After successful authentication, user will be redirected to /auth/google/callback.",
+        "parameters" : [ ],
+        "responses" : {
+          "302" : {
+            "description" : "Redirect to Google OAuth consent screen",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "OAuth2Google" : [ ]
+        } ]
+      }
+    },
+    "/register" : {
+      "post" : {
+        "tags" : [ "auth" ],
+        "description" : "Creates a new user account with the provided email and password. Returns JWT access and refresh tokens upon successful registration.",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.RegisterRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "description" : "User successfully registered",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.LoginResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid registration data (e.g., weak password, invalid email)",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "User with this email already exists",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/login" : {
+      "post" : {
+        "tags" : [ "auth" ],
+        "description" : "Authenticates a user using email and password credentials. Returns JWT access and refresh tokens upon successful authentication. May redirect to Google OAuth if the account was created via Google.",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.LoginRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Login successful",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.LoginResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid credentials or unverified email",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Too many failed login attempts from this IP address",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          },
+          "302" : {
+            "description" : "Account created via Google OAuth - redirect to /login/google required",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/login/google/android" : {
+      "post" : {
+        "tags" : [ "auth" ],
+        "description" : "Authenticates a user using a Google ID token obtained from Google Sign-In SDK. This endpoint supports both Android and iOS mobile applications. The ID token must be issued for one of the registered client IDs (Web or iOS).",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.GoogleLoginRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Login successful",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.LoginResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid or expired Google ID token",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Google ID token audience verification failed - token not issued for this application",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/auth/refresh" : {
+      "post" : {
+        "tags" : [ "auth" ],
+        "description" : "Exchanges a valid refresh token for a new access token and refresh token pair. Use this endpoint before the access token expires to maintain user session.",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.RefreshTokenRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Token refresh successful",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.LoginResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired refresh token",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/magic-link" : {
+      "post" : {
+        "tags" : [ "auth" ],
+        "description" : "Sends an email containing a magic link that allows the user to log in without a password. The link is valid for a limited time.",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.MagicLinkRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Magic link email sent (always returns success even if email doesn't exist for security)",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "null",
+                  "title" : "Unit"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/magic-link/login" : {
+      "post" : {
+        "tags" : [ "auth" ],
+        "description" : "Authenticates a user using the token from a magic link email. Returns JWT access and refresh tokens upon successful authentication.",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.MagicLinkLoginRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Magic link login successful",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.LoginResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid or expired magic link token",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/verify-email" : {
+      "post" : {
+        "tags" : [ "auth" ],
+        "description" : "Verifies a user's email address using the token sent via verification email. Email verification may be required before certain features are accessible.",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.auth.entity.VerifyEmailRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Email successfully verified",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "null",
+                  "title" : "Unit"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid or expired verification token",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/send-verification-email" : {
+      "post" : {
+        "tags" : [ "auth" ],
+        "description" : "Sends a verification email to the authenticated user's email address. Requires a valid JWT access token in the Authorization header.",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Verification email sent successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "null",
+                  "title" : "Unit"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing or invalid JWT token",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/admin/user-profiles" : {
+      "get" : {
+        "tags" : [ "admin" ],
+        "description" : "Get all user profiles (Admin only)",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "query",
+          "description" : "Filter by user ID",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        }, {
+          "name" : "email",
+          "in" : "query",
+          "description" : "Filter by email (case-insensitive like match)",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        }, {
+          "name" : "verified",
+          "in" : "query",
+          "description" : "Filter by verification status",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          }
+        }, {
+          "name" : "authorityRole",
+          "in" : "query",
+          "description" : "Filter by authority role (USER, ADMIN, etc.)",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        }, {
+          "name" : "activityRoles",
+          "in" : "query",
+          "description" : "Filter by activity roles (can provide multiple)",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "title" : "String"
+            },
+            "title" : "List<String>"
+          }
+        }, {
+          "name" : "language",
+          "in" : "query",
+          "description" : "Filter by preferred language",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        }, {
+          "name" : "measurementSystem",
+          "in" : "query",
+          "description" : "Filter by measurement system",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        }, {
+          "name" : "userCreatedAt",
+          "in" : "query",
+          "description" : "Filter by user creation timestamp (ISO-8601 format)",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        }, {
+          "name" : "userUpdatedAt",
+          "in" : "query",
+          "description" : "Filter by user update timestamp (ISO-8601 format)",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        }, {
+          "name" : "profileCreatedAt",
+          "in" : "query",
+          "description" : "Filter by profile creation timestamp (ISO-8601 format)",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        }, {
+          "name" : "profileUpdatedAt",
+          "in" : "query",
+          "description" : "Filter by profile update timestamp (ISO-8601 format)",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        }, {
+          "name" : "sort",
+          "in" : "query",
+          "description" : "Sort field in snake_case. Use 'field.asc' or 'field.desc' (e.g., 'id.asc').",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        }, {
+          "name" : "limit",
+          "in" : "query",
+          "description" : "Maximum number of results to return",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        }, {
+          "name" : "offset",
+          "in" : "query",
+          "description" : "The offset from the start of the results",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.PageResult_hs.flensburg.marlin.business.api.users.entity.UserProfile"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      },
+      "put" : {
+        "tags" : [ "admin" ],
+        "description" : "Update a user's profile by user ID (Admin only)",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.users.entity.UpdateUserRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "null",
+                  "title" : "Unit"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/admin/user-profiles/{userId}" : {
+      "get" : {
+        "tags" : [ "admin" ],
+        "description" : "Get a user's profile by user ID (Admin only)",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "description" : "ID of the user",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.users.entity.UserProfile"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      },
+      "delete" : {
+        "tags" : [ "admin" ],
+        "description" : "Delete a user's profile by user ID (Admin only)",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "description" : "ID of the user",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "headers" : { }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/admin/user-profiles/{userId}/recent-activity" : {
+      "get" : {
+        "tags" : [ "admin" ],
+        "description" : "Get a user's recent activity by user ID (Admin only)",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "description" : "ID of the user",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.PageResult_kotlin.String"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/admin/user-profiles/block" : {
+      "post" : {
+        "tags" : [ "admin" ],
+        "description" : "Add a user to the login blacklist (Admin only)",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.users.entity.BlacklistUserRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "null",
+                  "title" : "Unit"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/user-profile" : {
+      "get" : {
+        "tags" : [ "user-profile" ],
+        "description" : "Get the authenticated user's profile",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.users.entity.UserProfile"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing or invalid JWT token",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "BearerAuth" : [ ]
+        }, {
+          "BearerAuthAdmin" : [ ]
+        } ]
+      },
+      "put" : {
+        "tags" : [ "user-profile" ],
+        "description" : "Update the authenticated user's profile",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.users.entity.UpdateUserProfileRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.users.entity.UserProfile"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing or invalid JWT token",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "BearerAuth" : [ ]
+        }, {
+          "BearerAuthAdmin" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "user-profile" ],
+        "description" : "Create a user profile",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.users.entity.CreateUserProfileRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.users.entity.UserProfile"
+                }
+              }
+            }
+          },
+          "400" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing or invalid JWT token",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "BearerAuth" : [ ]
+        }, {
+          "BearerAuthAdmin" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "user-profile" ],
+        "description" : "Delete the authenticated user from the system",
+        "parameters" : [ ],
+        "responses" : {
+          "204" : {
+            "headers" : { }
+          },
+          "400" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing or invalid JWT token",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "BearerAuth" : [ ]
+        }, {
+          "BearerAuthAdmin" : [ ]
+        } ]
+      }
+    },
+    "/sensors" : {
+      "get" : {
+        "tags" : [ "raw" ],
+        "description" : "Return all sensors from the database (raw form, no aggregation).",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "List of sensors",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.raw.SensorDTO"
+                  },
+                  "title" : "List<SensorDTO>"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Error retrieving sensors",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/measurementtypes" : {
+      "get" : {
+        "tags" : [ "raw" ],
+        "description" : "Return all measurement types (raw form).",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "List of measurement types",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.raw.MeasurementTypeDTO"
+                  },
+                  "title" : "List<MeasurementTypeDTO>"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/locations" : {
+      "get" : {
+        "tags" : [ "location" ],
+        "description" : "Return all locations.",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "List of locations",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.location.entity.DetailedLocationDTO"
+                  },
+                  "title" : "List<DetailedLocationDTO>"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/measurements" : {
+      "get" : {
+        "tags" : [ "measurements" ],
+        "description" : "Return all measurements (raw form).",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "List of measurements",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.raw.MeasurementDTO"
+                  },
+                  "title" : "List<MeasurementDTO>"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/latestmeasurements" : {
+      "get" : {
+        "tags" : [ "measurements" ],
+        "description" : "Return the latest measurement for each location (raw form).",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "List of locations with their latest measurements",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.LocationWithLatestMeasurementsDTO"
+                  },
+                  "title" : "List<LocationWithLatestMeasurementsDTO>"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/latestmeasurementsNEW" : {
+      "get" : {
+        "tags" : [ "measurements" ],
+        "description" : "Get the latest measurement values for all locations. The measurement must be within the last 2 hours.",
+        "parameters" : [ {
+          "name" : "timezone",
+          "in" : "query",
+          "description" : "Optional timezone ('Europe/Berlin'). Defaults to Ip address based timezone. Backup UTC.",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful response with latest measurements for each location",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.LocationWithBoxesDTO"
+                  },
+                  "title" : "List<LocationWithBoxesDTO>"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Error occurred while retrieving the latest measurements",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/location/{id}/measurementsWithinTimeRange" : {
+      "get" : {
+        "tags" : [ "location" ],
+        "description" : "Get all measurements for a location within a given time range",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The location ID (not the sensor ID)",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        }, {
+          "name" : "timeRange",
+          "in" : "query",
+          "description" : "Optional time range ('48h', '7d', '30d', '90d', '180d' '1y'). Defaults to 24h. Warning: '90d', '180d' and '1y' can take a while to load.",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        }, {
+          "name" : "timezone",
+          "in" : "query",
+          "description" : "Optional timezone ('Europe/Berlin'). Defaults to Ip address based timezone. Backup UTC.",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful response with measurements",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.LocationWithBoxesDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid parameters",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/location/{id}/measurementsWithinTimeRangeFAST" : {
+      "get" : {
+        "tags" : [ "location" ],
+        "description" : "Get all measurements for a location within a given time range",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The location ID (not the sensor ID)",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        }, {
+          "name" : "timeRange",
+          "in" : "query",
+          "description" : "Optional time range ('48h', '7d', '30d', '1y'). Defaults to 24h.\n           \"24h\" -> raw;\n                                        \"48h\" -> raw;\n                                        \"7d\"  -> avg: 2 hours;\n                                        \"30d\" -> avg: 6 hours;\n                                        \"90d\"  -> avg: 12 hours;\n                                        \"180d\" -> avg: 1 day;\n                                        \"1y\"  -> avg: 2 days;",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        }, {
+          "name" : "timezone",
+          "in" : "query",
+          "description" : "Optional timezone ('Europe/Berlin'). Defaults to Ip address based timezone. Backup UTC.",
+          "required" : false,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful response with measurements",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.LocationWithBoxesDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid parameters",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/admin/dashboardInfo" : {
+      "get" : {
+        "tags" : [ "admin" ],
+        "description" : "Get dashboard information (Admin only)",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.admin.entity.DashboardInfo"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/admin/assignLocation" : {
+      "post" : {
+        "tags" : [ "admin" ],
+        "description" : "Assign a location to a harbor master (Admin only)",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.admin.entity.AssignLocationRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Location successfully assigned to harbor master",
+            "headers" : { }
+          },
+          "400" : {
+            "description" : "Invalid request (user is not a harbor master)",
+            "headers" : { }
+          },
+          "404" : {
+            "description" : "User or location not found",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/admin/potential-sensors" : {
+      "get" : {
+        "tags" : [ "admin" ],
+        "description" : "Get all potential sensors",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "List of potential sensors",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.potentialSensors.entity.PotentialSensorDTO"
+                  },
+                  "title" : "List<PotentialSensorDTO>"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing or invalid JWT token, or insufficient permissions (admin role required)",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Error retrieving potential sensors",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "BearerAuthAdmin" : [ ]
+        } ]
+      }
+    },
+    "/admin/potential-sensors-toggle/{id}" : {
+      "get" : {
+        "tags" : [ "admin" ],
+        "description" : "Toggle active state of potential sensors. Requires admin role.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The sensor ID",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "potential sensors with updated active state",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.potentialSensors.entity.PotentialSensorDTO"
+                  },
+                  "title" : "List<PotentialSensorDTO>"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid sensor ID",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Missing or invalid JWT token, or insufficient permissions (admin role required)",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Error retrieving potential sensors",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "BearerAuthAdmin" : [ ]
+        } ]
+      }
+    },
+    "/test-notification" : {
+      "post" : {
+        "tags" : [ "test-notification" ],
+        "description" : "Test notification",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.notifications.entity.TestNotificationRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.notifications.entity.TestNotificationRequest"
+                }
+              }
+            }
+          },
+          "400" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/location/{id}" : {
+      "get" : {
+        "tags" : [ "location" ],
+        "description" : "Get a location",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The location ID (not the sensor ID)",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful response with measurements",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.location.entity.DetailedLocationDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid parameters",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false
+      },
+      "put" : {
+        "tags" : [ "location" ],
+        "description" : "Update the location information",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The location ID (not the sensor ID)",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.location.entity.UpdateLocationRequest"
+              },
+              "examples" : {
+                "Update Location Example" : {
+                  "value" : {
+                    "name" : "Updated Marina Test",
+                    "description" : "This is a new description for the marina.",
+                    "address" : "456 Pier Road",
+                    "openingHours" : "Mon-Fri: 09:00-17:00; Sat: 10:00-14:00",
+                    "contact" : {
+                      "phone" : "1234567890",
+                      "email" : "info@marina.com",
+                      "website" : "https://marina-updated.com"
+                    },
+                    "image" : {
+                      "base64" : "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAIB...",
+                      "contentType" : "image/jpeg"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.location.entity.DetailedLocationDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/location/{id}/image" : {
+      "get" : {
+        "tags" : [ "location" ],
+        "description" : "Get a location image",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The location ID (not the sensor ID)",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful response with image",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/io.ktor.http.content.PartData.FileItem"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid parameters",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false
+      },
+      "delete" : {
+        "tags" : [ "location" ],
+        "description" : "Delete a location",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "The location ID (not the sensor ID)",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "null",
+                  "title" : "Unit"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid parameters",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/harbour/location" : {
+      "get" : {
+        "tags" : [ "harbourMaster" ],
+        "description" : "Get the assigned location for the authenticated harbor master",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Successful response with location details",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.location.entity.DetailedLocationDTO"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "User is not a harbor master",
+            "headers" : { }
+          },
+          "404" : {
+            "description" : "No location assigned to this harbor master",
+            "headers" : { }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/user-device/{id}" : {
+      "get" : {
+        "tags" : [ "user-device" ],
+        "description" : "Get a user device by its ID ",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the user device",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.userDevice.entity.UserDevice"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      },
+      "delete" : {
+        "tags" : [ "user-device" ],
+        "description" : "Delete a user's device by ID.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the user device entry",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "headers" : { }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/user-device/all/{userId}" : {
+      "get" : {
+        "tags" : [ "user-device" ],
+        "description" : "Get all devices of a user by userId",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "userId of the user",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.userDevice.entity.UserDevice"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/user-device" : {
+      "post" : {
+        "tags" : [ "user-device" ],
+        "description" : "Create a user device entry",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.userDevice.entity.CreateUserDeviceRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.userDevice.entity.UserDevice"
+                }
+              }
+            }
+          },
+          "400" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/notification-measurement-rules/{id}" : {
+      "get" : {
+        "tags" : [ "notification-measurement-rules" ],
+        "description" : "Get a notification measurement rule by its ID ",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the notification measurement rule",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.notificationMeasurementRule.entity.NotificationMeasurementRuleDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      },
+      "put" : {
+        "tags" : [ "notification-measurement-rules" ],
+        "description" : "Update a notification measurement rule by its ID",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.notificationMeasurementRule.entity.CreateOrUpdateNotificationMeasurementRuleRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.notificationMeasurementRule.entity.NotificationMeasurementRuleDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      },
+      "delete" : {
+        "tags" : [ "notification-measurement-rules" ],
+        "description" : "Delete a notification measurement rule by ID.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the user device entry",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "headers" : { }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/notification-measurement-rules/user/{userId}" : {
+      "get" : {
+        "tags" : [ "notification-measurement-rules" ],
+        "description" : "Get all notification measurement rules from a user by the user ID",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "description" : "ID of the user",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.notificationMeasurementRule.entity.NotificationMeasurementRuleDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/notification-measurement-rules/user/{userId}/location/{locationId}/measurementTypeId/{measurementTypeId}" : {
+      "get" : {
+        "tags" : [ "notification-measurement-rules" ],
+        "description" : "Get all notification measurement rules from a user by the user ID",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "description" : "ID of the user",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        }, {
+          "name" : "locationId",
+          "in" : "path",
+          "description" : "ID of the location",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        }, {
+          "name" : "measurementTypeId",
+          "in" : "path",
+          "description" : "ID of the measurement_type",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.notificationMeasurementRule.entity.NotificationMeasurementRuleDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/notification-measurement-rules" : {
+      "post" : {
+        "tags" : [ "notification-measurement-rules" ],
+        "description" : "Create a notification measurement rule",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.notificationMeasurementRule.entity.CreateOrUpdateNotificationMeasurementRuleRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.notificationMeasurementRule.entity.NotificationMeasurementRuleDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/user-locations/{id}" : {
+      "get" : {
+        "tags" : [ "user-locations" ],
+        "description" : "Get a user location by its ID ",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the user location",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserLocationDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      },
+      "put" : {
+        "tags" : [ "user-locations" ],
+        "description" : "Update a user location by its ID",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.userLocations.entity.CreateOrUpdateUserLocationRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserLocationDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      },
+      "delete" : {
+        "tags" : [ "user-locations" ],
+        "description" : "Delete a user location by ID.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the user location",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "headers" : { }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/user-locations/{userId}/{locationId}" : {
+      "get" : {
+        "tags" : [ "user-locations" ],
+        "description" : "Get a user location by its user ID and location ID",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "description" : "ID of the user",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        }, {
+          "name" : "locationId",
+          "in" : "path",
+          "description" : "ID of the location",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserLocationDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/user-locations/user/{userId}" : {
+      "get" : {
+        "tags" : [ "user-locations" ],
+        "description" : "Get all user locations from a user by the user ID",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "description" : "ID of the user",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserLocationDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/user-locations" : {
+      "post" : {
+        "tags" : [ "user-locations" ],
+        "description" : "Create a user location",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.userLocations.entity.CreateOrUpdateUserLocationRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserLocationDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/notification-locations/{id}" : {
+      "get" : {
+        "tags" : [ "notification-locations" ],
+        "description" : "Get a notification location by its ID ",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the notification location",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotificationLocationDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      },
+      "delete" : {
+        "tags" : [ "notification-locations" ],
+        "description" : "Delete a notification location by ID.",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "description" : "ID of the notification location",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "headers" : { }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/notification-locations/all/{locationId}" : {
+      "get" : {
+        "tags" : [ "notification-locations" ],
+        "description" : "Get all notification locations from a location by its ID",
+        "parameters" : [ {
+          "name" : "locationId",
+          "in" : "path",
+          "description" : "ID of the location",
+          "required" : true,
+          "deprecated" : false,
+          "explode" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotificationLocationDTO"
+                }
+              }
+            }
+          },
+          "404" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/notification-locations" : {
+      "post" : {
+        "tags" : [ "notification-locations" ],
+        "description" : "Create a notification location",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.notificationLocation.entity.CreateOrUpdateNotificationLocationRequest"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/NotificationLocationDTO"
+                }
+              }
+            }
+          },
+          "400" : {
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "string",
+                  "title" : "String"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/health" : {
+      "get" : {
+        "tags" : [ ],
+        "description" : "Health check endpoint",
+        "parameters" : [ ],
+        "responses" : { },
+        "deprecated" : false
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "hs.flensburg.marlin.business.api.auth.entity.RegisterRequest" : {
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "password" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "rememberMe" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          }
+        },
+        "required" : [ "email", "password", "rememberMe" ],
+        "title" : "RegisterRequest"
+      },
+      "hs.flensburg.marlin.business.api.users.entity.UserProfile" : {
+        "type" : "object",
+        "properties" : {
+          "activityRoles" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.database.generated.enums.UserActivityRole"
+            },
+            "title" : "List<UserActivityRole>"
+          },
+          "assignedLocation" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.raw.LocationDTO"
+            } ]
+          },
+          "authorityRole" : {
+            "$ref" : "#/components/schemas/hs.flensburg.marlin.database.generated.enums.UserAuthorityRole"
+          },
+          "email" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "firstName" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "language" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.database.generated.enums.Language"
+            } ]
+          },
+          "lastName" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "measurementSystem" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.database.generated.enums.MeasurementSystem"
+            } ]
+          },
+          "profileCreatedAt" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/kotlinx.datetime.LocalDateTime"
+            } ]
+          },
+          "profileUpdatedAt" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/kotlinx.datetime.LocalDateTime"
+            } ]
+          },
+          "userCreatedAt" : {
+            "$ref" : "#/components/schemas/kotlinx.datetime.LocalDateTime"
+          },
+          "userUpdatedAt" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/kotlinx.datetime.LocalDateTime"
+            } ]
+          },
+          "verified" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          }
+        },
+        "required" : [ "activityRoles", "authorityRole", "email", "id", "userCreatedAt", "verified" ],
+        "title" : "UserProfile"
+      },
+      "hs.flensburg.marlin.database.generated.enums.UserActivityRole" : {
+        "type" : "string",
+        "enum" : [ "SWIMMER", "SAILOR", "FISHERMAN" ],
+        "title" : "UserActivityRole"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.raw.LocationDTO" : {
+        "type" : "object",
+        "properties" : {
+          "coordinates" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.location.entity.GeoPoint"
+            } ]
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "required" : [ "id" ],
+        "title" : "LocationDTO"
+      },
+      "hs.flensburg.marlin.business.api.location.entity.GeoPoint" : {
+        "type" : "object",
+        "properties" : {
+          "lat" : {
+            "type" : "number",
+            "format" : "double",
+            "title" : "Double"
+          },
+          "lon" : {
+            "type" : "number",
+            "format" : "double",
+            "title" : "Double"
+          }
+        },
+        "required" : [ "lat", "lon" ],
+        "title" : "GeoPoint"
+      },
+      "hs.flensburg.marlin.database.generated.enums.UserAuthorityRole" : {
+        "type" : "string",
+        "enum" : [ "ADMIN", "HARBOR_MASTER", "USER" ],
+        "title" : "UserAuthorityRole"
+      },
+      "hs.flensburg.marlin.database.generated.enums.Language" : {
+        "type" : "string",
+        "enum" : [ "EN", "DE" ],
+        "title" : "Language"
+      },
+      "hs.flensburg.marlin.database.generated.enums.MeasurementSystem" : {
+        "type" : "string",
+        "enum" : [ "METRIC", "IMPERIAL" ],
+        "title" : "MeasurementSystem"
+      },
+      "kotlinx.datetime.LocalDateTime" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "$ref" : "#/components/schemas/kotlinx.datetime.LocalDate"
+          },
+          "day" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "dayOfMonth" : {
+            "type" : "integer",
+            "format" : "int32",
+            "deprecated" : true,
+            "title" : "Int"
+          },
+          "dayOfWeek" : {
+            "$ref" : "#/components/schemas/kotlinx.datetime.DayOfWeek"
+          },
+          "dayOfYear" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "hour" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "minute" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "month" : {
+            "$ref" : "#/components/schemas/kotlinx.datetime.Month"
+          },
+          "monthNumber" : {
+            "type" : "integer",
+            "format" : "int32",
+            "deprecated" : true,
+            "title" : "Int"
+          },
+          "nanosecond" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "second" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "time" : {
+            "$ref" : "#/components/schemas/kotlinx.datetime.LocalTime"
+          },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          }
+        },
+        "required" : [ "date", "day", "dayOfMonth", "dayOfWeek", "dayOfYear", "hour", "minute", "month", "monthNumber", "nanosecond", "second", "time", "year" ],
+        "title" : "LocalDateTime"
+      },
+      "kotlinx.datetime.LocalDate" : {
+        "type" : "object",
+        "properties" : {
+          "day" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "dayOfMonth" : {
+            "type" : "integer",
+            "format" : "int32",
+            "deprecated" : true,
+            "title" : "Int"
+          },
+          "dayOfWeek" : {
+            "$ref" : "#/components/schemas/kotlinx.datetime.DayOfWeek"
+          },
+          "dayOfYear" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "month" : {
+            "$ref" : "#/components/schemas/kotlinx.datetime.Month"
+          },
+          "monthNumber" : {
+            "type" : "integer",
+            "format" : "int32",
+            "deprecated" : true,
+            "title" : "Int"
+          },
+          "year" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          }
+        },
+        "required" : [ "day", "dayOfMonth", "dayOfWeek", "dayOfYear", "month", "monthNumber", "year" ],
+        "title" : "LocalDate"
+      },
+      "kotlinx.datetime.DayOfWeek" : {
+        "type" : "string",
+        "enum" : [ "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY" ],
+        "title" : "DayOfWeek"
+      },
+      "kotlinx.datetime.Month" : {
+        "type" : "string",
+        "enum" : [ "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER" ],
+        "title" : "Month"
+      },
+      "kotlinx.datetime.LocalTime" : {
+        "type" : "object",
+        "properties" : {
+          "hour" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "minute" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "nanosecond" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "second" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          }
+        },
+        "required" : [ "hour", "minute", "nanosecond", "second" ],
+        "title" : "LocalTime"
+      },
+      "hs.flensburg.marlin.business.api.auth.entity.LoginResponse" : {
+        "type" : "object",
+        "properties" : {
+          "accessToken" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "profile" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.users.entity.UserProfile"
+            } ]
+          },
+          "refreshToken" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "required" : [ "accessToken" ],
+        "title" : "LoginResponse"
+      },
+      "hs.flensburg.marlin.business.api.auth.entity.LoginRequest" : {
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "password" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "rememberMe" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          }
+        },
+        "required" : [ "email", "password", "rememberMe" ],
+        "title" : "LoginRequest"
+      },
+      "hs.flensburg.marlin.business.api.auth.entity.GoogleLoginRequest" : {
+        "type" : "object",
+        "properties" : {
+          "idToken" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "idToken" ],
+        "title" : "GoogleLoginRequest"
+      },
+      "hs.flensburg.marlin.business.api.auth.entity.RefreshTokenRequest" : {
+        "type" : "object",
+        "properties" : {
+          "refreshToken" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "refreshToken" ],
+        "title" : "RefreshTokenRequest"
+      },
+      "hs.flensburg.marlin.business.api.auth.entity.MagicLinkRequest" : {
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "email" ],
+        "title" : "MagicLinkRequest"
+      },
+      "hs.flensburg.marlin.business.api.auth.entity.MagicLinkLoginRequest" : {
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "token" ],
+        "title" : "MagicLinkLoginRequest"
+      },
+      "hs.flensburg.marlin.business.api.auth.entity.VerifyEmailRequest" : {
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "token" ],
+        "title" : "VerifyEmailRequest"
+      },
+      "hs.flensburg.marlin.business.PageResult_hs.flensburg.marlin.business.api.users.entity.UserProfile" : {
+        "type" : "object",
+        "properties" : {
+          "filteredCount" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.users.entity.UserProfile"
+            },
+            "title" : "List<UserProfile>"
+          },
+          "totalCount" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        },
+        "required" : [ "filteredCount", "items", "totalCount" ],
+        "title" : "PageResult<UserProfile>"
+      },
+      "hs.flensburg.marlin.business.PageResult_kotlin.String" : {
+        "type" : "object",
+        "properties" : {
+          "filteredCount" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "items" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "title" : "String"
+            },
+            "title" : "List<String>"
+          },
+          "totalCount" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        },
+        "required" : [ "filteredCount", "items", "totalCount" ],
+        "title" : "PageResult<String>"
+      },
+      "hs.flensburg.marlin.business.api.users.entity.BlacklistUserRequest" : {
+        "type" : "object",
+        "properties" : {
+          "blockUntil" : {
+            "type" : [ "null", "integer" ],
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "reason" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        },
+        "required" : [ "reason", "userId" ],
+        "title" : "BlacklistUserRequest"
+      },
+      "hs.flensburg.marlin.business.api.users.entity.UpdateUserRequest" : {
+        "type" : "object",
+        "properties" : {
+          "authorityRole" : {
+            "$ref" : "#/components/schemas/hs.flensburg.marlin.database.generated.enums.UserAuthorityRole"
+          },
+          "firstName" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "lastName" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "verified" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          }
+        },
+        "required" : [ "authorityRole", "userId", "verified" ],
+        "title" : "UpdateUserRequest"
+      },
+      "hs.flensburg.marlin.business.api.users.entity.CreateUserProfileRequest" : {
+        "type" : "object",
+        "properties" : {
+          "firstName" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "language" : {
+            "$ref" : "#/components/schemas/hs.flensburg.marlin.database.generated.enums.Language"
+          },
+          "lastName" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "measurementSystem" : {
+            "$ref" : "#/components/schemas/hs.flensburg.marlin.database.generated.enums.MeasurementSystem"
+          },
+          "roles" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.database.generated.enums.UserActivityRole"
+            },
+            "title" : "List<UserActivityRole>"
+          }
+        },
+        "required" : [ "language", "measurementSystem", "roles" ],
+        "title" : "CreateUserProfileRequest"
+      },
+      "hs.flensburg.marlin.business.api.users.entity.UpdateUserProfileRequest" : {
+        "type" : "object",
+        "properties" : {
+          "firstName" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "language" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.database.generated.enums.Language"
+            } ]
+          },
+          "lastName" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "measurementSystem" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.database.generated.enums.MeasurementSystem"
+            } ]
+          },
+          "roles" : {
+            "type" : [ "null", "array" ],
+            "items" : {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.database.generated.enums.UserActivityRole"
+            },
+            "title" : "List<UserActivityRole>"
+          }
+        },
+        "title" : "UpdateUserProfileRequest"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.raw.SensorDTO" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "id" : {
+            "type" : [ "null", "integer" ],
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "isMoving" : {
+            "type" : [ "null", "boolean" ],
+            "title" : "Boolean"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "title" : "SensorDTO"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.raw.MeasurementTypeDTO" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "name" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "unitDefinition" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "unitName" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "unitSymbol" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "required" : [ "id", "name" ],
+        "title" : "MeasurementTypeDTO"
+      },
+      "hs.flensburg.marlin.business.api.location.entity.DetailedLocationDTO" : {
+        "type" : "object",
+        "properties" : {
+          "address" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "contact" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.location.entity.Contact"
+            } ]
+          },
+          "coordinates" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.location.entity.GeoPoint"
+            } ]
+          },
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "id" : {
+            "type" : [ "null", "integer" ],
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "openingHours" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "title" : "DetailedLocationDTO"
+      },
+      "hs.flensburg.marlin.business.api.location.entity.Contact" : {
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "phone" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "website" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "title" : "Contact"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.raw.MeasurementDTO" : {
+        "type" : "object",
+        "properties" : {
+          "locationId" : {
+            "type" : [ "null", "integer" ],
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "sensorId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "time" : {
+            "$ref" : "#/components/schemas/kotlinx.datetime.LocalDateTime"
+          },
+          "typeId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "value" : {
+            "type" : "number",
+            "format" : "double",
+            "title" : "Double"
+          }
+        },
+        "required" : [ "sensorId", "time", "typeId", "value" ],
+        "title" : "MeasurementDTO"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.LocationWithLatestMeasurementsDTO" : {
+        "type" : "object",
+        "properties" : {
+          "latestMeasurements" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.EnrichedMeasurementDTO"
+            },
+            "title" : "List<EnrichedMeasurementDTO>"
+          },
+          "location" : {
+            "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.raw.LocationDTO"
+          }
+        },
+        "required" : [ "latestMeasurements", "location" ],
+        "title" : "LocationWithLatestMeasurementsDTO"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.EnrichedMeasurementDTO" : {
+        "type" : "object",
+        "properties" : {
+          "measurementType" : {
+            "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.raw.MeasurementTypeDTO"
+          },
+          "sensor" : {
+            "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.raw.SensorDTO"
+          },
+          "time" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/kotlinx.datetime.LocalDateTime"
+            } ]
+          },
+          "value" : {
+            "type" : "number",
+            "format" : "double",
+            "title" : "Double"
+          }
+        },
+        "required" : [ "measurementType", "sensor", "value" ],
+        "title" : "EnrichedMeasurementDTO"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.LocationWithBoxesDTO" : {
+        "type" : "object",
+        "properties" : {
+          "boxes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.boxes.BoxDTO"
+            },
+            "title" : "List<BoxDTO>"
+          },
+          "location" : {
+            "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.raw.LocationDTO"
+          }
+        },
+        "required" : [ "boxes", "location" ],
+        "title" : "LocationWithBoxesDTO"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.boxes.BoxDTO" : {
+        "anyOf" : [ {
+          "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.boxes.AirBoxDTO"
+        }, {
+          "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.boxes.WaterBoxDTO"
+        }, {
+          "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.boxes.WaterTemperatureOnlyBoxDTO"
+        } ],
+        "title" : "BoxDTO"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.boxes.AirBoxDTO" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "id" : {
+            "type" : [ "null", "integer" ],
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "isMoving" : {
+            "type" : [ "null", "boolean" ],
+            "title" : "Boolean"
+          },
+          "measurementTimes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.TimestampedBoxMeasurementsDTO_hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.AirMeasurementValuesDTO"
+            },
+            "title" : "List<TimestampedBoxMeasurementsDTO<AirMeasurementValuesDTO>>"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "required" : [ "measurementTimes" ],
+        "title" : "AirBoxDTO"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.TimestampedBoxMeasurementsDTO_hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.AirMeasurementValuesDTO" : {
+        "type" : "object",
+        "properties" : {
+          "measurements" : {
+            "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.AirMeasurementValuesDTO"
+          },
+          "time" : {
+            "$ref" : "#/components/schemas/kotlinx.datetime.LocalDateTime"
+          }
+        },
+        "required" : [ "measurements", "time" ],
+        "title" : "TimestampedBoxMeasurementsDTO<AirMeasurementValuesDTO>"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.AirMeasurementValuesDTO" : {
+        "type" : "object",
+        "properties" : {
+          "airPressure" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          },
+          "airTemperature" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          },
+          "gustDirection" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          },
+          "gustSpeed" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          },
+          "humidity" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          },
+          "windDirection" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          },
+          "windSpeed" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          }
+        },
+        "title" : "AirMeasurementValuesDTO"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.boxes.WaterBoxDTO" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "id" : {
+            "type" : [ "null", "integer" ],
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "isMoving" : {
+            "type" : [ "null", "boolean" ],
+            "title" : "Boolean"
+          },
+          "measurementTimes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.TimestampedBoxMeasurementsDTO_hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.WaterMeasurementValuesDTO"
+            },
+            "title" : "List<TimestampedBoxMeasurementsDTO<WaterMeasurementValuesDTO>>"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "required" : [ "measurementTimes" ],
+        "title" : "WaterBoxDTO"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.TimestampedBoxMeasurementsDTO_hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.WaterMeasurementValuesDTO" : {
+        "type" : "object",
+        "properties" : {
+          "measurements" : {
+            "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.WaterMeasurementValuesDTO"
+          },
+          "time" : {
+            "$ref" : "#/components/schemas/kotlinx.datetime.LocalDateTime"
+          }
+        },
+        "required" : [ "measurements", "time" ],
+        "title" : "TimestampedBoxMeasurementsDTO<WaterMeasurementValuesDTO>"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.WaterMeasurementValuesDTO" : {
+        "type" : "object",
+        "properties" : {
+          "batteryVoltage" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          },
+          "standardDeviation" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          },
+          "tide" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          },
+          "waterTemperature" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          },
+          "waveHeight" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          }
+        },
+        "title" : "WaterMeasurementValuesDTO"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.boxes.WaterTemperatureOnlyBoxDTO" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "id" : {
+            "type" : [ "null", "integer" ],
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "isMoving" : {
+            "type" : [ "null", "boolean" ],
+            "title" : "Boolean"
+          },
+          "measurementTimes" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.TimestampedBoxMeasurementsDTO_hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.WaterTemperatureOnlyMeasurementValuesDTO"
+            },
+            "title" : "List<TimestampedBoxMeasurementsDTO<WaterTemperatureOnlyMeasurementValuesDTO>>"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "required" : [ "measurementTimes" ],
+        "title" : "WaterTemperatureOnlyBoxDTO"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.TimestampedBoxMeasurementsDTO_hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.WaterTemperatureOnlyMeasurementValuesDTO" : {
+        "type" : "object",
+        "properties" : {
+          "measurements" : {
+            "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.WaterTemperatureOnlyMeasurementValuesDTO"
+          },
+          "time" : {
+            "$ref" : "#/components/schemas/kotlinx.datetime.LocalDateTime"
+          }
+        },
+        "required" : [ "measurements", "time" ],
+        "title" : "TimestampedBoxMeasurementsDTO<WaterTemperatureOnlyMeasurementValuesDTO>"
+      },
+      "hs.flensburg.marlin.business.api.sensors.entity.boxes.measurements.WaterTemperatureOnlyMeasurementValuesDTO" : {
+        "type" : "object",
+        "properties" : {
+          "waterTemperature" : {
+            "type" : [ "null", "number" ],
+            "format" : "double",
+            "title" : "Double"
+          }
+        },
+        "title" : "WaterTemperatureOnlyMeasurementValuesDTO"
+      },
+      "hs.flensburg.marlin.business.api.admin.entity.DashboardInfo" : {
+        "type" : "object",
+        "properties" : {
+          "totalLocations" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "totalMeasurements" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "totalSensors" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "totalUsers" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          }
+        },
+        "required" : [ "totalLocations", "totalMeasurements", "totalSensors", "totalUsers" ],
+        "title" : "DashboardInfo"
+      },
+      "hs.flensburg.marlin.business.api.admin.entity.AssignLocationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "locationId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        },
+        "required" : [ "locationId", "userId" ],
+        "title" : "AssignLocationRequest"
+      },
+      "hs.flensburg.marlin.business.api.potentialSensors.entity.PotentialSensorDTO" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "id" : {
+            "type" : [ "null", "integer" ],
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "isActive" : {
+            "type" : [ "null", "boolean" ],
+            "title" : "Boolean"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "title" : "PotentialSensorDTO"
+      },
+      "hs.flensburg.marlin.business.api.notifications.entity.TestNotificationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "FCMtoken" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "message" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "title" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "FCMtoken", "message", "title" ],
+        "title" : "TestNotificationRequest"
+      },
+      "io.ktor.http.ContentDisposition" : {
+        "type" : "object",
+        "properties" : {
+          "parameters" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/io.ktor.http.HeaderValueParam"
+            },
+            "title" : "List<HeaderValueParam>"
+          },
+          "disposition" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "required" : [ "disposition", "parameters" ],
+        "title" : "ContentDisposition"
+      },
+      "io.ktor.http.HeaderValueParam" : {
+        "type" : "object",
+        "properties" : {
+          "escapeValue" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          },
+          "name" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "value" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "escapeValue", "name", "value" ],
+        "title" : "HeaderValueParam"
+      },
+      "io.ktor.http.ContentType" : {
+        "type" : "object",
+        "properties" : {
+          "parameters" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/io.ktor.http.HeaderValueParam"
+            },
+            "title" : "List<HeaderValueParam>"
+          },
+          "contentSubtype" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "contentType" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "contentSubtype", "contentType", "parameters" ],
+        "title" : "ContentType"
+      },
+      "kotlin.Function0_kotlin.Unit" : {
+        "type" : "object",
+        "properties" : { },
+        "title" : "Function0<Unit>"
+      },
+      "io.ktor.http.Headers" : {
+        "type" : "object",
+        "properties" : {
+          "caseInsensitiveName" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          }
+        },
+        "required" : [ "caseInsensitiveName" ],
+        "title" : "Headers"
+      },
+      "kotlin.Function0_io.ktor.utils.io.ByteReadChannel" : {
+        "type" : "object",
+        "properties" : { },
+        "title" : "Function0<ByteReadChannel>"
+      },
+      "io.ktor.http.content.PartData.FileItem" : {
+        "type" : "object",
+        "properties" : {
+          "contentDisposition" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/io.ktor.http.ContentDisposition"
+            } ]
+          },
+          "contentType" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/io.ktor.http.ContentType"
+            } ]
+          },
+          "dispose" : {
+            "$ref" : "#/components/schemas/kotlin.Function0_kotlin.Unit"
+          },
+          "headers" : {
+            "$ref" : "#/components/schemas/io.ktor.http.Headers"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "originalFileName" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "provider" : {
+            "$ref" : "#/components/schemas/kotlin.Function0_io.ktor.utils.io.ByteReadChannel"
+          }
+        },
+        "required" : [ "dispose", "headers", "provider" ],
+        "title" : "FileItem"
+      },
+      "hs.flensburg.marlin.business.api.location.entity.ImageRequest" : {
+        "type" : "object",
+        "properties" : {
+          "base64" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "contentType" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "title" : "ImageRequest"
+      },
+      "hs.flensburg.marlin.business.api.location.entity.UpdateLocationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "address" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "contact" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.location.entity.Contact"
+            } ]
+          },
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "image" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/hs.flensburg.marlin.business.api.location.entity.ImageRequest"
+            } ]
+          },
+          "name" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "openingHours" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "required" : [ "address", "name" ],
+        "title" : "UpdateLocationRequest"
+      },
+      "hs.flensburg.marlin.business.api.userDevice.entity.UserDevice" : {
+        "type" : "object",
+        "properties" : {
+          "fcmToken" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        },
+        "required" : [ "fcmToken", "id", "userId" ],
+        "title" : "UserDevice"
+      },
+      "hs.flensburg.marlin.business.api.userDevice.entity.CreateUserDeviceRequest" : {
+        "type" : "object",
+        "properties" : {
+          "fcmToken" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        },
+        "required" : [ "fcmToken", "userId" ],
+        "title" : "CreateUserDeviceRequest"
+      },
+      "hs.flensburg.marlin.business.api.notificationMeasurementRule.entity.NotificationMeasurementRuleDTO" : {
+        "type" : "object",
+        "properties" : {
+          "createdAt" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/kotlinx.datetime.LocalDateTime"
+            } ]
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "isActive" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          },
+          "lastNotifiedAt" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/kotlinx.datetime.LocalDateTime"
+            } ]
+          },
+          "lastState" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          },
+          "locationId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "measurementTypeId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "measurementValue" : {
+            "type" : "number",
+            "format" : "double",
+            "title" : "Double"
+          },
+          "operator" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        },
+        "required" : [ "id", "isActive", "lastState", "locationId", "measurementTypeId", "measurementValue", "operator", "userId" ],
+        "title" : "NotificationMeasurementRuleDTO"
+      },
+      "hs.flensburg.marlin.business.api.notificationMeasurementRule.entity.CreateOrUpdateNotificationMeasurementRuleRequest" : {
+        "type" : "object",
+        "properties" : {
+          "isActive" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          },
+          "locationId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "measurementTypeId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "measurementValue" : {
+            "type" : "number",
+            "format" : "double",
+            "title" : "Double"
+          },
+          "operator" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        },
+        "required" : [ "isActive", "locationId", "measurementTypeId", "measurementValue", "operator", "userId" ],
+        "title" : "CreateOrUpdateNotificationMeasurementRuleRequest"
+      },
+      "UserLocationDTO" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "locationId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "sentHarborNotifications" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        },
+        "required" : [ "id", "locationId", "sentHarborNotifications", "userId" ],
+        "title" : "UserLocationDTO"
+      },
+      "hs.flensburg.marlin.business.api.userLocations.entity.CreateOrUpdateUserLocationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "locationId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "sentHarborNotifications" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          },
+          "userId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          }
+        },
+        "required" : [ "locationId", "sentHarborNotifications", "userId" ],
+        "title" : "CreateOrUpdateUserLocationRequest"
+      },
+      "NotificationLocationDTO" : {
+        "type" : "object",
+        "properties" : {
+          "createdBy" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "id" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "locationId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "notificationText" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "notificationTitle" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "createdBy", "id", "locationId", "notificationText", "notificationTitle" ],
+        "title" : "NotificationLocationDTO"
+      },
+      "hs.flensburg.marlin.business.api.notificationLocation.entity.CreateOrUpdateNotificationLocationRequest" : {
+        "type" : "object",
+        "properties" : {
+          "createdBy" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "locationId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "title" : "Long"
+          },
+          "notificationText" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "notificationTitle" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "createdBy", "locationId", "notificationText", "notificationTitle" ],
+        "title" : "CreateOrUpdateNotificationLocationRequest"
+      }
+    },
+    "examples" : { },
+    "securitySchemes" : {
+      "BearerAuth" : {
+        "type" : "http",
+        "description" : "JWT access token for authenticated users. Obtain via /login, /register, /login/google/android, or /magic-link/login endpoints. Token expires after 15 minutes - use /auth/refresh to obtain a new token pair.",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      },
+      "BearerAuthAdmin" : {
+        "type" : "http",
+        "description" : "JWT access token with admin role. Only users with 'ADMIN' role in their JWT claims can access admin endpoints. Obtain via login endpoints if user has admin privileges.",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      },
+      "OAuth2Google" : {
+        "type" : "oauth2",
+        "description" : "Google OAuth2 authentication flow. Redirects to Google for authentication, then returns JWT tokens via callback.",
+        "flows" : {
+          "authorizationCode" : {
+            "authorizationUrl" : "https://accounts.google.com/o/oauth2/v2/auth",
+            "tokenUrl" : "https://oauth2.googleapis.com/token",
+            "scopes" : {
+              "openid" : "OpenID Connect authentication",
+              "email" : "Access user's email address",
+              "profile" : "Access user's basic profile information"
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks" : { }
+}
