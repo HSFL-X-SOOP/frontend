@@ -6,6 +6,8 @@ import {
     RegisterRequest,
     VerifyEmailRequest,
     GoogleLoginRequest,
+    RegisterUserDeviceRequest,
+    RegisterUserDeviceResponse,
 } from "@/api/models/auth";
 import { useAuthStore } from "@/api/stores/auth";
 import * as AsyncHandler from "@/hooks/core/asyncHandler";
