@@ -11,8 +11,8 @@ import {ChartDataPoint} from '@/types/chart';
 import {MarinaNameWithId} from '@/types/marina';
 import {useLocationStore} from '@/api/stores/location.service';
 import {
-    CreateMeasurementDictionary,
-    GetLatestMeasurements,
+    createMeasurementDictionary,
+    getLatestMeasurements,
     formatMeasurementValue,
     getIDFromMeasurementType,
     getMeasurementColor,
@@ -189,7 +189,7 @@ export default function DashboardScreen() {
 
     const filteredMeasurements = useMemo(() => {
         if (!timeRangeData?.boxes) return [];
-        const latestMeasurements = GetLatestMeasurements(timeRangeData.boxes);
+        const latestMeasurements = getLatestMeasurements(timeRangeData.boxes);
         const filtered = latestMeasurements.filter(
             m => !excludedMeasurements.includes(m.measurementType)
         );
@@ -266,7 +266,7 @@ export default function DashboardScreen() {
 
     useEffect(() => {
         if (timeRangeData) {
-            const measurementDict = CreateMeasurementDictionary(timeRangeData, timeRange);
+            const measurementDict = createMeasurementDictionary(timeRangeData, timeRange);
 
             const tideData = measurementDict["tide"]?.reverse() || [];
             const waveData = measurementDict["waveHeight"]?.reverse() || [];

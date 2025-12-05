@@ -4,7 +4,7 @@ import { Activity, Battery, HelpCircle, Thermometer, Waves } from "@tamagui/luci
 import { formatTimeToLocal } from "@/utils/time";
 import { MeasurementType } from "@/api/models/notificationMeasurementRule";
 
-export const GetLatestMeasurements = (boxes: Box[]): LatestMeasurement[] => {
+export const getLatestMeasurements = (boxes: Box[]): LatestMeasurement[] => {
     const measurements: LatestMeasurement[] = [];
 
     boxes.forEach((box) => {
@@ -67,7 +67,7 @@ export const GetLatestMeasurements = (boxes: Box[]): LatestMeasurement[] => {
     return measurements;
 }
 
-export const CreateMeasurementDictionary = (
+export const createMeasurementDictionary = (
     data: any,
     timeRange: string
 ): MeasurementDictionary => {
