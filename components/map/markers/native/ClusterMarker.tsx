@@ -1,17 +1,21 @@
 import React from 'react';
 
 interface ClusterMarkerProps {
-  cluster: any;
-  isDark?: boolean;
+  latitude: number;
+  longitude: number;
+  pointCount: number;
+  clusterId: number;
   onPress?: () => void;
+  isDark?: boolean;
 }
 
 /**
  * Native cluster marker component for MapLibre React Native
+ * Placeholder implementation - actual implementation would render MapLibre MarkerView
  */
 export const ClusterMarker = React.memo(
-  ({ cluster, isDark, onPress }: ClusterMarkerProps) => {
-    // Placeholder: Real implementation would render MapLibre MarkerView with cluster count
+  ({ latitude, longitude, pointCount, clusterId, onPress, isDark }: ClusterMarkerProps) => {
+    // TODO: Render actual MapLibre MarkerView with cluster visualization
     return null;
   }
 );

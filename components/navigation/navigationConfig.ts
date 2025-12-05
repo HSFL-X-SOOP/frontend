@@ -1,7 +1,6 @@
 import {MapIcon, CloudIcon, BadgeIcon} from '@/components/ui/Icons';
 import {LayoutDashboard, BookOpen, User, LogOut} from '@tamagui/lucide-icons';
 import type {ComponentType} from 'react';
-import type {IconProps} from '@tamagui/helpers-icon';
 
 /**
  * Navigation item configuration
@@ -10,7 +9,7 @@ import type {IconProps} from '@tamagui/helpers-icon';
 export interface NavigationItem {
     key: string;
     label: string; // Translation key
-    icon: ComponentType<IconProps>;
+    icon: ComponentType<any>; // Icon component (custom or tamagui)
     href: string;
     isExternal?: boolean;
     requiresAuth?: boolean;

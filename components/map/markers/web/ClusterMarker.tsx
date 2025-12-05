@@ -1,17 +1,20 @@
 import React from 'react';
 
 interface ClusterMarkerProps {
-  cluster: any;
+  latitude: number;
+  longitude: number;
+  pointCount: number;
+  onClick?: () => void;
   isDark?: boolean;
-  onPress?: () => void;
 }
 
 /**
  * Web cluster marker component for react-map-gl
+ * Placeholder implementation - actual implementation would render react-map-gl Marker
  */
 export const ClusterMarker = React.memo(
-  ({ cluster, isDark, onPress }: ClusterMarkerProps) => {
-    // Placeholder: Real implementation would render react-map-gl Marker with cluster count
+  ({ latitude, longitude, pointCount, onClick, isDark }: ClusterMarkerProps) => {
+    // TODO: Render actual react-map-gl Marker with cluster visualization
     return null;
   }
 );
