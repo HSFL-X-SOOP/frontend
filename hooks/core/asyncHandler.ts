@@ -3,38 +3,44 @@
  */
 import React from 'react';
 
-export const useAsync = <T, E = string>(
-  asyncFunction: () => Promise<T>,
-  immediate = true
+// Legacy pattern: for wrapping functions with parameters
+// Returns [executeFunction, statusObject] tuple
+export const useAsync = <TArgs extends any[], TReturn, E = string>(
+  asyncFunction: (...args: TArgs) => Promise<TReturn>,
+  immediate = false
 ) => {
   const [status, setStatus] = React.useState<'idle' | 'pending' | 'success' | 'error'>('idle');
-  const [value, setValue] = React.useState<T | null>(null);
+  const [value, setValue] = React.useState<TReturn | null>(null);
   const [error, setError] = React.useState<E | null>(null);
 
-  const execute = React.useCallback(async () => {
-    setStatus('pending');
-    setValue(null);
-    setError(null);
+  const execute = React.useCallback(
+    async (...args: TArgs) => {
+      setStatus('pending');
+      setValue(null);
+      setError(null);
 
-    try {
-      const response = await asyncFunction();
-      setValue(response);
-      setStatus('success');
-      return response;
-    } catch (error) {
-      setError(error as E);
-      setStatus('error');
-      throw error;
-    }
-  }, [asyncFunction]);
+      try {
+        const response = await asyncFunction(...args);
+        setValue(response);
+        setStatus('success');
+        return response;
+      } catch (err) {
+        setError(err as E);
+        setStatus('error');
+        throw err;
+      }
+    },
+    [asyncFunction]
+  );
 
   React.useEffect(() => {
-    if (immediate) {
+    if (immediate && asyncFunction) {
       execute();
     }
-  }, [execute, immediate]);
+  }, [execute, immediate, asyncFunction]);
 
-  return { execute, status, value, error };
+  // Return as tuple for destructuring compatibility
+  return [execute, { status, value, error }] as const;
 };
 
 export default useAsync;
