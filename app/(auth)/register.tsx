@@ -7,7 +7,7 @@ import {PermissionsAndroid, Platform, SafeAreaView} from 'react-native';
 import {Button, Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {User} from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/components/useToast';
+import {useToast} from '@/hooks/useToast';
 import {GoogleIcon} from '@/components/ui/Icons';
 import {useGoogleSignIn} from '@/hooks/useGoogleSignIn';
 import {usePasswordValidation, useEmailValidation} from '@/hooks/usePasswordValidation';

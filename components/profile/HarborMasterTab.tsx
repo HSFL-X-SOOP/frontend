@@ -34,7 +34,7 @@ import {
     AlertCircle
 } from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/components/useToast';
+import {useToast} from '@/hooks/useToast';
 import {Platform} from 'react-native';
 import {useLocationInfo} from '@/hooks/useLocationInfo';
 import {UpdateLocationRequest, DetailedLocationDTO} from '@/api/models/location';

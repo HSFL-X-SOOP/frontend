@@ -1,5 +1,5 @@
 import {useEffect, useState} from 'react';
-import {useLocationStore} from '@/api/stores/locationStore';
+import {useLocationStore} from '@/api/stores/location.service';
 import {useSession} from '@/context/SessionContext';
 import {AuthorityRole} from '@/api/models/profile';
 import {DetailedLocationDTO, UpdateLocationRequest} from '@/api/models/location';

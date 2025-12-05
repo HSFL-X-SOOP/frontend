@@ -9,7 +9,7 @@ import {useSensorDataNew, useSensorDataTimeRange} from '@/hooks/useSensors';
 import {useTranslation} from '@/hooks/useTranslation';
 import {ChartDataPoint} from '@/types/chart';
 import {MarinaNameWithId} from '@/types/marina';
-import {useLocationStore} from '@/api/stores/locations';
+import {useLocationStore} from '@/api/stores/location.service';
 import {
     CreateMeasurementDictionary,
     GetLatestMeasurements,

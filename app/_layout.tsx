@@ -25,7 +25,7 @@ import {AuthProvider} from '@/context/SessionContext'
 import {ThemeProvider, useThemeContext} from '@/context/ThemeSwitch.tsx'
 import {usePathname, Slot} from 'expo-router'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import type {ToastType} from '@/components/useToast'
+import type {ToastType} from '@/hooks/useToast'
 
 
 function CurrentToast() {

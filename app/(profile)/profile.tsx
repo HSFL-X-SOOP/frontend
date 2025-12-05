@@ -20,7 +20,7 @@ import {useTranslation} from '@/hooks/useTranslation';
 import {ProfileTab} from '@/components/profile/ProfileTab';
 import {BoatsTab} from '@/components/profile/BoatsTab';
 import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
-import {useLocationStore} from '@/api/stores/locationStore';
+import {useLocationStore} from '@/api/stores/location.service';
 
 export default function ProfileScreen() {
     const router = useRouter();

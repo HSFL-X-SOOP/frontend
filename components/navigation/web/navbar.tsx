@@ -2,7 +2,7 @@ import {Link, useRouter, Href} from 'expo-router';
 import {Button, Popover, Sheet, Text, XStack, YStack, useTheme, ScrollView, Tooltip} from 'tamagui';
 import {useState} from 'react';
 
-import {useToast} from '@/components/useToast';
+import {useToast} from '@/hooks/useToast';
 import {ThemeSwitch} from '@/context/ThemeSwitch';
 import {LOGO, BadgeIcon, MapIcon, CloudIcon} from '@/components/ui/Icons';
 import {User, Languages, Menu, LogOut, LayoutDashboard, BookOpen} from '@tamagui/lucide-icons';

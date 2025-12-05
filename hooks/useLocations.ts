@@ -1,8 +1,8 @@
 import {useState, useEffect} from 'react';
 import {DetailedLocationDTO} from '@/api/models/location';
-import {useToast} from '@/components/useToast';
+import {useToast} from '@/hooks/useToast';
 import {useSession} from '@/context/SessionContext';
-import {useLocationStore} from '@/api/stores/locations';
+import {useLocationStore} from '@/api/stores/location.service';
 
 /**
  * Hook to fetch all locations from the /locations endpoint

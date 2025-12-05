@@ -14,7 +14,7 @@ import {
 } from 'tamagui';
 import {Globe, Activity, Ruler, Check} from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/components/useToast';
+import {useToast} from '@/hooks/useToast';
 import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/useUser';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';

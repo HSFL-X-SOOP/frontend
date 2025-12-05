@@ -9,7 +9,7 @@ import {AuthorityRole} from '@/api/models/profile';
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/components/useToast';
+import {useToast} from '@/hooks/useToast';
 import {createLogger} from '@/utils/logger';
 
 const logger = createLogger('Auth:MagicLink');
