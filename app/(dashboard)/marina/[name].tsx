@@ -30,11 +30,11 @@ import {
     Home,
     MapPin,
     Thermometer,
-    Waves, 
-    HeartPlus, 
+    Waves,
+    HeartPlus,
     HeartMinus,
     BellOff,
-    Bell, 
+    Bell,
     BrickWallFire,
     MessageSquarePlus
 } from '@tamagui/lucide-icons';
@@ -69,15 +69,15 @@ import {
     useMedia
 } from 'tamagui';
 
-import { useUserLocations } from '@/hooks/data';
-import { UserLocation } from '@/api/models/userLocation';
-import { useNotificationMeasurementRules } from '@/hooks/ui';
-import { MeasurementType, NotificationMeasurementRule } from '@/api/models/notificationMeasurementRule';
-import { Popover } from 'tamagui';
-import { useNotificationLocations } from '@/hooks/ui';
-import { useSession } from '@/context/SessionContext';
-import { AuthorityRole } from '@/api/models/profile';
-import { useNotificationMeasurementRuleStore } from '@/api/stores/notificationMeasurementRule';
+import {useUserLocations} from '@/hooks/data';
+import {UserLocation} from '@/api/models/userLocation';
+import {useNotificationMeasurementRules} from '@/hooks/ui';
+import {MeasurementType, NotificationMeasurementRule} from '@/api/models/notificationMeasurementRule';
+import {Popover} from 'tamagui';
+import {useNotificationLocations} from '@/hooks/ui';
+import {useSession} from '@/context/SessionContext';
+import {AuthorityRole} from '@/api/models/profile';
+import {useNotificationMeasurementRuleStore} from '@/api/stores/notificationMeasurementRule';
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -371,7 +371,7 @@ export default function DashboardScreen() {
 
     const updateUserLocationSentHarborNotifications = useCallback(async () => {
         if (!marinaID || !userLocation) return;
-        
+
         const updatedUserocation = await userLocations.update(userLocation.id, {
             userId: userID,
             locationId: marinaID,
@@ -422,45 +422,45 @@ export default function DashboardScreen() {
                             </H1>
                             <View style={{width: 300}}>
                                 <XStack gap={20}>
-                                <NavigateDashboardDropdownMenu
-                                    isDark={isDark}
-                                    router={router}
-                                    sensorLocations={sensorLocations}
-                                    selectedMarina={harbourName}
-                                />
-                               
-                                {(userID > -1) && (
-
-                                   <XStack>
-
-                                    <Button
-                                    size="$5"
-                                    variant="outlined"
-                                    icon={userLocation ? HeartMinus : HeartPlus}
-                                    onPress={createOrDeleteUserLocation}
-                                    circular
-                                    visibility='hidden'
+                                    <NavigateDashboardDropdownMenu
+                                        isDark={isDark}
+                                        router={router}
+                                        sensorLocations={sensorLocations}
+                                        selectedMarina={harbourName}
                                     />
-                                    {userLocation &&(
-                                        <Button
-                                        size="$5"
-                                        variant="outlined"
-                                        icon={userLocation?.sentHarborNotifications ? BellOff : Bell}
-                                        onPress={updateUserLocationSentHarborNotifications}
-                                        circular
-                                        />
+
+                                    {(userID > -1) && (
+
+                                        <XStack>
+
+                                            <Button
+                                                size="$5"
+                                                variant="outlined"
+                                                icon={userLocation ? HeartMinus : HeartPlus}
+                                                onPress={createOrDeleteUserLocation}
+                                                circular
+                                                visibility='hidden'
+                                            />
+                                            {userLocation && (
+                                                <Button
+                                                    size="$5"
+                                                    variant="outlined"
+                                                    icon={userLocation?.sentHarborNotifications ? BellOff : Bell}
+                                                    onPress={updateUserLocationSentHarborNotifications}
+                                                    circular
+                                                />
+                                            )}
+                                            {true && (
+                                                <HarborMasterBroadcastNotificationPopover
+                                                    shouldAdapt={false}
+                                                    placement="top"
+                                                    Icon={MessageSquarePlus}
+                                                    Name={"Harbor Master Notification"}
+                                                    userID={userID}
+                                                    marinaID={marinaID}
+                                                />)}
+                                        </XStack>
                                     )}
-                                    {true && (
-                                        <HarborMasterBroadcastNotificationPopover
-                                        shouldAdapt={false}
-                                        placement="top"
-                                        Icon={MessageSquarePlus}
-                                        Name={"Harbor Master Notification"}
-                                        userID={userID}
-                                        marinaID={marinaID}
-                                        />)}
-                                    </XStack>
-                                )}
                                 </XStack>
                             </View>
                         </Stack>
@@ -574,19 +574,19 @@ export default function DashboardScreen() {
                                         >
                                             <Card.Header padded>
                                                 <YStack gap="$3" alignItems="center">
-                                                {userLocation &&(
-                                                    <SetNotificationMeasurementRulePopover
-                                                    shouldAdapt={false}
-                                                    placement="top"
-                                                    Icon={Bell}
-                                                    Name={getTextFromMeasurementType(measurement.measurementType, t)}
-                                                    Value={measurement.value}
-                                                    MeasurementType={measurement.measurementType}
-                                                    marinaID={marinaID}
-                                                    userID={userID}
-                                                    measurement={measurement}
-                                                    t={t}
-                                                />)}
+                                                    {userLocation && (
+                                                        <SetNotificationMeasurementRulePopover
+                                                            shouldAdapt={false}
+                                                            placement="top"
+                                                            Icon={Bell}
+                                                            Name={getTextFromMeasurementType(measurement.measurementType, t)}
+                                                            Value={measurement.value}
+                                                            MeasurementType={measurement.measurementType}
+                                                            marinaID={marinaID}
+                                                            userID={userID}
+                                                            measurement={measurement}
+                                                            t={t}
+                                                        />)}
                                                     <Stack
                                                         width={56}
                                                         height={56}
@@ -703,17 +703,27 @@ export default function DashboardScreen() {
 }
 
 export function SetNotificationMeasurementRulePopover({
-  Icon,
-  Name,
-  shouldAdapt,
-  userID,
-  marinaID,
-  Value,
-  MeasurementType,
-  measurement,
-  t,
-  ...props
-}: PopoverProps & { Icon?: any; Name?: string; shouldAdapt?: boolean; userID?: number | null; marinaID?: number | null; Value?: number; MeasurementType: string, measurement: any, t: any}) {
+                                                          Icon,
+                                                          Name,
+                                                          shouldAdapt,
+                                                          userID,
+                                                          marinaID,
+                                                          Value,
+                                                          MeasurementType,
+                                                          measurement,
+                                                          t,
+                                                          ...props
+                                                      }: PopoverProps & {
+    Icon?: any;
+    Name?: string;
+    shouldAdapt?: boolean;
+    userID?: number | null;
+    marinaID?: number | null;
+    Value?: number;
+    MeasurementType: string,
+    measurement: any,
+    t: any
+}) {
     const notificationMeasurementRules = useNotificationMeasurementRules();
     const [measurementValue, setMeasurementValue] = useState<number>(Value || 0);
     const [operator, setOperator] = useState<string>('>');
@@ -740,7 +750,7 @@ export function SetNotificationMeasurementRulePopover({
 
         void fetchNotificationMeasurementRule();
     }, [marinaID, userID, MeasurementType]);
-    
+
     const createNotificationMeasurementRule = useCallback(async (value: number) => {
         if (!marinaID) return;
         const notificationMeasurementRule = {
@@ -751,7 +761,7 @@ export function SetNotificationMeasurementRulePopover({
             measurementValue: value,
             isActive: isActive,
         }
-        
+
         if (existingRule) {
             await notificationMeasurementRules.update(existingRule.id, notificationMeasurementRule);
         } else {
@@ -761,166 +771,173 @@ export function SetNotificationMeasurementRulePopover({
     }, [marinaID, operator, isActive, userID, MeasurementType, existingRule]);
     return (
         <Dialog
-        allowFlip
-        stayInFrame
-        offset={15}
-        {...props}
-        open={open}
-        onOpenChange={setOpen}
+            allowFlip
+            stayInFrame
+            offset={15}
+            {...props}
+            open={open}
+            onOpenChange={setOpen}
         >
             <Dialog.Trigger asChild>
-                <Button icon={Icon} onPress={() => setOpen(true)} />
+                <Button icon={Icon} onPress={() => setOpen(true)}/>
             </Dialog.Trigger>
 
             <Dialog.Portal>
-                <Dialog.Overlay 
-                onPress={() => setOpen(false)} 
-                backgroundColor="rgba(0,0,0,0.3)" 
+                <Dialog.Overlay
+                    onPress={() => setOpen(false)}
+                    backgroundColor="rgba(0,0,0,0.3)"
                 />
 
                 <Dialog.Content
-                key={`${measurement.id}-${measurement.measurementType}`}
-                borderWidth={1}
-                borderColor="$borderColor"
-                elevate
-                p="$4"
-                maxWidth="90%"
-                width="100%"
-                borderRadius="$6"
-                animation={[
-                    'quick',
-                    {
-                    opacity: { overshootClamping: true },
-                    },
-                ]}
-                enterStyle={{ opacity: 0, scale: 0.95 }}
-                exitStyle={{ opacity: 0, scale: 0.95 }}
+                    key={`${measurement.id}-${measurement.measurementType}`}
+                    borderWidth={1}
+                    borderColor="$borderColor"
+                    elevate
+                    p="$4"
+                    maxWidth="90%"
+                    width="100%"
+                    borderRadius="$6"
+                    animation={[
+                        'quick',
+                        {
+                            opacity: {overshootClamping: true},
+                        },
+                    ]}
+                    enterStyle={{opacity: 0, scale: 0.95}}
+                    exitStyle={{opacity: 0, scale: 0.95}}
                 >
 
-                <YStack gap="$4">
-                    
-                    <Text
-                    fontSize="$6"
-                    fontWeight="700"
-                    textAlign="center"
-                    >
-                    Benachrichtige mich, wenn …
-                    </Text>
+                    <YStack gap="$4">
 
-                    {/* Measurement Display */}
-                    <YStack gap="$2" alignItems="center">
-                        <Text fontSize="$4" color="$gray11" fontWeight="600">
-                            {getTextFromMeasurementType(measurement.measurementType, t)}
-                        </Text>
-
-                        <XStack alignItems="baseline" gap="$2">
-                            <H2 fontSize="$9" color={getMeasurementColor(measurement.measurementType)}>
-                            {formatMeasurementValue(measurement.value)}
-                            </H2>
-                            <Text fontSize="$5" color={getMeasurementColor(measurement.measurementType)}>
-                            {getMeasurementTypeSymbol(measurement.measurementType, t)}
-                            </Text>
-                        </XStack>
-                    </YStack>
-
-                    {/* Operator Value Selector */}
-                    <XStack gap="$2" justifyContent="center">
-                    <Button
-                        size="$3"
-                        theme={operator === "<" ? "active" : "gray"}
-                        onPress={() => setOperator("<")}
-                    >
-                        {"kleiner als Zielwert"}
-                    </Button>
-
-                    <Button
-                        size="$3"
-                        theme={operator === ">" ? "active" : "gray"}
-                        onPress={() => setOperator(">")}
-                    >
-                        {"größer als Zielwert"}
-                    </Button>
-                    </XStack>
-
-                    {/* Measurement Value Input */}
-                    <YStack gap="$2" alignItems="center">
-                    <Text fontSize="$4" fontWeight="600" color="$gray11">
-                        Zielwert
-                    </Text>
-
-                    <XStack gap="$2" alignItems="center">
-                        <Input
-                        size="$3"
-                        width={90}
-                        keyboardType="decimal-pad"
-                        inputMode="decimal"
-                        value={measurementValue.toString()}
-                        onChangeText={(text) => {
-                            if (/^-?\d*\.?\d*$/.test(text)) {
-                                let value = text === "" ? 0 : parseFloat(text);
-
-                                if (value < TEMPERATURE_MIN_VALUE) value = TEMPERATURE_MIN_VALUE;
-                                if (value > TEMPERATURE_MAX_VALUE) value = TEMPERATURE_MAX_VALUE;
-
-                                setMeasurementValue(value);
-                            }
-                        }}
-                        />
-                        <Text fontSize="$5" fontWeight="600" color={getMeasurementColor(measurement.measurementType)}>
-                        {getMeasurementTypeSymbol(measurement.measurementType, t)}
-                        </Text>
-                    </XStack>
-                    </YStack>
-
-                    {/* Checkbox */}
-                    <YStack gap="$2" alignItems="center">
-                        <XStack alignItems="center" gap="$2">
-                            <Checkbox
-                            checked={isActive}
-                            onCheckedChange={(checked: boolean | "indeterminate") => {
-                                setIsActive(checked === true);
-                            }}
-                            size="$4"
-                            borderColor="$gray7"
-                            >
-                                <Checkbox.Indicator>
-                                    <Text fontSize="$4">✓</Text>
-                                </Checkbox.Indicator>
-                            </Checkbox>
-                            <Text fontSize="$4" fontWeight="600" color="$gray11">
-                                Aktiv
-                            </Text>
-                        </XStack>
-                    </YStack>
-
-                    <Dialog.Close asChild>
-                        <Button
-                            size="$4"
-                            width="100%"
-                            onPress={() => {
-                            if (!marinaID) return;
-                            createNotificationMeasurementRule(measurementValue);
-                            }}
+                        <Text
+                            fontSize="$6"
+                            fontWeight="700"
+                            textAlign="center"
                         >
-                            Speichern
-                        </Button>
-                    </Dialog.Close>
-                
-                </YStack>
+                            Benachrichtige mich, wenn …
+                        </Text>
+
+                        {/* Measurement Display */}
+                        <YStack gap="$2" alignItems="center">
+                            <Text fontSize="$4" color="$gray11" fontWeight="600">
+                                {getTextFromMeasurementType(measurement.measurementType, t)}
+                            </Text>
+
+                            <XStack alignItems="baseline" gap="$2">
+                                <H2 fontSize="$9" color={getMeasurementColor(measurement.measurementType)}>
+                                    {formatMeasurementValue(measurement.value)}
+                                </H2>
+                                <Text fontSize="$5" color={getMeasurementColor(measurement.measurementType)}>
+                                    {getMeasurementTypeSymbol(measurement.measurementType, t)}
+                                </Text>
+                            </XStack>
+                        </YStack>
+
+                        {/* Operator Value Selector */}
+                        <XStack gap="$2" justifyContent="center">
+                            <Button
+                                size="$3"
+                                theme={operator === "<" ? "active" : "gray"}
+                                onPress={() => setOperator("<")}
+                            >
+                                {"kleiner als Zielwert"}
+                            </Button>
+
+                            <Button
+                                size="$3"
+                                theme={operator === ">" ? "active" : "gray"}
+                                onPress={() => setOperator(">")}
+                            >
+                                {"größer als Zielwert"}
+                            </Button>
+                        </XStack>
+
+                        {/* Measurement Value Input */}
+                        <YStack gap="$2" alignItems="center">
+                            <Text fontSize="$4" fontWeight="600" color="$gray11">
+                                Zielwert
+                            </Text>
+
+                            <XStack gap="$2" alignItems="center">
+                                <Input
+                                    size="$3"
+                                    width={90}
+                                    keyboardType="decimal-pad"
+                                    inputMode="decimal"
+                                    value={measurementValue.toString()}
+                                    onChangeText={(text) => {
+                                        if (/^-?\d*\.?\d*$/.test(text)) {
+                                            let value = text === "" ? 0 : parseFloat(text);
+
+                                            if (value < TEMPERATURE_MIN_VALUE) value = TEMPERATURE_MIN_VALUE;
+                                            if (value > TEMPERATURE_MAX_VALUE) value = TEMPERATURE_MAX_VALUE;
+
+                                            setMeasurementValue(value);
+                                        }
+                                    }}
+                                />
+                                <Text fontSize="$5" fontWeight="600"
+                                      color={getMeasurementColor(measurement.measurementType)}>
+                                    {getMeasurementTypeSymbol(measurement.measurementType, t)}
+                                </Text>
+                            </XStack>
+                        </YStack>
+
+                        {/* Checkbox */}
+                        <YStack gap="$2" alignItems="center">
+                            <XStack alignItems="center" gap="$2">
+                                <Checkbox
+                                    checked={isActive}
+                                    onCheckedChange={(checked: boolean | "indeterminate") => {
+                                        setIsActive(checked === true);
+                                    }}
+                                    size="$4"
+                                    borderColor="$gray7"
+                                >
+                                    <Checkbox.Indicator>
+                                        <Text fontSize="$4">✓</Text>
+                                    </Checkbox.Indicator>
+                                </Checkbox>
+                                <Text fontSize="$4" fontWeight="600" color="$gray11">
+                                    Aktiv
+                                </Text>
+                            </XStack>
+                        </YStack>
+
+                        <Dialog.Close asChild>
+                            <Button
+                                size="$4"
+                                width="100%"
+                                onPress={() => {
+                                    if (!marinaID) return;
+                                    createNotificationMeasurementRule(measurementValue);
+                                }}
+                            >
+                                Speichern
+                            </Button>
+                        </Dialog.Close>
+
+                    </YStack>
                 </Dialog.Content>
             </Dialog.Portal>
         </Dialog>
-  )
+    )
 }
 
 export function HarborMasterBroadcastNotificationPopover({
-  Icon,
-  Name,
-  shouldAdapt,
-  userID,
-  marinaID,
-  ...props
-}: PopoverProps & { Icon?: any; Name?: string; shouldAdapt?: boolean; userID?: number | null; marinaID?: number | null}) {
+                                                             Icon,
+                                                             Name,
+                                                             shouldAdapt,
+                                                             userID,
+                                                             marinaID,
+                                                             ...props
+                                                         }: PopoverProps & {
+    Icon?: any;
+    Name?: string;
+    shouldAdapt?: boolean;
+    userID?: number | null;
+    marinaID?: number | null
+}) {
     const [notificationTitle, setNotificationTitle] = useState<string>('');
     const [notificationMessage, setNotificationMessage] = useState<string>('');
     const notificationLocations = useNotificationLocations();
@@ -938,86 +955,86 @@ export function HarborMasterBroadcastNotificationPopover({
     }, [marinaID, notificationTitle, notificationMessage, userID]);
 
     return (
-    <Popover size="$5" allowFlip stayInFrame offset={15} resize {...props}>
-      <Popover.Trigger asChild>
-        <Button 
-            size="$5"
-            variant="outlined"
-            icon={Icon} 
-            circular
-            />
-      </Popover.Trigger>
+        <Popover size="$5" allowFlip stayInFrame offset={15} resize {...props}>
+            <Popover.Trigger asChild>
+                <Button
+                    size="$5"
+                    variant="outlined"
+                    icon={Icon}
+                    circular
+                />
+            </Popover.Trigger>
 
-      {shouldAdapt && (
-        <Adapt platform="touch">
-          <Sheet animation="medium" modal dismissOnSnapToBottom>
-            <Sheet.Frame padding="$4">
-              <Adapt.Contents />
-            </Sheet.Frame>
-            <Sheet.Overlay
-              backgroundColor="$shadowColor"
-              animation="lazy"
-              enterStyle={{ opacity: 0 }}
-              exitStyle={{ opacity: 0 }}
-            />
-          </Sheet>
-        </Adapt>
-      )}
+            {shouldAdapt && (
+                <Adapt platform="touch">
+                    <Sheet animation="medium" modal dismissOnSnapToBottom>
+                        <Sheet.Frame padding="$4">
+                            <Adapt.Contents/>
+                        </Sheet.Frame>
+                        <Sheet.Overlay
+                            backgroundColor="$shadowColor"
+                            animation="lazy"
+                            enterStyle={{opacity: 0}}
+                            exitStyle={{opacity: 0}}
+                        />
+                    </Sheet>
+                </Adapt>
+            )}
 
-      <Popover.Content
-        borderWidth={1}
-        borderColor="$borderColor"
-        width={300}
-        height={275}
-        enterStyle={{ y: -10, opacity: 0 }}
-        exitStyle={{ y: -10, opacity: 0 }}
-        elevate
-        animation={[
-          'quick',
-          {
-            opacity: {
-              overshootClamping: true,
-            },
-          },
-        ]}
-      >
-        <Popover.Arrow borderWidth={1} borderColor="$borderColor" />
-
-        <YStack gap="$3">
-            <XStack>
-                <Text fontSize="$6" fontWeight="600">{Name}</Text>
-            </XStack>
-            <XStack gap="$3">
-                <Label size="$3" htmlFor={"Title"}>
-                {"Title"}
-                </Label>
-                <Input f={1} size="$3" id={"Title"} onChangeText={(text) => setNotificationTitle(text)} />
-                
-            </XStack>
-
-            <XStack gap="$3">
-                <Label size="$3" htmlFor={"Message"}>
-                {"Message"}
-                </Label>
-                <TextArea f={1} size="$3" id={"Message"} onChangeText={(text) => setNotificationMessage(text)} />
-            </XStack>
-
-
-          <Popover.Close asChild>
-            <Button
-              size="$3"
-              onPress={() => {
-                if (!marinaID) {
-                  return;
-                }
-                createNotificationLocation();
-              }}
+            <Popover.Content
+                borderWidth={1}
+                borderColor="$borderColor"
+                width={300}
+                height={275}
+                enterStyle={{y: -10, opacity: 0}}
+                exitStyle={{y: -10, opacity: 0}}
+                elevate
+                animation={[
+                    'quick',
+                    {
+                        opacity: {
+                            overshootClamping: true,
+                        },
+                    },
+                ]}
             >
-              An alle Subscriber senden
-            </Button>
-          </Popover.Close>
-        </YStack>
-      </Popover.Content>
-    </Popover>
-  )
+                <Popover.Arrow borderWidth={1} borderColor="$borderColor"/>
+
+                <YStack gap="$3">
+                    <XStack>
+                        <Text fontSize="$6" fontWeight="600">{Name}</Text>
+                    </XStack>
+                    <XStack gap="$3">
+                        <Label size="$3" htmlFor={"Title"}>
+                            {"Title"}
+                        </Label>
+                        <Input f={1} size="$3" id={"Title"} onChangeText={(text) => setNotificationTitle(text)}/>
+
+                    </XStack>
+
+                    <XStack gap="$3">
+                        <Label size="$3" htmlFor={"Message"}>
+                            {"Message"}
+                        </Label>
+                        <TextArea f={1} size="$3" id={"Message"} onChangeText={(text) => setNotificationMessage(text)}/>
+                    </XStack>
+
+
+                    <Popover.Close asChild>
+                        <Button
+                            size="$3"
+                            onPress={() => {
+                                if (!marinaID) {
+                                    return;
+                                }
+                                createNotificationLocation();
+                            }}
+                        >
+                            An alle Subscriber senden
+                        </Button>
+                    </Popover.Close>
+                </YStack>
+            </Popover.Content>
+        </Popover>
+    )
 }
