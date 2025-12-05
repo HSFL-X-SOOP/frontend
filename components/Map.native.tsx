@@ -1,11 +1,10 @@
 import {useSensorDataNew} from "@/hooks/useSensors";
-import {useSupercluster} from "@/hooks/useSupercluster";
+import {useSupercluster, useMapFilters, useMapCamera, useMapState, useMapStyle} from "@/hooks/map";
 import {MapView, Camera, type CameraRef} from "@maplibre/maplibre-react-native";
-import {useMemo, useState, useRef, RefObject} from "react";
+import {useMemo, useRef} from "react";
 import {View} from "react-native";
 import SensorMarker from "./map/markers/native/SensorMarker";
 import ClusterMarker from "./map/markers/native/ClusterMarker";
-import {BoxType, LocationWithBoxes} from "@/api/models/sensor";
 import MapSensorBottomSheet, {MapSensorBottomSheetRef} from "./map/controls/MapSensorBottomSheet";
 import SensorList from "./map/sensors/SensorList";
 import {SpeedDial} from "@/components/speeddial";
@@ -21,19 +20,13 @@ interface MapProps {
 }
 
 const MAP_CONSTANTS = {
-    homeCoordinate: [9.26, 54.47926] as [number, number],
+    highlightDuration: 3000,
+    animationDuration: 500,
     zoomLevels: {
         min: 3,
         max: 18,
-        default: 7,
         sensorDetail: 12
-    },
-    boundaries: {
-        ne: [49.869301, 71.185001],
-        sw: [-31.266001, 27.560001]
-    },
-    highlightDuration: 3000,
-    animationDuration: 500
+    }
 };
 
 export default function NativeMap(props: MapProps) {
@@ -41,68 +34,43 @@ export default function NativeMap(props: MapProps) {
     const {t} = useTranslation();
 
     // REFS
-    const mapRef = useRef<MapView>(null); // für getZoom / getVisibleBounds
-    const cameraRef = useRef<CameraRef>(null); // für setCamera / flyTo etc.
+    const mapRef = useRef<MapView>(null);
+    const cameraRef = useRef<CameraRef>(null);
     const bottomSheetRef = useRef<MapSensorBottomSheetRef>(null);
     const hasSnappedForGestureRef = useRef(false);
 
     // DATA
     const {data: content, loading} = useSensorDataNew();
 
-    // FILTER
-    const [module1Visible, setModule1Visible] = useState(props.module1Visible ?? true);
-    const [module2Visible, setModule2Visible] = useState(props.module2Visible ?? true);
-    const [module3Visible, setModule3Visible] = useState(props.module3Visible ?? false);
+    // CONSOLIDATED HOOKS - Extract shared logic
+    const {
+        module1Visible, setModule1Visible,
+        module2Visible, setModule2Visible,
+        module3Visible, setModule3Visible,
+        filteredContent
+    } = useMapFilters(content, props.module1Visible, props.module2Visible, props.module3Visible);
 
-    // VIEW STATE (ähnlich Web)
-    const [viewportBounds, setViewportBounds] = useState<[number, number, number, number]>([
-        MAP_CONSTANTS.boundaries.sw[0],
-        MAP_CONSTANTS.boundaries.sw[1],
-        MAP_CONSTANTS.boundaries.ne[0],
-        MAP_CONSTANTS.boundaries.ne[1]
-    ]);
-    const [zoomLevel, setZoomLevel] = useState(MAP_CONSTANTS.zoomLevels.default);
-    const [center, setCenter] = useState<[number, number]>(MAP_CONSTANTS.homeCoordinate);
+    const {
+        viewportBounds, setViewportBounds,
+        zoomLevel, setZoomLevel,
+        center, setCenter,
+        bounds
+    } = useMapCamera();
 
-    // UI
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [highlightedSensorId, setHighlightedSensorId] = useState<number | null>(null);
+    const {
+        isDrawerOpen, setIsDrawerOpen,
+        isFilterOpen, setIsFilterOpen,
+        highlightedSensorId, setHighlightedSensorId,
+        toggleDrawer, toggleFilter, clearHighlight
+    } = useMapState();
 
-    // MAP STYLE
-    const mapStyle = useMemo(
-        () => isDark
-            ? require('@/assets/mapStyles/dark_mode_new.json')
-            : require('@/assets/mapStyles/light_mode_new.json'),
-        [isDark]
-    );
-
-    const bounds: [number, number, number, number] = useMemo(
-        () => viewportBounds,
-        [viewportBounds]
-    );
-
-    // FILTERED CONTENT
-    const filteredContent = useMemo(() => {
-        if (!content) return [];
-        return content.filter(locationWithBoxes => {
-            const hasWater = locationWithBoxes.boxes.some(
-                box =>
-                    box.type === BoxType.WaterBox ||
-                    box.type === BoxType.WaterTemperatureOnlyBox
-            );
-            const hasAir = locationWithBoxes.boxes.some(
-                box => box.type === BoxType.AirBox
-            );
-
-            if (module1Visible && hasWater) return true;
-            return module2Visible && hasAir;
-
-        });
-    }, [content, module1Visible, module2Visible]);
+    const { mapStyle } = useMapStyle(isDark);
 
     const visibleSensors = useMemo(() => {
         return filteredContent.filter(sensor => {
+            // Type guard for location and coordinates
+            if (!sensor.location?.coordinates) return false;
+
             const {lat, lon} = sensor.location.coordinates;
             return (
                 lon >= bounds[0] &&
