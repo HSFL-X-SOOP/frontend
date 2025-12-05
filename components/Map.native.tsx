@@ -1,7 +1,7 @@
 import {useSensorDataNew} from "@/hooks/useSensors";
 import {useSupercluster} from "@/hooks/useSupercluster";
 import {MapView, Camera, type CameraRef} from "@maplibre/maplibre-react-native";
-import {useMemo, useState, useRef} from "react";
+import {useMemo, useState, useRef, RefObject} from "react";
 import {View} from "react-native";
 import SensorMarker from "./map/markers/native/SensorMarker";
 import ClusterMarker from "./map/markers/native/ClusterMarker";
@@ -41,7 +41,7 @@ export default function NativeMap(props: MapProps) {
     const {t} = useTranslation();
 
     // REFS
-    const mapRef = useRef<any>(null); // für getZoom / getVisibleBounds
+    const mapRef = useRef<MapView>(null); // für getZoom / getVisibleBounds
     const cameraRef = useRef<CameraRef>(null); // für setCamera / flyTo etc.
     const bottomSheetRef = useRef<MapSensorBottomSheetRef>(null);
     const hasSnappedForGestureRef = useRef(false);

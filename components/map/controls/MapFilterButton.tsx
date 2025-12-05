@@ -102,13 +102,28 @@ export default function MapFilterButton({
     );
 
     return (
-        <Sheet modal open={sheetVisible} onOpenChange={handleOpenChange} snapPointsMode="fit">
+        <Sheet
+            modal
+            open={sheetVisible}
+            onOpenChange={handleOpenChange}
+            snapPointsMode="fit"
+            accessibilityLabel={t('map.filterSettings')}
+            accessibilityRole="dialog"
+        >
             <Sheet.Overlay animation="quick" enterStyle={{opacity: 0}} exitStyle={{opacity: 0}}/>
             <Sheet.Handle/>
             <Sheet.Frame padding="$4" backgroundColor="$background">
                 <XStack alignItems="center" justifyContent="space-between" marginBottom="$4">
                     <Text fontSize="$6" fontWeight="600">{t('map.filterSettings')}</Text>
-                    <Button size="$3" chromeless circular onPress={() => handleOpenChange(false)}>
+                    <Button
+                        size="$3"
+                        chromeless
+                        circular
+                        onPress={() => handleOpenChange(false)}
+                        accessibilityLabel={t('common.close')}
+                        accessibilityHint={t('map.closeFilterPanel')}
+                        accessibilityRole="button"
+                    >
                         <X size={20} color="$color" />
                     </Button>
                 </XStack>

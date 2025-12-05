@@ -11,23 +11,40 @@ export function useHttpClient() {
         timeout: 30_000,
     })
 
-    const refreshAccessToken = async (refreshToken: string): Promise<string> => {
-        const {data} = await axios.post<LoginResponse>(
-            `${ENV.apiUrl}/auth/refresh`,
-            {refreshToken}
-        )
+    // Mutex pattern: Prevent multiple simultaneous token refresh calls
+    let refreshPromise: Promise<string> | null = null;
 
-        const newSession = {
-            accessToken: data.accessToken,
-            refreshToken: data.refreshToken,
-            loggedInSince: session?.loggedInSince ?? new Date(),
-            lastTokenRefresh: new Date(),
-            profile: data.profile,
-            role: data.profile?.authorityRole ?? null
+    const refreshAccessToken = async (refreshToken: string): Promise<string> => {
+        // If a refresh is already in progress, return the existing promise
+        if (refreshPromise) {
+            return refreshPromise;
         }
 
-        login(newSession)
-        return newSession.accessToken
+        refreshPromise = (async () => {
+            try {
+                const {data} = await axios.post<LoginResponse>(
+                    `${ENV.apiUrl}/auth/refresh`,
+                    {refreshToken}
+                )
+
+                const newSession = {
+                    accessToken: data.accessToken,
+                    refreshToken: data.refreshToken,
+                    loggedInSince: session?.loggedInSince ?? new Date(),
+                    lastTokenRefresh: new Date(),
+                    profile: data.profile,
+                    role: data.profile?.authorityRole ?? null
+                }
+
+                login(newSession)
+                return newSession.accessToken
+            } finally {
+                // Clear the promise after completion (success or failure)
+                refreshPromise = null;
+            }
+        })();
+
+        return refreshPromise;
     }
 
     httpClient.interceptors.request.use(
@@ -47,6 +64,7 @@ export function useHttpClient() {
                     const accessToken = await refreshAccessToken(session.refreshToken!)
                     config.headers.Authorization = `Bearer ${accessToken}`
                 } catch (err) {
+                    console.error('Token refresh failed in request interceptor:', err);
                     return config
                 }
             } else {
@@ -60,11 +78,11 @@ export function useHttpClient() {
     httpClient.interceptors.response.use(
         (res) => res,
         async (err: AxiosError) => {
-            const originalRequest = err.config;
+            const originalRequest = err.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-            if (err.response?.status === 401 && originalRequest && !(originalRequest as any)._retry) {
+            if (err.response?.status === 401 && originalRequest && !originalRequest._retry) {
                 if (session?.refreshToken) {
-                    (originalRequest as any)._retry = true;
+                    originalRequest._retry = true;
 
                     try {
                         const accessToken = await refreshAccessToken(session.refreshToken);

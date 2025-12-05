@@ -3,6 +3,7 @@ export interface UserProfile {
     userId: number;
     language: Language;
     activityRoles: ActivityRole[];
+    roles?: ActivityRole[]; // Alias for activityRoles
     authorityRole: AuthorityRole
     measurementSystem: MeasurementSystem;
     createdAt: string;
