@@ -1,4 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { PointAnnotation } from '@maplibre/maplibre-react-native';
+import { View } from 'react-native';
+import { ClusterMarkerSvg } from './ClusterMarkerSvg';
+import { useThemeContext } from '@/context/ThemeSwitch';
 
 interface ClusterMarkerProps {
   latitude: number;
@@ -27,16 +31,48 @@ const arePropsEqual = (prevProps: ClusterMarkerProps, nextProps: ClusterMarkerPr
 /**
  * Native cluster marker component for MapLibre React Native
  * Memoized to prevent unnecessary re-renders when parent re-renders
- * Placeholder implementation - actual implementation would render MapLibre MarkerView
+ * Shows clustered sensor markers with count
  */
-export const ClusterMarker = React.memo(
-  ({ latitude, longitude, pointCount, clusterId, onPress, isDark }: ClusterMarkerProps) => {
-    // TODO: Render actual MapLibre MarkerView with cluster visualization
-    return null;
-  },
-  arePropsEqual
-);
+const NativeClusterMarker = ({
+  latitude,
+  longitude,
+  pointCount,
+  clusterId,
+  onPress,
+  isDark: isDarkProp,
+}: ClusterMarkerProps) => {
+  const { isDark } = useThemeContext();
+  const isActuallyDark = isDarkProp ?? isDark;
 
-ClusterMarker.displayName = 'ClusterMarker';
+  // Memoize color calculation to avoid recalculation
+  const accentColor = useMemo(
+    () => (!isActuallyDark ? '#006e99' : '#7db07d'),
+    [isActuallyDark]
+  );
 
-export default ClusterMarker;
+  const handleClusterPress = () => {
+    onPress?.();
+  };
+
+  return (
+    <PointAnnotation
+      id={`cluster-${clusterId}`}
+      key={`cluster-${clusterId}`}
+      coordinate={[longitude, latitude]}
+      title="Cluster"
+      onSelected={handleClusterPress}
+    >
+      <View>
+        <ClusterMarkerSvg
+          count={pointCount}
+          accentColor={accentColor}
+          enableAnimations={false}
+        />
+      </View>
+    </PointAnnotation>
+  );
+};
+
+NativeClusterMarker.displayName = 'NativeClusterMarker';
+
+export default React.memo(NativeClusterMarker, arePropsEqual);

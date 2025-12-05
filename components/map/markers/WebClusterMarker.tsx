@@ -1,4 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { Marker } from '@vis.gl/react-maplibre';
+import { ClusterMarkerSvg } from './ClusterMarkerSvg';
+import { useThemeContext } from '@/context/ThemeSwitch';
+import { YStack } from 'tamagui';
 
 interface ClusterMarkerProps {
   latitude: number;
@@ -25,16 +29,37 @@ const arePropsEqual = (prevProps: ClusterMarkerProps, nextProps: ClusterMarkerPr
 /**
  * Web cluster marker component for react-map-gl
  * Memoized to prevent unnecessary re-renders when parent re-renders
- * Placeholder implementation - actual implementation would render react-map-gl Marker
+ * Shows clustered sensor markers with count and animation
  */
-export const ClusterMarker = React.memo(
-  ({ latitude, longitude, pointCount, onClick, isDark }: ClusterMarkerProps) => {
-    // TODO: Render actual react-map-gl Marker with cluster visualization
-    return null;
-  },
-  arePropsEqual
-);
+const WebClusterMarker = ({ latitude, longitude, pointCount, onClick, isDark: isDarkProp }: ClusterMarkerProps) => {
+  const { isDark } = useThemeContext();
+  const isActuallyDark = isDarkProp ?? isDark;
 
-ClusterMarker.displayName = 'ClusterMarker';
+  // Memoize color calculation to avoid recalculation
+  const accentColor = useMemo(
+    () => (!isActuallyDark ? '#006e99' : '#7db07d'),
+    [isActuallyDark]
+  );
 
-export default ClusterMarker;
+  const handleClusterClick = (e: any) => {
+    e.originalEvent.stopPropagation();
+    onClick?.();
+  };
+
+  return (
+    <Marker
+      latitude={latitude}
+      longitude={longitude}
+      anchor="center"
+      onClick={handleClusterClick}
+    >
+      <YStack cursor="pointer">
+        <ClusterMarkerSvg count={pointCount} accentColor={accentColor} enableAnimations={true} />
+      </YStack>
+    </Marker>
+  );
+};
+
+WebClusterMarker.displayName = 'WebClusterMarker';
+
+export default React.memo(WebClusterMarker, arePropsEqual);
