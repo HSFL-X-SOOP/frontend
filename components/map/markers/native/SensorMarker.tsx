@@ -13,7 +13,7 @@ interface SensorMarkerProps {
  */
 const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProps): boolean => {
   return (
-    prevProps.locationWithBoxes.location.id === nextProps.locationWithBoxes.location.id &&
+    prevProps.locationWithBoxes?.location?.id === nextProps.locationWithBoxes?.location?.id &&
     prevProps.isDark === nextProps.isDark &&
     prevProps.onPress === nextProps.onPress
   );
