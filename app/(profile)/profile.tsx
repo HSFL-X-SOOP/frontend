@@ -21,6 +21,7 @@ import {ProfileTab} from '@/components/profile/ProfileTab';
 import {BoatsTab} from '@/components/profile/BoatsTab';
 import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
 import {useLocationStore} from '@/api/stores/location.service';
+import type {DetailedLocationDTO} from '@/api/models/location';
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -30,7 +31,7 @@ export default function ProfileScreen() {
     const locationStore = useLocationStore();
 
     const [activeTab, setActiveTab] = useState("profile");
-    const [harborLocation, setHarborLocation] = useState<any>(null);
+    const [harborLocation, setHarborLocation] = useState<DetailedLocationDTO | null>(null);
     const [isLoadingHarbor, setIsLoadingHarbor] = useState(false);
 
     const isHarborMaster = session?.role === AuthorityRole.HARBOURMASTER;

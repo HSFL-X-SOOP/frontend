@@ -9,7 +9,7 @@ import type {ComponentType} from 'react';
 export interface NavigationItem {
     key: string;
     label: string; // Translation key
-    icon: ComponentType<any>; // Icon component (custom or tamagui)
+    icon: ComponentType<{ size?: number; color?: string }>; // Icon component (custom or tamagui)
     href: string;
     isExternal?: boolean;
     requiresAuth?: boolean;

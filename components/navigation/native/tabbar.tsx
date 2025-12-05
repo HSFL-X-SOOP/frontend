@@ -24,7 +24,7 @@ export function TabBarNative() {
 
     const navigateAndClose = (path: string) => {
         setIsMenuOpen(false);
-        requestAnimationFrame(() => router.push(path as any));
+        requestAnimationFrame(() => router.push(path as never));
     };
 
     const handleLogout = () => {

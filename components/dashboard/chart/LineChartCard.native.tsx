@@ -2,7 +2,7 @@ import {useThemeContext} from "@/context/ThemeSwitch";
 import {useTranslation} from "@/hooks/useTranslation";
 import {Activity} from "@tamagui/lucide-icons";
 import {useMemo, useState} from "react";
-import {View} from "react-native";
+import {View, GestureResponderEvent} from "react-native";
 import Svg, {G, Line, Path, Circle, Text as SvgText} from "react-native-svg";
 import {Card, H3, Text, useMedia, XStack, YStack} from "tamagui";
 
@@ -84,7 +84,7 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
         return {path, points};
     }, [displayData, innerWidth, innerHeight, minValue, maxValue]);
 
-    const handleTouch = (event: any) => {
+    const handleTouch = (event: GestureResponderEvent) => {
         const {locationX, locationY} = event.nativeEvent;
         const x = locationX - padding.left;
         const y = locationY - padding.top;

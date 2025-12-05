@@ -9,8 +9,8 @@ export function useUserStore() {
             try {
                 const response = await httpClient.get<UserProfile>('/user-profile');
                 return response.data;
-            } catch (error: any) {
-                if (error.response?.status === 404) {
+            } catch (error: unknown) {
+                if ((error as any).response?.status === 404) {
                     return null;
                 }
                 throw error;
@@ -21,7 +21,7 @@ export function useUserStore() {
             try {
                 const response = await httpClient.post<UserProfile>('/user-profile', body);
                 return response.data;
-            } catch (error: any) {
+            } catch (error: unknown) {
                 throw error;
             }
         },

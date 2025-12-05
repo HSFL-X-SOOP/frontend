@@ -14,6 +14,11 @@ import {Platform} from 'react-native';
 // ==========================================
 // TYPES & INTERFACES
 // ==========================================
+interface SheetRef {
+    setPosition?: (position: number) => void;
+    setPositionImmediate?: (position: number) => void;
+}
+
 interface MapSensorBottomSheetProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
@@ -43,7 +48,7 @@ const MapSensorBottomSheet = forwardRef<MapSensorBottomSheetRef, MapSensorBottom
         // STATE & REFS
         // ==========================================
         const [position, setPosition] = useState(SHEET_CONFIG.defaultPosition);
-        const sheetRef = useRef<any>(null);
+        const sheetRef = useRef<SheetRef>(null);
         const lastSnapTime = useRef(0);
 
         // ==========================================

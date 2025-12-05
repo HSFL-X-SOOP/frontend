@@ -30,8 +30,8 @@ export function useLocationInfo(initialData?: DetailedLocationDTO | null) {
             const data = await locationStore.getHarborMasterLocation();
             setLocationData(data);
             return data;
-        } catch (err: any) {
-            const errorMessage = err?.response?.data?.message || err?.message || 'Failed to fetch location info';
+        } catch (err: unknown) {
+            const errorMessage = (err as any)?.response?.data?.message || (err as any)?.message || 'Failed to fetch location info';
             setError(errorMessage);
             console.error('Error fetching location info:', err);
             return null;
@@ -50,8 +50,8 @@ export function useLocationInfo(initialData?: DetailedLocationDTO | null) {
             const updatedData = await locationStore.updateLocationInfo(locationData.id, data);
             setLocationData(updatedData);
             return updatedData;
-        } catch (err: any) {
-            const errorMessage = err?.response?.data?.message || err?.message || 'Failed to update location info';
+        } catch (err: unknown) {
+            const errorMessage = (err as any)?.response?.data?.message || (err as any)?.message || 'Failed to update location info';
             setError(errorMessage);
             throw err;
         }
@@ -66,8 +66,8 @@ export function useLocationInfo(initialData?: DetailedLocationDTO | null) {
             // Use the location ID from the fetched data
             await locationStore.deleteLocationImage(locationData.id);
             return true;
-        } catch (err: any) {
-            const errorMessage = err?.response?.data?.message || err?.message || 'Failed to delete image';
+        } catch (err: unknown) {
+            const errorMessage = (err as any)?.response?.data?.message || (err as any)?.message || 'Failed to delete image';
             setError(errorMessage);
             throw err;
         }
