@@ -112,8 +112,6 @@ export default function MapFilterButton({
             open={sheetVisible}
             onOpenChange={handleOpenChange}
             snapPointsMode="fit"
-            accessibilityLabel={t('map.filterSettings')}
-            accessibilityRole="dialog"
         >
             <Sheet.Overlay animation="quick" enterStyle={{opacity: 0}} exitStyle={{opacity: 0}}/>
             <Sheet.Handle/>

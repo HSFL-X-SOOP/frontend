@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 
 /**
  * Map UI state management
@@ -15,12 +15,12 @@ export interface MapUIState {
 }
 
 export interface MapUIReturn extends MapUIState {
-  // Drawer setters
-  setIsDrawerOpen: (open: boolean) => void;
+  // Drawer setters - supports both boolean and functional updates
+  setIsDrawerOpen: Dispatch<SetStateAction<boolean>>;
   // Filter setters
-  setIsFilterOpen: (open: boolean) => void;
+  setIsFilterOpen: Dispatch<SetStateAction<boolean>>;
   // Highlight setters
-  setHighlightedSensorId: (id: number | null) => void;
+  setHighlightedSensorId: Dispatch<SetStateAction<number | null>>;
   // Combined actions
   toggleDrawer: () => void;
   toggleFilter: () => void;

@@ -39,7 +39,8 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
     const cardWidth = 350;
 
     const handleNavigateToDashboard = () => {
-        router.push(`/marina/${locationWithBoxes.location.name}`);
+        if (!locationWithBoxes.location?.name) return;
+        router.push(`/marina/${locationWithBoxes.location.name}` as any);
         setTimeout(() => {
             closeOverlay?.();
         }, 100);
@@ -82,7 +83,7 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
                                 {t('sensor.location')}
                             </Text>
                             <H3 fontSize="$7" fontWeight="700" color="white" numberOfLines={1}>
-                                {locationWithBoxes.location.name}
+                                {locationWithBoxes.location?.name}
                             </H3>
                         </YStack>
                     </XStack>

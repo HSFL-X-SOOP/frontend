@@ -61,7 +61,6 @@ export function SpeedDial({
                               ...stackProps
                           }: SpeedDialProps) {
     const insets = useSafeAreaInsets();
-    const fabRef = useRef<Button>(null);
 
     // Handle controlled/uncontrolled state
     const isControlled = controlledOpen !== undefined;
@@ -248,7 +247,6 @@ export function SpeedDial({
 
                 {/* Floating Action Button - Fixed Position */}
                 <Button
-                    ref={fabRef}
                     circular
                     size={fabSize}
                     disabled={disabled}

@@ -84,27 +84,30 @@ export default function RegisterScreen() {
         }
 
         logger.info('Registration attempt', {email});
-        const res = await register({email, password, rememberMe: false});
-        if (res) {
-            logger.info('Registration successful');
-            login({
-                accessToken: res.accessToken,
-                refreshToken: res.refreshToken,
-                loggedInSince: new Date(),
-                lastTokenRefresh: null,
-                role: res.profile?.authorityRole ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
-                profile: res.profile
-            });
-            toast.success(t('auth.registerSuccess'), {
-                message: t('auth.accountCreated'),
-                duration: 3000
-            });
-            handleRegisterUserDevice(res.profile?.id || 0);
-            router.push("/");
-        } else {
-            logger.error('Registration failed', registerStatus.error);
+        try {
+            const res = await register({email, password, rememberMe: false});
+            if (res) {
+                logger.info('Registration successful');
+                login({
+                    accessToken: res.accessToken,
+                    refreshToken: res.refreshToken,
+                    loggedInSince: new Date(),
+                    lastTokenRefresh: null,
+                    role: res.profile?.authorityRole ?? AuthorityRole.USER,
+                    profile: res.profile
+                });
+                toast.success(t('auth.registerSuccess'), {
+                    message: t('auth.accountCreated'),
+                    duration: 3000
+                });
+                handleRegisterUserDevice(res.profile?.id || 0);
+                router.push("/");
+            }
+        } catch (err: any) {
+            logger.error('Registration failed', err);
+            const errorMessage = err?.response?.data?.message || err?.message || t('auth.registerErrorGeneric');
             toast.error(t('auth.registerError'), {
-                message: registerStatus.error?.message || t('auth.registerErrorGeneric'),
+                message: errorMessage,
                 duration: 5000
             });
         }

@@ -121,7 +121,7 @@ export default function MapSensorDrawer({
                         <YStack gap="$2" paddingHorizontal="$1">
                             {sensors.slice(0, 10).map((sensor) => (
                                 <Button
-                                    key={sensor.location.id}
+                                    key={sensor.location?.id ?? Math.random()}
                                     size="$2"
                                     chromeless
                                     padding="$2"
@@ -149,7 +149,7 @@ export default function MapSensorDrawer({
                                             width="100%"
                                             lineHeight={10}
                                         >
-                                            {sensor.location.name}
+                                            {sensor.location?.name}
                                         </Text>
                                     </YStack>
                                 </Button>

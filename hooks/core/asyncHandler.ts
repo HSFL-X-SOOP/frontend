@@ -5,7 +5,7 @@ import React from 'react';
 
 // Legacy pattern: for wrapping functions with parameters
 // Returns [executeFunction, statusObject] tuple
-export const useAsync = <TArgs extends any[], TReturn, E = string>(
+export const useAsync = <TArgs extends any[], TReturn, E = Error>(
   asyncFunction: (...args: TArgs) => Promise<TReturn>,
   immediate = false
 ) => {
@@ -34,13 +34,16 @@ export const useAsync = <TArgs extends any[], TReturn, E = string>(
   );
 
   React.useEffect(() => {
-    if (immediate && asyncFunction) {
-      execute();
+    if (immediate) {
+      execute(...([] as unknown as TArgs));
     }
-  }, [execute, immediate, asyncFunction]);
+  }, []);
+
+  // Compute loading from status for backwards compatibility
+  const loading = status === 'pending';
 
   // Return as tuple for destructuring compatibility
-  return [execute, { status, value, error }] as const;
+  return [execute, { status, value, error, loading }] as const;
 };
 
 export default useAsync;

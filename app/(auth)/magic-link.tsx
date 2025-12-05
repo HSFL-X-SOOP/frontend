@@ -31,18 +31,21 @@ export default function MagicLinkScreen() {
 
     const handleSendMagicLink = async () => {
         logger.info('Requesting magic link', {email});
-        const result = await requestMagicLink({email});
-        if (result !== undefined) {
-            logger.info('Magic link sent successfully');
-            toast.success(t('auth.magicLink.linkSentSuccess'), {
-                message: t('auth.magicLink.checkYourEmail'),
-                duration: 4000
-            });
-            setSent(true);
-        } else {
-            logger.error('Magic link request failed', requestMagicLinkStatus.error);
+        try {
+            const result = await requestMagicLink({email});
+            if (result !== undefined) {
+                logger.info('Magic link sent successfully');
+                toast.success(t('auth.magicLink.linkSentSuccess'), {
+                    message: t('auth.magicLink.checkYourEmail'),
+                    duration: 4000
+                });
+                setSent(true);
+            }
+        } catch (err: any) {
+            logger.error('Magic link request failed', err);
+            const errorMessage = err?.response?.data?.message || err?.message || t('auth.magicLink.linkSentErrorGeneric');
             toast.error(t('auth.magicLink.linkSentError'), {
-                message: requestMagicLinkStatus.error?.message || t('auth.magicLink.linkSentErrorGeneric'),
+                message: errorMessage,
                 duration: 5000
             });
         }
@@ -57,26 +60,29 @@ export default function MagicLinkScreen() {
         logger.info('Processing magic link token');
 
         (async () => {
-            const result = await magicLinkLogin({token});
-            if (result) {
-                logger.info('Magic link login successful');
-                logUserIn({
-                    accessToken: result.accessToken,
-                    refreshToken: result.refreshToken,
-                    loggedInSince: new Date(),
-                    lastTokenRefresh: null,
-                    role: result.profile?.authorityRole ?? AuthorityRole.USER,
-                    profile: result.profile
-                });
-                toast.success(t('auth.magicLink.loginSuccess'), {
-                    message: t('auth.welcomeBack'),
-                    duration: 3000
-                });
-                router.replace("/map");
-            } else {
-                logger.error('Magic link login failed', magicLinkLoginStatus.error);
+            try {
+                const result = await magicLinkLogin({token});
+                if (result) {
+                    logger.info('Magic link login successful');
+                    logUserIn({
+                        accessToken: result.accessToken,
+                        refreshToken: result.refreshToken,
+                        loggedInSince: new Date(),
+                        lastTokenRefresh: null,
+                        role: result.profile?.authorityRole ?? AuthorityRole.USER,
+                        profile: result.profile
+                    });
+                    toast.success(t('auth.magicLink.loginSuccess'), {
+                        message: t('auth.welcomeBack'),
+                        duration: 3000
+                    });
+                    router.replace("/map");
+                }
+            } catch (err: any) {
+                logger.error('Magic link login failed', err);
+                const errorMessage = err?.response?.data?.message || err?.message || t('auth.magicLink.invalidOrExpired');
                 toast.error(t('auth.magicLink.loginError'), {
-                    message: magicLinkLoginStatus.error?.message || t('auth.magicLink.invalidOrExpired'),
+                    message: errorMessage,
                     duration: 5000
                 });
             }

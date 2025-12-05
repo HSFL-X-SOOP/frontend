@@ -249,7 +249,8 @@ export default function DashboardScreen() {
     }, [marinaID, detailedLocation]);
 
     useEffect(() => {
-        if (!marinaID) return;
+        // Only fetch user location if user is logged in (userID > 0) and marinaID exists
+        if (!marinaID || userID <= 0) return;
 
         const fetchUserLocation = async () => {
             try {
@@ -262,7 +263,7 @@ export default function DashboardScreen() {
         };
 
         void fetchUserLocation();
-    }, [marinaID]);
+    }, [marinaID, userID]);
 
     useEffect(() => {
         if (timeRangeData) {

@@ -64,27 +64,29 @@ export default function LoginScreen() {
 
     const handleSubmit = async () => {
         logger.info('Login attempt', {email, rememberMe});
-        const res = await login({email, password, rememberMe});
-        if (res) {
-            console.log('Login successful', res);
-            logUserIn({
-                accessToken: res.accessToken,
-                refreshToken: res.refreshToken,
-                loggedInSince: new Date(),
-                lastTokenRefresh: null,
-                role: res.profile?.authorityRole ?? AuthorityRole.USER,
-                profile: res.profile
-            });
-            toast.success(t('auth.loginSuccess'), {
-                message: t('auth.welcomeBack'),
-                duration: 3000
-            });
-            handleRegisterUserDevice(res.profile?.id || 0);
-            router.push("/map");
-        } else {
-            logger.error('Login failed', loginStatus.error);
+        try {
+            const res = await login({email, password, rememberMe});
+            if (res) {
+                logUserIn({
+                    accessToken: res.accessToken,
+                    refreshToken: res.refreshToken,
+                    loggedInSince: new Date(),
+                    lastTokenRefresh: null,
+                    role: res.profile?.authorityRole ?? AuthorityRole.USER,
+                    profile: res.profile
+                });
+                toast.success(t('auth.loginSuccess'), {
+                    message: t('auth.welcomeBack'),
+                    duration: 3000
+                });
+                handleRegisterUserDevice(res.profile?.id || 0);
+                router.push("/map");
+            }
+        } catch (err: any) {
+            logger.error('Login failed', err);
+            const errorMessage = err?.response?.data?.message || err?.message || t('auth.loginErrorGeneric');
             toast.error(t('auth.loginError'), {
-                message: loginStatus.error?.message || t('auth.loginErrorGeneric'),
+                message: errorMessage,
                 duration: 5000
             });
         }

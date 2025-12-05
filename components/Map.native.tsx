@@ -1,7 +1,7 @@
 import {useSensorDataNew} from "@/hooks/data";
 import {useSupercluster, useMapFilters, useMapCamera, useMapState, useMapStyle} from "@/hooks/map";
 import {useMapSpeedDialActions} from "@/hooks/map";
-import {MapView, Camera, type CameraRef} from "@maplibre/maplibre-react-native";
+import {MapView, Camera, type CameraRef, type MapViewRef} from "@maplibre/maplibre-react-native";
 import {useMemo, useRef} from "react";
 import {View} from "react-native";
 import SensorMarker from "./map/markers/NativeSensorMarker";
@@ -23,9 +23,11 @@ interface MapProps {
 const MAP_CONSTANTS = {
     highlightDuration: 3000,
     animationDuration: 500,
+    homeCoordinate: [9.26, 54.47926] as [number, number],
     zoomLevels: {
         min: 3,
         max: 18,
+        default: 7,
         sensorDetail: 12
     }
 };
@@ -35,7 +37,7 @@ export default function NativeMap(props: MapProps) {
     const {t} = useTranslation();
 
     // REFS
-    const mapRef = useRef<MapView>(null);
+    const mapRef = useRef<MapViewRef>(null);
     const cameraRef = useRef<CameraRef>(null);
     const bottomSheetRef = useRef<MapSensorBottomSheetRef>(null);
     const hasSnappedForGestureRef = useRef(false);
@@ -124,7 +126,7 @@ export default function NativeMap(props: MapProps) {
 
             return (
                 <SensorMarker
-                    key={locationWithBoxes!.location.id}
+                    key={locationWithBoxes!.location!.id}
                     locationWithBoxes={locationWithBoxes!}
                 />
             );
@@ -153,7 +155,8 @@ export default function NativeMap(props: MapProps) {
 
     // ========== EVENTS ==========
 
-    const handleSensorSelect = (sensor: LocationWithBoxes) => {
+    const handleSensorSelect = (sensor: { location?: { id: number; coordinates: { lat: number; lon: number } } }) => {
+        if (!sensor.location) return;
         const {lat, lon} = sensor.location.coordinates;
         setHighlightedSensorId(sensor.location.id);
         flyTo(lon, lat);

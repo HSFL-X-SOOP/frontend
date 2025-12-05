@@ -114,6 +114,7 @@ export default function WebMap(props: MapProps) {
 
     const visibleSensors = useMemo(() => {
         return filteredContent.filter(sensor => {
+            if (!sensor.location?.coordinates) return false;
             const {lat, lon} = sensor.location.coordinates;
             return (
                 lon >= bounds[0] &&
@@ -125,6 +126,7 @@ export default function WebMap(props: MapProps) {
     }, [filteredContent, bounds]);
 
     const handleSensorSelect = (sensor: LocationWithBoxes) => {
+        if (!sensor.location?.coordinates) return;
         const {lat, lon} = sensor.location.coordinates;
         setHighlightedSensorId(sensor.location.id);
 
@@ -177,7 +179,7 @@ export default function WebMap(props: MapProps) {
 
             return (
                 <SensorMarker
-                    key={locationWithBoxes!.location.id}
+                    key={locationWithBoxes!.location!.id}
                     locationWithBoxes={locationWithBoxes!}
                 />
             );
@@ -276,7 +278,10 @@ export default function WebMap(props: MapProps) {
                     latitude={location?.coords.latitude || 0}
                     anchor="center"
                 >
-                    <GpsPin />
+                    <GpsPin
+                        latitude={location?.coords.latitude || 0}
+                        longitude={location?.coords.longitude || 0}
+                    />
                 </Marker>
                 )}
             </Map>

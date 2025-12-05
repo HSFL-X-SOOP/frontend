@@ -388,7 +388,7 @@ export const mockLocationWithBoxes: LocationWithBoxes[] = [
 ];
 
 export const mockTimeRangeData = (id: number, timeRange: string): LocationWithBoxes | null => {
-  const location = mockLocationWithBoxes.find(loc => loc.location.id === id);
+  const location = mockLocationWithBoxes.find(loc => loc.location?.id === id);
   if (!location) {
     return null;
   }

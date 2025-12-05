@@ -39,7 +39,9 @@ export function useSupercluster(
             return cluster;
         }
 
-        const points: ClusterPoint[] = locations.map((locationWithBoxes) => ({
+        const points: ClusterPoint[] = locations
+            .filter((locationWithBoxes) => locationWithBoxes.location?.coordinates)
+            .map((locationWithBoxes) => ({
             type: 'Feature' as const,
             properties: {
                 cluster: false,
@@ -48,8 +50,8 @@ export function useSupercluster(
             geometry: {
                 type: 'Point' as const,
                 coordinates: [
-                    locationWithBoxes.location.coordinates.lon,
-                    locationWithBoxes.location.coordinates.lat,
+                    locationWithBoxes.location!.coordinates.lon,
+                    locationWithBoxes.location!.coordinates.lat,
                 ],
             },
         }));
