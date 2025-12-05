@@ -1,6 +1,7 @@
 import {BoxType, LocationWithBoxes} from "@/api/models/sensor";
 import {useTranslation} from "@/hooks/useTranslation";
 import {formatTimeToLocal} from "@/utils/time";
+import type {TFunction} from 'i18next';
 import {
     Activity,
     ArrowRight,
@@ -329,7 +330,7 @@ function getBoxTypeIcon(boxType: BoxType) {
     }
 }
 
-function getBoxTypeName(boxType: BoxType, t: any): string {
+function getBoxTypeName(boxType: BoxType, t: TFunction): string {
     switch (boxType) {
         case BoxType.WaterBox:
             return t('sensor.waterBox');
@@ -409,7 +410,7 @@ function getMeasurementIcon(measurementType: string): { icon: React.ReactNode; c
     }
 }
 
-function getMeasurementLabel(measurementType: string, t: any): string {
+function getMeasurementLabel(measurementType: string, t: TFunction): string {
     switch (measurementType) {
         case "waterTemperature":
             return t('sensor.waterTemperature');
@@ -434,7 +435,7 @@ function getMeasurementLabel(measurementType: string, t: any): string {
     }
 }
 
-function getMeasurementUnit(measurementType: string, t: any): string {
+function getMeasurementUnit(measurementType: string, t: TFunction): string {
     switch (measurementType) {
         case "waterTemperature":
         case "airTemperature":

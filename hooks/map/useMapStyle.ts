@@ -6,7 +6,7 @@ import { useMemo } from 'react';
  */
 
 export interface MapStyleReturn {
-  mapStyle: any; // MapLibre style object
+  mapStyle: Record<string, unknown>; // MapLibre style object
 }
 
 export function useMapStyle(isDark: boolean): MapStyleReturn {
