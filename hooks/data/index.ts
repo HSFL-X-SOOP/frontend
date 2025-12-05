@@ -3,7 +3,7 @@
  * All data-related custom hooks for sensors, locations, users
  */
 
-export { useSensors } from './useSensors';
+export { useSensors, useSensorDataNew, useSensorDataTimeRange } from './useSensors';
 export { useLocations } from './useLocations';
 export { useUser } from './useUser';
 export { useUserLocations } from './useUserLocations';

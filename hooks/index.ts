@@ -7,7 +7,15 @@
 export { useAuth, useGoogleSignIn } from '@/hooks/auth';
 
 // Data Fetching Hooks
-export { useSensors, useLocations, useUser, useUserLocations, useLocationInfo } from '@/hooks/data';
+export {
+  useSensors,
+  useSensorDataNew,
+  useSensorDataTimeRange,
+  useLocations,
+  useUser,
+  useUserLocations,
+  useLocationInfo,
+} from '@/hooks/data';
 
 // Map Hooks
 export {
@@ -22,13 +30,16 @@ export {
 // UI Hooks
 export {
   useToast,
+  ToastType,
   useLocalStorage,
   useNotificationLocations,
   useNotificationMeasurementRules,
   useTranslation,
   useViewportHeight,
   useIsMobileWeb,
+  useIsMobile,
   usePasswordValidation,
+  useEmailValidation,
   useUserDevice,
 } from '@/hooks/ui';
 
