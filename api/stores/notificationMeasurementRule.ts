@@ -17,6 +17,11 @@ export function useNotificationMeasurementRuleStore() {
         getAllNotificationMeasurementRulesByUserId: (userId: number) =>
             httpClient.get<NotificationMeasurementRule[]>(`/notification-measurement-rules/user/${userId}`).then(r => r.data),
 
+
+        getAllNotificationMeasurementRulesByUserIdAndLocationId: (userId: number, locationId: number) =>
+            httpClient.get<NotificationMeasurementRule[]>(`/notification-measurement-rules/user/${userId}/location/${locationId}`).then(r => r.data),
+        
+
         getNotificationMeasurementRule: (userId: number, locationId: number, measurementTypeId: number) =>
             httpClient.get<NotificationMeasurementRule | null>(`/notification-measurement-rules/user/${userId}/location/${locationId}/measurementTypeId/${measurementTypeId}`).then(r => r.data),
 

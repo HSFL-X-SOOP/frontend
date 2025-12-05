@@ -9,6 +9,9 @@ import * as AsyncHandler from "@/hooks/core/asyncHandler";
 export const useUserLocations = () => {
     const userLocationStore = useUserLocationStore();
 
+    const [getAllUserLocationByUserId, getAllUserLocationByUserIdStatus] =
+        AsyncHandler.useAsync<[number], UserLocation[]>(userLocationStore.getAllUserLocationByUserId);
+
     const [getUserLocationByUserIdAndLocationId, getUserLocationByUserIdAndLocationIdStatus] =
         AsyncHandler.useAsync<[number, number], UserLocation>(userLocationStore.getUserLocationByUserIdAndLocationId);
 
@@ -24,6 +27,9 @@ export const useUserLocations = () => {
     return {
         getUserLocationByUserIdAndLocationId,
         getUserLocationByUserIdAndLocationIdStatus,
+
+        getAllUserLocationByUserId,
+        getAllUserLocationByUserIdStatus,
         
         create,
         createStatus,

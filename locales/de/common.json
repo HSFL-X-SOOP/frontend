@@ -110,7 +110,8 @@
     "tabs": {
       "profile": "Profil",
       "boats": "Boote",
-      "settings": "Einstellungen"
+      "settings": "Einstellungen",
+      "myNotifications": "Meine Benachrichtigungen"
     },
     "boats": {
       "title": "Meine Boote",
@@ -189,7 +190,9 @@
     "retry": "Wiederholen",
     "back": "Zurück",
     "next": "Weiter",
-    "finish": "Fertig"
+    "finish": "Fertig",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren"
   },
   "Heute": "Heute",
   "Gestern": "Gestern",
@@ -321,12 +324,22 @@
       "greaterThanTargetValue": "größer als Zielwert",
       "targetValue": "Zielwert",
       "active": "Aktiv",
-      "save": "Speichern"
+      "save": "Speichern",
+      "condition": "Bedingung",
+      "lastNotifiedAt": "Zuletzt benachrichtigt am",
+      "delete": "Löschen",
+      "deleteConfirmText": "Sind Sie sicher, dass Sie diese Benachrichtigungsregel löschen möchten?"
     },
     "units": {
       "celsius": "°C",
       "centimeters": "cm",
       "volts": "V"
     }
+  },
+  "notificationMeasurementRule": {
+    "measurementTypeId": "Messwert Typ",
+    "measurementValue": "Messwert",
+    "operator": "Operator",
+    "active": "Aktiv"
   }
 }

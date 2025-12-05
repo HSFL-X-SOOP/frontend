@@ -78,6 +78,7 @@ import { useNotificationLocations } from '@/hooks/useNotificationLocations';
 import { useSession } from '@/context/SessionContext';
 import { AuthorityRole } from '@/api/models/profile';
 import { useNotificationMeasurementRuleStore } from '@/api/stores/notificationMeasurementRule';
+import { measure } from 'react-native-reanimated';
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -585,7 +586,7 @@ export default function DashboardScreen() {
                                                     MeasurementType={measurement.measurementType}
                                                     marinaID={marinaID}
                                                     userID={userID}
-                                                    measurement={measurement}
+                                                    measurementId={index}
                                                     t={t}
                                                 />)}
                                                     <Stack
@@ -711,10 +712,11 @@ export function SetNotificationMeasurementRulePopover({
   marinaID,
   Value,
   MeasurementType,
-  measurement,
+  measurementId,
   t,
+  fetchNotifications,
   ...props
-}: PopoverProps & { Icon?: any; Name?: string; shouldAdapt?: boolean; userID?: number | null; marinaID?: number | null; Value?: number; MeasurementType: string, measurement: any, t: any}) {
+}: PopoverProps & { Icon?: any; Name?: string; shouldAdapt?: boolean; userID?: number | null; marinaID?: number | null; Value?: number; MeasurementType: string, measurementId?: number, t: any, fetchNotifications?: () => void }) {
     const notificationMeasurementRules = useNotificationMeasurementRules();
     const [measurementValue, setMeasurementValue] = useState<number>(Value || 0);
     const [operator, setOperator] = useState<string>('>');
@@ -723,6 +725,7 @@ export function SetNotificationMeasurementRulePopover({
     const [existingRule, setExistingRule] = useState<NotificationMeasurementRule | null | undefined>(undefined);
     const TEMPERATURE_MIN_VALUE = -10;
     const TEMPERATURE_MAX_VALUE = 50;
+    
     useEffect(() => {
         if (!marinaID || !userID) return;
         const fetchNotificationMeasurementRule = async () => {
@@ -732,7 +735,6 @@ export function SetNotificationMeasurementRulePopover({
                 setMeasurementValue(fetchedRule?.measurementValue || 0);
                 setOperator(fetchedRule?.operator || '>');
                 setIsActive(fetchedRule?.isActive ?? true);
-                console.log('Fetched existing rule:', fetchedRule);
             } catch (e) {
                 console.warn('fetchUserLocation failed', e);
                 setExistingRule(null);
@@ -780,7 +782,7 @@ export function SetNotificationMeasurementRulePopover({
                 />
 
                 <Dialog.Content
-                key={`${measurement.id}-${measurement.measurementType}`}
+                key={`${measurementId}-${MeasurementType}`}
                 borderWidth={1}
                 borderColor="$borderColor"
                 elevate
@@ -811,15 +813,15 @@ export function SetNotificationMeasurementRulePopover({
                     {/* Measurement Display */}
                     <YStack gap="$2" alignItems="center">
                         <Text fontSize="$4" color="$gray11" fontWeight="600">
-                            {getTextFromMeasurementType(measurement.measurementType, t)}
+                            {getTextFromMeasurementType(MeasurementType, t)}
                         </Text>
 
                         <XStack alignItems="baseline" gap="$2">
-                            <H2 fontSize="$9" color={getMeasurementColor(measurement.measurementType)}>
-                            {formatMeasurementValue(measurement.value)}
+                            <H2 fontSize="$9" color={getMeasurementColor(MeasurementType)}>
+                            {formatMeasurementValue(Value!)}
                             </H2>
-                            <Text fontSize="$5" color={getMeasurementColor(measurement.measurementType)}>
-                            {getMeasurementTypeSymbol(measurement.measurementType, t)}
+                            <Text fontSize="$5" color={getMeasurementColor(MeasurementType)}>
+                            {getMeasurementTypeSymbol(MeasurementType, t)}
                             </Text>
                         </XStack>
                     </YStack>
@@ -867,8 +869,8 @@ export function SetNotificationMeasurementRulePopover({
                             }
                         }}
                         />
-                        <Text fontSize="$5" fontWeight="600" color={getMeasurementColor(measurement.measurementType)}>
-                        {getMeasurementTypeSymbol(measurement.measurementType, t)}
+                        <Text fontSize="$5" fontWeight="600" color={getMeasurementColor(MeasurementType)}>
+                        {getMeasurementTypeSymbol(MeasurementType, t)}
                         </Text>
                     </XStack>
                     </YStack>
@@ -900,7 +902,11 @@ export function SetNotificationMeasurementRulePopover({
                             width="100%"
                             onPress={() => {
                             if (!marinaID) return;
-                            createNotificationMeasurementRule(measurementValue);
+                            createNotificationMeasurementRule(measurementValue).then(async () => {
+                                    if (fetchNotifications) {
+                                        await fetchNotifications();
+                                    }
+                                });
                             }}
                         >
                             {t('dashboard.measurements.save')}
