@@ -48,7 +48,8 @@
       "@maplibre/maplibre-react-native",
       "expo-asset",
       "expo-localization",
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true
