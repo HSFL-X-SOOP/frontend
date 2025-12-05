@@ -1,3 +1,4 @@
+import React from 'react';
 import {BoxType, LocationWithBoxes} from '@/api/models/sensor';
 import {useTranslation} from '@/hooks/useTranslation';
 import {formatTimeToLocal} from '@/utils/time';
@@ -10,11 +11,27 @@ interface SensorListItemProps {
     isHighlighted?: boolean;
 }
 
-export default function SensorListItem({
-                                           locationWithBoxes,
-                                           onPress,
-                                           isHighlighted = false
-                                       }: SensorListItemProps) {
+/**
+ * Custom comparison function to prevent unnecessary re-renders
+ * Only re-render if sensor ID, highlighted state, or callback changes
+ */
+const arePropsEqual = (prevProps: SensorListItemProps, nextProps: SensorListItemProps): boolean => {
+    return (
+        prevProps.locationWithBoxes?.location?.id === nextProps.locationWithBoxes?.location?.id &&
+        prevProps.isHighlighted === nextProps.isHighlighted &&
+        prevProps.onPress === nextProps.onPress
+    );
+};
+
+/**
+ * Sensor list item component
+ * Memoized to prevent unnecessary re-renders when parent re-renders
+ */
+function SensorListItem({
+                            locationWithBoxes,
+                            onPress,
+                            isHighlighted = false
+                        }: SensorListItemProps) {
     const {t} = useTranslation();
 
     const getKeyMeasurements = () => {
@@ -99,7 +116,7 @@ export default function SensorListItem({
                     <XStack gap="$2" alignItems="center">
                         <MapPin size={16} color="$color"/>
                         <H4 fontSize="$5" fontWeight="600" color="$color" numberOfLines={1} flex={1}>
-                            {locationWithBoxes.location.name}
+                            {locationWithBoxes.location?.name || 'Unknown'}
                         </H4>
                     </XStack>
 
@@ -156,3 +173,7 @@ export default function SensorListItem({
         </Card>
     );
 }
+
+SensorListItem.displayName = 'SensorListItem';
+
+export default React.memo(SensorListItem, arePropsEqual);

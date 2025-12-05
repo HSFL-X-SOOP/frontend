@@ -6,6 +6,7 @@ import {Button, H4, Input, ScrollView, Separator, Text, XStack, YStack} from 'ta
 import SensorListItem from './SensorListItem';
 import {SelectWithSheet} from '@/components/ui/SelectWithSheet';
 import {SelectItem} from '@/types/select';
+import {fuzzyMatch} from '@/utils/searchUtils';
 
 interface SensorListProps {
     sensors: LocationWithBoxes[];
@@ -52,78 +53,27 @@ export default function SensorList({
         { value: 'recent', label: t('sensor.sortByRecent') },
     ];
 
-    const normalize = (s: string) =>
-        s
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]+/g, '')
-            .trim();
+    const calculateDistance = useMemo(() => {
+        return (sensor: LocationWithBoxes) => {
+            if (!mapCenter || !sensor.location) return 0;
 
-    const isSubsequence = (q: string, t: string) => {
-        let qi = 0;
-        for (let i = 0; i < t.length && qi < q.length; i++) {
-            if (t[i] === q[qi]) qi++;
-        }
-        return qi === q.length;
-    };
+            const [mapLon, mapLat] = mapCenter;
+            const sensorLat = sensor.location.coordinates.lat;
+            const sensorLon = sensor.location.coordinates.lon;
 
-    const levenshtein = (a: string, b: string) => {
-        if (a === b) return 0;
-        const m = a.length, n = b.length;
-        if (m === 0) return n;
-        if (n === 0) return m;
-        const dp = new Array(n + 1);
-        for (let j = 0; j <= n; j++) dp[j] = j;
-        for (let i = 1; i <= m; i++) {
-            let prev = i - 1;
-            dp[0] = i;
-            for (let j = 1; j <= n; j++) {
-                const tmp = dp[j];
-                const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-                dp[j] = Math.min(
-                    dp[j] + 1,
-                    dp[j - 1] + 1,
-                    prev + cost
-                );
-                prev = tmp;
-            }
-        }
-        return dp[n];
-    };
-
-    const fuzzyMatch = (queryRaw: string, candidates: string[]) => {
-        const q = normalize(queryRaw);
-        if (!q) return true;
-        return candidates.some((raw) => {
-            const t = normalize(raw);
-            if (t.includes(q)) return true;
-            if (isSubsequence(q, t)) return true;
-            const dist = levenshtein(q, t);
-            const maxLen = Math.max(q.length, t.length) || 1;
-            const similarity = 1 - dist / maxLen;
-            return similarity >= 0.6;
-        });
-    };
-
-    const calculateDistance = (sensor: LocationWithBoxes) => {
-        if (!mapCenter) return 0;
-
-        const [mapLon, mapLat] = mapCenter;
-        const sensorLat = sensor.location.coordinates.lat;
-        const sensorLon = sensor.location.coordinates.lon;
-
-        const R = 6371;
-        const dLat = ((sensorLat - mapLat) * Math.PI) / 180;
-        const dLon = ((sensorLon - mapLon) * Math.PI) / 180;
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos((mapLat * Math.PI) / 180) *
-            Math.cos((sensorLat * Math.PI) / 180) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    };
+            const R = 6371;
+            const dLat = ((sensorLat - mapLat) * Math.PI) / 180;
+            const dLon = ((sensorLon - mapLon) * Math.PI) / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos((mapLat * Math.PI) / 180) *
+                Math.cos((sensorLat * Math.PI) / 180) *
+                Math.sin(dLon / 2) *
+                Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        };
+    }, [mapCenter]);
 
     const processedSensors = useMemo(() => {
         let filtered = sensorsToDisplay;
@@ -131,7 +81,7 @@ export default function SensorList({
         if (searchQuery) {
             filtered = filtered.filter((sensor) =>
                 fuzzyMatch(searchQuery, [
-                    sensor.location.name,
+                    sensor.location?.name || '',
                     ...sensor.boxes.map((b) => b.name),
                 ])
             );
@@ -158,7 +108,7 @@ export default function SensorList({
                 const distB = calculateDistance(b);
                 return distA - distB;
             } else if (sortBy === 'name') {
-                return a.location.name.localeCompare(b.location.name);
+                return (a.location?.name || '').localeCompare(b.location?.name || '');
             } else if (sortBy === 'recent') {
                 const getLatestTime = (sensor: LocationWithBoxes) => {
                     let latest = 0;
@@ -174,7 +124,7 @@ export default function SensorList({
             }
             return 0;
         });
-    }, [sensorsToDisplay, searchQuery, filterType, sortBy, mapCenter, calculateDistance]);
+    }, [sensorsToDisplay, searchQuery, filterType, sortBy, calculateDistance]);
 
     if (loading) {
         return (
@@ -380,11 +330,11 @@ export default function SensorList({
                         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                             <XStack gap="$3" paddingHorizontal="$3" paddingVertical="$2">
                                 {processedSensors.map((sensor) => (
-                                    <YStack key={sensor.location.id} width={280}>
+                                    <YStack key={sensor.location?.id} width={280}>
                                         <SensorListItem
                                             locationWithBoxes={sensor}
                                             onPress={() => onSensorSelect(sensor)}
-                                            isHighlighted={sensor.location.id === highlightedSensorId}
+                                            isHighlighted={sensor.location?.id === highlightedSensorId}
                                         />
                                     </YStack>
                                 ))}
@@ -421,10 +371,10 @@ export default function SensorList({
                             <YStack paddingBottom="$4">
                                 {processedSensors.map((sensor) => (
                                     <SensorListItem
-                                        key={sensor.location.id}
+                                        key={sensor.location?.id}
                                         locationWithBoxes={sensor}
                                         onPress={() => onSensorSelect(sensor)}
-                                        isHighlighted={sensor.location.id === highlightedSensorId}
+                                        isHighlighted={sensor.location?.id === highlightedSensorId}
                                     />
                                 ))}
                             </YStack>
