@@ -15,7 +15,7 @@ import MapSensorBottomSheet, {MapSensorBottomSheetRef} from './map/controls/MapS
 import {useIsMobileWeb, useIsMobile} from '@/hooks/useIsMobileWeb';
 import {SpeedDial} from '@/components/speeddial';
 import {Plus, Home, Navigation, ZoomIn, ZoomOut, List, Filter} from '@tamagui/lucide-icons';
-import MapFilterButton from './map/controls/MapFilterButton';
+import MapFilterButton, {MapFilterState} from './map/controls/MapFilterButton';
 import {useTranslation} from '@/hooks/useTranslation';
 import * as Location from 'expo-location';
 import {Marker} from "@vis.gl/react-maplibre";
@@ -41,6 +41,19 @@ export default function WebMap(props: MapProps) {
     const [module2Visible, setModule2Visible] = useState(props.module2Visible ?? true);
     const [module3Visible, setModule3Visible] = useState(props.module3Visible ?? false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+    // Create consolidated filter state
+    const filterState: MapFilterState = {
+        module1Visible,
+        module2Visible,
+        module3Visible,
+    };
+
+    const handleFilterChange = (newState: MapFilterState) => {
+        if (newState.module1Visible !== module1Visible) setModule1Visible(newState.module1Visible);
+        if (newState.module2Visible !== module2Visible) setModule2Visible(newState.module2Visible);
+        if (newState.module3Visible !== module3Visible) setModule3Visible(newState.module3Visible);
+    };
 
     const {data: content, loading} = useSensorDataNew();
     const mapRef = React.useRef<MapRef>(null);
@@ -353,12 +366,8 @@ export default function WebMap(props: MapProps) {
 
             {/* Filter Sheet - controlled by SpeedDial */}
             <MapFilterButton
-                module1Visible={module1Visible}
-                setModule1Visible={setModule1Visible}
-                module2Visible={module2Visible}
-                setModule2Visible={setModule2Visible}
-                module3Visible={module3Visible}
-                setModule3Visible={setModule3Visible}
+                filterState={filterState}
+                onFilterChange={handleFilterChange}
                 isOpen={isFilterOpen}
                 onOpenChange={setIsFilterOpen}
             />

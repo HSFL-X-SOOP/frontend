@@ -9,7 +9,7 @@ import MapSensorBottomSheet, {MapSensorBottomSheetRef} from "./map/controls/MapS
 import SensorList from "./map/sensors/SensorList";
 import {SpeedDial} from "@/components/speeddial";
 import {Plus, Home, Navigation, ZoomIn, ZoomOut, List, Filter} from "@tamagui/lucide-icons";
-import MapFilterButton from "./map/controls/MapFilterButton";
+import MapFilterButton, {MapFilterState} from "./map/controls/MapFilterButton";
 import {useTranslation} from '@/hooks/useTranslation';
 
 interface MapProps {
@@ -49,6 +49,19 @@ export default function NativeMap(props: MapProps) {
         module3Visible, setModule3Visible,
         filteredContent
     } = useMapFilters(content, props.module1Visible, props.module2Visible, props.module3Visible);
+
+    // Create consolidated filter state
+    const filterState: MapFilterState = {
+        module1Visible,
+        module2Visible,
+        module3Visible,
+    };
+
+    const handleFilterChange = (newState: MapFilterState) => {
+        if (newState.module1Visible !== module1Visible) setModule1Visible(newState.module1Visible);
+        if (newState.module2Visible !== module2Visible) setModule2Visible(newState.module2Visible);
+        if (newState.module3Visible !== module3Visible) setModule3Visible(newState.module3Visible);
+    };
 
     const {
         viewportBounds, setViewportBounds,
@@ -330,12 +343,8 @@ export default function NativeMap(props: MapProps) {
             </MapSensorBottomSheet>
 
             <MapFilterButton
-                module1Visible={module1Visible}
-                setModule1Visible={setModule1Visible}
-                module2Visible={module2Visible}
-                setModule2Visible={setModule2Visible}
-                module3Visible={module3Visible}
-                setModule3Visible={setModule3Visible}
+                filterState={filterState}
+                onFilterChange={handleFilterChange}
                 isOpen={isFilterOpen}
                 onOpenChange={setIsFilterOpen}
             />
