@@ -5,8 +5,8 @@ import {ChartTimeRange, TimeRangeDropdown} from '@/components/dashboard/chart/Ti
 import {MeasurementCard} from '@/components/dashboard/MeasurementCard';
 import {NavigateDashboardDropdownMenu} from '@/components/dashboard/NavigateDropdownMenu';
 import {useThemeContext} from '@/context/ThemeSwitch';
-import {useSensorDataNew, useSensorDataTimeRange} from '@/hooks/useSensors';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useSensorDataNew, useSensorDataTimeRange} from '@/hooks/data';
+import {useTranslation} from '@/hooks/ui';
 import {ChartDataPoint} from '@/types/chart';
 import {MarinaNameWithId} from '@/types/marina';
 import {useLocationStore} from '@/api/stores/location.service';
@@ -69,12 +69,12 @@ import {
     useMedia
 } from 'tamagui';
 
-import { useUserLocations } from '@/hooks/useUserLocations';
+import { useUserLocations } from '@/hooks/data';
 import { UserLocation } from '@/api/models/userLocation';
-import { useNotificationMeasurementRules } from '@/hooks/useNotificationMeasurementRules';
+import { useNotificationMeasurementRules } from '@/hooks/ui';
 import { MeasurementType, NotificationMeasurementRule } from '@/api/models/notificationMeasurementRule';
 import { Popover } from 'tamagui';
-import { useNotificationLocations } from '@/hooks/useNotificationLocations';
+import { useNotificationLocations } from '@/hooks/ui';
 import { useSession } from '@/context/SessionContext';
 import { AuthorityRole } from '@/api/models/profile';
 import { useNotificationMeasurementRuleStore } from '@/api/stores/notificationMeasurementRule';
