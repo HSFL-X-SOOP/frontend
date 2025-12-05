@@ -8,7 +8,6 @@ export { useAuth, useGoogleSignIn } from '@/hooks/auth';
 
 // Data Fetching Hooks
 export {
-  useSensors,
   useSensorDataNew,
   useSensorDataTimeRange,
   useLocations,
