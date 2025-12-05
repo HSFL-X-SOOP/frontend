@@ -1,5 +1,6 @@
 import {useSensorDataNew} from "@/hooks/useSensors";
 import {useSupercluster, useMapFilters, useMapCamera, useMapState, useMapStyle} from "@/hooks/map";
+import {useMapSpeedDialActions} from "@/hooks/map";
 import {MapView, Camera, type CameraRef} from "@maplibre/maplibre-react-native";
 import {useMemo, useRef} from "react";
 import {View} from "react-native";
@@ -8,7 +9,7 @@ import ClusterMarker from "./map/markers/native/ClusterMarker";
 import MapSensorBottomSheet, {MapSensorBottomSheetRef} from "./map/controls/MapSensorBottomSheet";
 import SensorList from "./map/sensors/SensorList";
 import {SpeedDial} from "@/components/speeddial";
-import {Plus, Home, Navigation, ZoomIn, ZoomOut, List, Filter} from "@tamagui/lucide-icons";
+import {Plus} from "@tamagui/lucide-icons";
 import MapFilterButton, {MapFilterState} from "./map/controls/MapFilterButton";
 import {useTranslation} from '@/hooks/useTranslation';
 
@@ -226,70 +227,44 @@ export default function NativeMap(props: MapProps) {
 
     // ========== SPEED DIAL ==========
 
-    const speedDialActions = [
-        {
-            key: 'sensors',
-            label: t('navigation.sensors'),
-            icon: List,
-            onPress: () => setIsDrawerOpen(prev => !prev),
-        },
-        {
-            key: 'filter',
-            label: t('map.filters'),
-            icon: Filter,
-            onPress: () => setIsFilterOpen(true),
-        },
-        {
-            key: 'zoomin',
-            label: 'Zoom In',
-            icon: ZoomIn,
-            closeOnPress: false,
-            onPress: async () => {
-                const currentZoom = (await mapRef.current?.getZoom?.()) ?? zoomLevel;
-                if (currentZoom < MAP_CONSTANTS.zoomLevels.max) {
-                    const newZoom = currentZoom + 1;
-                    setCameraSafe({zoomLevel: newZoom});
-                    setZoomLevel(newZoom);
-                }
-            },
-        },
-        {
-            key: 'zoomout',
-            label: 'Zoom Out',
-            icon: ZoomOut,
-            closeOnPress: false,
-            onPress: async () => {
-                const currentZoom = (await mapRef.current?.getZoom?.()) ?? zoomLevel;
-                if (currentZoom > MAP_CONSTANTS.zoomLevels.min) {
-                    const newZoom = currentZoom - 1;
-                    setCameraSafe({zoomLevel: newZoom});
-                    setZoomLevel(newZoom);
-                }
-            },
-        },
-        {
-            key: 'compass',
-            label: 'Reset View',
-            icon: Navigation,
-            closeOnPress: false,
-            onPress: () => {
-                setCameraSafe({heading: 0, pitch: 0});
-            },
-        },
-        {
-            key: 'home',
-            label: 'Go Home',
-            icon: Home,
-            closeOnPress: false,
-            onPress: () => {
-                flyTo(
-                    MAP_CONSTANTS.homeCoordinate[0],
-                    MAP_CONSTANTS.homeCoordinate[1],
-                    MAP_CONSTANTS.zoomLevels.default
-                );
-            },
-        },
-    ];
+    const handleZoomIn = async () => {
+        const currentZoom = (await mapRef.current?.getZoom?.()) ?? zoomLevel;
+        if (currentZoom < MAP_CONSTANTS.zoomLevels.max) {
+            const newZoom = currentZoom + 1;
+            setCameraSafe({zoomLevel: newZoom});
+            setZoomLevel(newZoom);
+        }
+    };
+
+    const handleZoomOut = async () => {
+        const currentZoom = (await mapRef.current?.getZoom?.()) ?? zoomLevel;
+        if (currentZoom > MAP_CONSTANTS.zoomLevels.min) {
+            const newZoom = currentZoom - 1;
+            setCameraSafe({zoomLevel: newZoom});
+            setZoomLevel(newZoom);
+        }
+    };
+
+    const handleResetView = () => {
+        setCameraSafe({heading: 0, pitch: 0});
+    };
+
+    const handleGoHome = () => {
+        flyTo(
+            MAP_CONSTANTS.homeCoordinate[0],
+            MAP_CONSTANTS.homeCoordinate[1],
+            MAP_CONSTANTS.zoomLevels.default
+        );
+    };
+
+    const speedDialActions = useMapSpeedDialActions({
+        setIsDrawerOpen,
+        setIsFilterOpen,
+        onZoomIn: handleZoomIn,
+        onZoomOut: handleZoomOut,
+        onResetView: handleResetView,
+        onGoHome: handleGoHome,
+    });
 
     // ========== RENDER ==========
 
