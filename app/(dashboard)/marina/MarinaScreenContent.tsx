@@ -95,7 +95,7 @@ const GetMarinaID = (name: string, locations: LocationWithBoxes[]): number | nul
 // Main Component
 // ============================================================================
 
-export default function DashboardScreen() {
+function DashboardScreen() {
     // ----------------------------------------------------------------------------
     // Hooks - Context & Router
     // ----------------------------------------------------------------------------
@@ -1021,3 +1021,5 @@ export function HarborMasterBroadcastNotificationPopover({
     </Popover>
   )
 }
+
+export default DashboardScreen;
