@@ -39,82 +39,27 @@ export const SensorMarkerSvg = React.memo(
     indicatorColor,
     enableAnimations = true,
     size = 48
-  }: SensorMarkerSvgProps) => {
-    // Format temperature string
-    const tempString = typeof temperature === 'number' ? Math.round(temperature).toString() : String(temperature);
+  }: SensorMarkerSvgProps) => (
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
+      {/* Outer circle background */}
+      <circle cx="24" cy="24" r="22" fill={backgroundColor} stroke={accentColor} strokeWidth="2" />
 
-    return (
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 48 48"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ display: 'block' }}
+      {/* Indicator dot */}
+      <circle cx="24" cy="8" r="3" fill={indicatorColor} />
+
+      {/* Temperature text - simplified */}
+      <text
+        x="24"
+        y="28"
+        textAnchor="middle"
+        fontSize="16"
+        fontWeight="bold"
+        fill={textColor}
       >
-        <defs>
-          <filter id="shadow">
-            <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3" />
-          </filter>
-        </defs>
-
-        {/* Outer circle background with shadow */}
-        <circle
-          cx="24"
-          cy="24"
-          r="20"
-          fill={backgroundColor}
-          stroke={accentColor}
-          strokeWidth="2"
-          filter="url(#shadow)"
-        />
-
-        {/* Inner circle for depth */}
-        <circle
-          cx="24"
-          cy="24"
-          r="18"
-          fill="none"
-          stroke={accentColor}
-          strokeWidth="0.5"
-          opacity="0.5"
-        />
-
-        {/* Indicator dot at top */}
-        <circle
-          cx="24"
-          cy="8"
-          r="2.5"
-          fill={indicatorColor}
-        />
-
-        {/* Temperature text with background for readability */}
-        <rect
-          x="14"
-          y="18"
-          width="20"
-          height="16"
-          rx="4"
-          fill={backgroundColor}
-          opacity="0.9"
-        />
-
-        {/* Temperature value */}
-        <text
-          x="24"
-          y="30"
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fontSize="14"
-          fontWeight="700"
-          fill={textColor}
-          fontFamily="system-ui, -apple-system, sans-serif"
-        >
-          {tempString}°
-        </text>
-      </svg>
-    );
-  },
+        {temperature}°
+      </text>
+    </svg>
+  ),
   arePropsEqual
 );
 
