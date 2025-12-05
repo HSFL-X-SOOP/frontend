@@ -4,7 +4,7 @@ import { Marker } from '@vis.gl/react-maplibre';
 import { SensorMarkerContent } from '../sensors/MapSensorTemperatureText';
 import { Popover, Dialog, YStack } from 'tamagui';
 import { SensorPopup } from '../sensors/MapSensorMeasurements';
-import { useIsMobileWeb } from '@/hooks/useIsMobileWeb';
+import { useIsMobileWeb } from '@/hooks/ui';
 
 interface SensorMarkerProps {
   locationWithBoxes: LocationWithBoxes;

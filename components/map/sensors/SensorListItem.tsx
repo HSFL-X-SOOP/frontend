@@ -1,6 +1,6 @@
 import React from 'react';
 import {BoxType, LocationWithBoxes} from '@/api/models/sensor';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 import {formatTimeToLocal} from '@/utils/time';
 import {Activity, MapPin, Thermometer, Wind} from '@tamagui/lucide-icons';
 import {Card, H4, Text, XStack, YStack} from 'tamagui';

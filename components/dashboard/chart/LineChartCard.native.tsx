@@ -1,5 +1,5 @@
 import {useThemeContext} from "@/context/ThemeSwitch";
-import {useTranslation} from "@/hooks/useTranslation";
+import {useTranslation} from "@/hooks/ui";
 import {Activity} from "@tamagui/lucide-icons";
 import {useMemo, useState} from "react";
 import {View, GestureResponderEvent} from "react-native";

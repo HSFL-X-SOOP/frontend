@@ -2,7 +2,7 @@ import {Link, Href} from 'expo-router';
 import {SafeAreaView, ScrollView, Linking} from 'react-native';
 import {Text, YStack, Card, H1, H2, XStack, View, Button} from 'tamagui';
 import {Code, Database, Key, ExternalLink} from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 
 export default function APIScreen() {
     const {t} = useTranslation('api');

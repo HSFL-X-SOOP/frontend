@@ -33,10 +33,10 @@ import {
     RefreshCw,
     AlertCircle
 } from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/hooks/useToast';
+import {useTranslation} from '@/hooks/ui';
+import {useToast} from '@/hooks/ui';
 import {Platform} from 'react-native';
-import {useLocationInfo} from '@/hooks/useLocationInfo';
+import {useLocationInfo} from '@/hooks/data';
 import {UpdateLocationRequest, DetailedLocationDTO} from '@/api/models/location';
 
 interface HarborMasterTabProps {

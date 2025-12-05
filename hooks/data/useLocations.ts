@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react';
 import {DetailedLocationDTO} from '@/api/models/location';
-import {useToast} from '@/hooks/useToast';
+import {useToast} from '@/hooks/ui';
 import {useSession} from '@/context/SessionContext';
 import {useLocationStore} from '@/api/stores/location.service';
 

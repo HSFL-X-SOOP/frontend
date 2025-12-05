@@ -1,5 +1,5 @@
 import {BoxType, LocationWithBoxes} from '@/api/models/sensor';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 import {AlertCircle, ArrowUpDown, Filter, Search} from '@tamagui/lucide-icons';
 import {useMemo, useState} from 'react';
 import {Button, H4, Input, ScrollView, Separator, Text, XStack, YStack} from 'tamagui';

@@ -1,8 +1,8 @@
 import React from 'react';
 import {Button, YStack, XStack, Text} from 'tamagui';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 import {useSession} from '@/context/SessionContext';
-import {useUser} from '@/hooks/useUser';
+import {useUser} from '@/hooks/data';
 import {Language} from '@/api/models/profile';
 
 const languages = [

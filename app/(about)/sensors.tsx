@@ -1,4 +1,4 @@
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/ui';
 import { SafeAreaView, ScrollView } from 'react-native';
 import { Card, H1, H2, Text, YStack } from 'tamagui';
 

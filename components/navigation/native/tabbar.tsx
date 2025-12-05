@@ -2,7 +2,7 @@ import {LanguageSelector} from '@/components/common/LanguageSelector';
 import {CloudIcon, LOGO, BadgeIcon, MapIcon, MoonFilledIcon, SunFilledIcon} from '@/components/ui/Icons';
 import {useSession} from '@/context/SessionContext';
 import {useThemeContext} from '@/context/ThemeSwitch.tsx';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 import {Languages, LayoutDashboard, Menu, User, BookOpen, LogOut} from '@tamagui/lucide-icons';
 import {Link, useRouter, Href} from 'expo-router';
 import React, {useState} from 'react';

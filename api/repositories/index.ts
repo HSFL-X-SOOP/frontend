@@ -23,4 +23,4 @@ export { SensorRepository, useSensorRepository } from './sensor.repository';
 export { AuthRepository, useAuthRepository } from './auth.repository';
 export { UserRepository, useUserRepository } from './user.repository';
 
-export type { BaseRepository };
+export type { BaseRepository } from './base.repository';

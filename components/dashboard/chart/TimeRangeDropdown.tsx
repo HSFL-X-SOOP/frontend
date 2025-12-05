@@ -1,4 +1,4 @@
-import {useTranslation} from "@/hooks/useTranslation";
+import {useTranslation} from "@/hooks/ui";
 import {ChevronDown} from "@tamagui/lucide-icons";
 import {useMemo} from "react";
 import {SelectWithSheet} from "@/components/ui/SelectWithSheet";

@@ -2,7 +2,7 @@ import {Href, Link} from 'expo-router';
 import {ScrollView, SafeAreaView} from 'react-native';
 import {Card, Text, XStack, YStack, View, Button, H1, H2, Separator} from 'tamagui';
 import {ExternalLink, Globe, Database, MapPin, TrendingUp} from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 
 type StudentCardProps = {
     id: string;

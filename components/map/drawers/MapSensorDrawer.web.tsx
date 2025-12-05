@@ -3,8 +3,8 @@ import {AnimatePresence, Button, ScrollView, View, XStack, YStack, Text, useThem
 import {ReactNode} from 'react';
 import {LocationWithBoxes} from '@/api/models/sensor';
 import {SmallBadgeIcon} from "@/components/ui/Icons.tsx";
-import {useIsMobileWeb} from '@/hooks/useIsMobileWeb';
-import {useViewportHeight} from '@/hooks/useViewportHeight';
+import {useIsMobileWeb} from '@/hooks/ui';
+import {useViewportHeight} from '@/hooks/ui';
 import {useThemeContext} from "@/context/ThemeSwitch.tsx";
 
 interface MapSensorDrawerProps {

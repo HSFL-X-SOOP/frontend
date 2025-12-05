@@ -2,16 +2,16 @@ import {Link, useRouter, Href} from 'expo-router';
 import {Button, Popover, Sheet, Text, XStack, YStack, useTheme, ScrollView, Tooltip} from 'tamagui';
 import {useState} from 'react';
 
-import {useToast} from '@/hooks/useToast';
+import {useToast} from '@/hooks/ui';
 import {ThemeSwitch} from '@/context/ThemeSwitch';
 import {LOGO, BadgeIcon, MapIcon, CloudIcon} from '@/components/ui/Icons';
 import {User, Languages, Menu, LogOut, LayoutDashboard, BookOpen} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
 import {PrimaryButton, SecondaryButton} from '@/types/button';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 import {LanguageSelector} from '@/components/common/LanguageSelector';
-import {useIsMobileWeb} from '@/hooks/useIsMobileWeb';
-import {useViewportHeight} from '@/hooks/useViewportHeight';
+import {useIsMobileWeb} from '@/hooks/ui';
+import {useViewportHeight} from '@/hooks/ui';
 
 
 export function NavbarWeb() {

@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react';
 import {LocationWithBoxes} from '@/api/models/sensor';
 import {useSensorStore} from '@/api/stores/sensors';
-import {useToast} from '@/hooks/useToast';
+import {useToast} from '@/hooks/ui';
 
 
 /**

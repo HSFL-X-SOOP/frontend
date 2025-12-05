@@ -1,5 +1,5 @@
 import {BoxType, LocationWithBoxes} from "@/api/models/sensor";
-import {useTranslation} from "@/hooks/useTranslation";
+import {useTranslation} from "@/hooks/ui";
 import {formatTimeToLocal} from "@/utils/time";
 import type {TFunction} from 'i18next';
 import {

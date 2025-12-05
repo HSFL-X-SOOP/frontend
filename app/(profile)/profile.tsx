@@ -14,9 +14,9 @@ import {
 } from "tamagui";
 import {User, Anchor, Home} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
-import {useUser} from '@/hooks/useUser';
+import {useUser} from '@/hooks/data';
 import {AuthorityRole} from '@/api/models/profile';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 import {ProfileTab} from '@/components/profile/ProfileTab';
 import {BoatsTab} from '@/components/profile/BoatsTab';
 import {HarborMasterTab} from '@/components/profile/HarborMasterTab';

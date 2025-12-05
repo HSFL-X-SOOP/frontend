@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { ENV } from '@/config/environment';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/auth';
 import { useSession } from '@/context/SessionContext';
 import { AuthorityRole } from '@/api/models/profile';
 import { createLogger } from '@/utils/logger';

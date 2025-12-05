@@ -1,6 +1,6 @@
 import {Button, Text, XStack, YStack, Sheet, Checkbox, View, Separator} from 'tamagui';
 import {useState} from 'react';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 import {X} from '@tamagui/lucide-icons';
 
 export interface MapFilterState {

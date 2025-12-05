@@ -1,4 +1,4 @@
-import {useSensorDataNew} from "@/hooks/useSensors";
+import {useSensorDataNew} from "@/hooks/data";
 import {useSupercluster, useMapFilters, useMapCamera, useMapState, useMapStyle} from "@/hooks/map";
 import {useMapSpeedDialActions} from "@/hooks/map";
 import {MapView, Camera, type CameraRef} from "@maplibre/maplibre-react-native";
@@ -11,7 +11,7 @@ import SensorList from "./map/sensors/SensorList";
 import {SpeedDial} from "@/components/speeddial";
 import {Plus} from "@tamagui/lucide-icons";
 import MapFilterButton, {MapFilterState} from "./map/controls/MapFilterButton";
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 
 interface MapProps {
     module1Visible?: boolean;

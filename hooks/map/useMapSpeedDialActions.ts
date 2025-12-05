@@ -1,6 +1,6 @@
 import {useMemo} from 'react';
 import {Plus, Home, Navigation, ZoomIn, ZoomOut, List, Filter} from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 import type {SpeedDialActionItem} from '@/types/speeddial';
 
 /**

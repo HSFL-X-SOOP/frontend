@@ -1,7 +1,7 @@
 import {List} from '@tamagui/lucide-icons';
 import {Button, XStack} from 'tamagui';
 import {Platform} from 'react-native';
-import {useIsMobileWeb} from '@/hooks/useIsMobileWeb';
+import {useIsMobileWeb} from '@/hooks/ui';
 
 interface MapDrawerToggleProps {
     onPress: () => void;

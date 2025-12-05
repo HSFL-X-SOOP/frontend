@@ -1,6 +1,6 @@
 import {Platform} from 'react-native';
 import {Adapt, Select, YStack, GetProps} from 'tamagui';
-import {useIsMobileWeb} from '@/hooks/useIsMobileWeb';
+import {useIsMobileWeb} from '@/hooks/ui';
 import {
     SelectItem,
     defaultSelectSheetConfig,

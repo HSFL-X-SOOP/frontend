@@ -13,10 +13,10 @@ import {
     Label
 } from 'tamagui';
 import {Globe, Activity, Ruler, Check} from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/hooks/useToast';
+import {useTranslation} from '@/hooks/ui';
+import {useToast} from '@/hooks/ui';
 import {useSession} from '@/context/SessionContext';
-import {useUser} from '@/hooks/useUser';
+import {useUser} from '@/hooks/data';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 
 export const ProfileTab: React.FC = () => {

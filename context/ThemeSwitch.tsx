@@ -1,7 +1,7 @@
 import React, {createContext, useContext, useState, useEffect} from 'react';
 import {TouchableOpacity, useColorScheme, Platform} from 'react-native';
 import {MoonFilledIcon, SunFilledIcon} from "@/components/ui/Icons.tsx";
-import {useLocalStorage} from '@/hooks/useLocalStorage';
+import {useLocalStorage} from '@/hooks/ui';
 
 type ThemeContextType = {
     isDark: boolean;
