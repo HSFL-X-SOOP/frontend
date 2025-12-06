@@ -69,6 +69,11 @@
     "googleSignInSuccess": "Google Sign-In Successful",
     "googleSignInError": "Google Sign-In Failed",
     "googleSignInErrorGeneric": "An error occurred during Google Sign-In. Please try again.",
+    "signInWithApple": "Sign in with Apple",
+    "signUpWithApple": "Sign up with Apple",
+    "appleSignInSuccess": "Apple Sign-In Successful",
+    "appleSignInError": "Apple Sign-In Failed",
+    "appleSignInErrorGeneric": "An error occurred during Apple Sign-In. Please try again.",
     "logoutSuccess": "Logged Out Successfully",
     "logoutMessage": "You have been logged out. See you soon!",
     "magicLink": {
@@ -267,7 +272,11 @@
     "email": "Email",
     "emailPlaceholder": "harbor@example.com",
     "website": "Website",
-    "websitePlaceholder": "https://www.harbor-website.com"
+    "websitePlaceholder": "https://www.harbor-website.com",
+    "harborMasterNotification": "Harbor Master Notification",
+    "sendToAllSubscribers": "Send to all subscribers",
+    "title": "Title",
+    "message": "Message"
   },
   "dashboard": {
     "dashboard": "Dashboard",
@@ -311,7 +320,13 @@
       "waveHeight": "Wave Height",
       "waterTemperature": "Water Temperature",
       "waterLevel": "Water Level",
-      "batteryVoltage": "Battery Voltage"
+      "batteryVoltage": "Battery Voltage",
+      "notifyMeWhen": "Notify me when…",
+      "lessThanTargetValue": "less than target value",
+      "greaterThanTargetValue": "greater than target value",
+      "targetValue": "Target Value",
+      "active": "Active",
+      "save": "Save"
     },
     "units": {
       "celsius": "°C",

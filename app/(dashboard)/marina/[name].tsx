@@ -456,9 +456,10 @@ export default function DashboardScreen() {
                                                     shouldAdapt={false}
                                                     placement="top"
                                                     Icon={MessageSquarePlus}
-                                                    Name={"Harbor Master Notification"}
+                                                    Name={t("harbor.harborMasterNotification")}
                                                     userID={userID}
                                                     marinaID={marinaID}
+                                        t={t}
                                                 />)}
                                         </XStack>
                                     )}
@@ -815,7 +816,7 @@ export function SetNotificationMeasurementRulePopover({
                             fontWeight="700"
                             textAlign="center"
                         >
-                            Benachrichtige mich, wenn …
+                            {t('dashboard.measurements.notifyMeWhen')}
                         </Text>
 
                         {/* Measurement Display */}
@@ -841,7 +842,7 @@ export function SetNotificationMeasurementRulePopover({
                                 theme={operator === "<" ? "active" : "gray"}
                                 onPress={() => setOperator("<")}
                             >
-                                {"kleiner als Zielwert"}
+                                {t('dashboard.measurements.lessThanTargetValue')}
                             </Button>
 
                             <Button
@@ -849,14 +850,14 @@ export function SetNotificationMeasurementRulePopover({
                                 theme={operator === ">" ? "active" : "gray"}
                                 onPress={() => setOperator(">")}
                             >
-                                {"größer als Zielwert"}
+                                {t('dashboard.measurements.greaterThanTargetValue')}
                             </Button>
                         </XStack>
 
                         {/* Measurement Value Input */}
                         <YStack gap="$2" alignItems="center">
                             <Text fontSize="$4" fontWeight="600" color="$gray11">
-                                Zielwert
+                                {t('dashboard.measurements.targetValue')}
                             </Text>
 
                             <XStack gap="$2" alignItems="center">
@@ -900,7 +901,7 @@ export function SetNotificationMeasurementRulePopover({
                                     </Checkbox.Indicator>
                                 </Checkbox>
                                 <Text fontSize="$4" fontWeight="600" color="$gray11">
-                                    Aktiv
+                                    {t('dashboard.measurements.active')}
                                 </Text>
                             </XStack>
                         </YStack>
@@ -914,7 +915,7 @@ export function SetNotificationMeasurementRulePopover({
                                     createNotificationMeasurementRule(measurementValue);
                                 }}
                             >
-                                Speichern
+                                {t('dashboard.measurements.save')}
                             </Button>
                         </Dialog.Close>
 
@@ -931,14 +932,14 @@ export function HarborMasterBroadcastNotificationPopover({
                                                              shouldAdapt,
                                                              userID,
                                                              marinaID,
-                                                             ...props
+                                                             t,...props
                                                          }: PopoverProps & {
     Icon?: any;
     Name?: string;
     shouldAdapt?: boolean;
     userID?: number | null;
     marinaID?: number | null
-}) {
+, t: any}) {
     const [notificationTitle, setNotificationTitle] = useState<string>('');
     const [notificationMessage, setNotificationMessage] = useState<string>('');
     const notificationLocations = useNotificationLocations();
@@ -1007,7 +1008,7 @@ export function HarborMasterBroadcastNotificationPopover({
                     </XStack>
                     <XStack gap="$3">
                         <Label size="$3" htmlFor={"Title"}>
-                            {"Title"}
+                            {t('harbor.title')}
                         </Label>
                         <Input f={1} size="$3" id={"Title"} onChangeText={(text) => setNotificationTitle(text)}/>
 
@@ -1015,7 +1016,7 @@ export function HarborMasterBroadcastNotificationPopover({
 
                     <XStack gap="$3">
                         <Label size="$3" htmlFor={"Message"}>
-                            {"Message"}
+                            {t('harbor.message')}
                         </Label>
                         <TextArea f={1} size="$3" id={"Message"} onChangeText={(text) => setNotificationMessage(text)}/>
                     </XStack>
@@ -1031,7 +1032,7 @@ export function HarborMasterBroadcastNotificationPopover({
                                 createNotificationLocation();
                             }}
                         >
-                            An alle Subscriber senden
+                            {t('harbor.sendToAllSubscribers')}
                         </Button>
                     </Popover.Close>
                 </YStack>

@@ -69,6 +69,11 @@
     "googleSignInSuccess": "Google-Anmeldung erfolgreich",
     "googleSignInError": "Google-Anmeldung fehlgeschlagen",
     "googleSignInErrorGeneric": "Bei der Google-Anmeldung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+    "signInWithApple": "Mit Apple anmelden",
+    "signUpWithApple": "Mit Apple registrieren",
+    "appleSignInSuccess": "Apple-Anmeldung erfolgreich",
+    "appleSignInError": "Apple-Anmeldung fehlgeschlagen",
+    "appleSignInErrorGeneric": "Bei der Apple-Anmeldung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "logoutSuccess": "Erfolgreich abgemeldet",
     "logoutMessage": "Sie wurden abgemeldet. Bis bald!",
     "magicLink": {
@@ -267,7 +272,11 @@
     "email": "E-Mail",
     "emailPlaceholder": "hafen@beispiel.de",
     "website": "Webseite",
-    "websitePlaceholder": "https://www.hafen-webseite.de"
+    "websitePlaceholder": "https://www.hafen-webseite.de",
+    "harborMasterNotification": "Hafenmeister Benachrichtigung",
+    "sendToAllSubscribers": "An alle Abonnenten senden",
+    "title": "Titel",
+    "message": "Nachricht"
   },
   "dashboard": {
     "dashboard": "Dashboard",
@@ -311,7 +320,13 @@
       "waveHeight": "Wellenhöhe",
       "waterTemperature": "Wassertemperatur",
       "waterLevel": "Wasserstand",
-      "batteryVoltage": "Batteriespannung"
+      "batteryVoltage": "Batteriespannung",
+      "notifyMeWhen": "Benachrichtige mich, wenn…",
+      "lessThanTargetValue": "weniger als Zielwert",
+      "greaterThanTargetValue": "größer als Zielwert",
+      "targetValue": "Zielwert",
+      "active": "Aktiv",
+      "save": "Speichern"
     },
     "units": {
       "celsius": "°C",

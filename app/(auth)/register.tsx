@@ -11,6 +11,12 @@ import {useToast} from '@/hooks/ui';
 import {GoogleIcon} from '@/components/ui/Icons';
 import {useGoogleSignIn} from '@/hooks/auth';
 import {usePasswordValidation, useEmailValidation} from '@/hooks/ui';
+import {useTranslation} from '@/hooks/useTranslation';
+import {useToast} from '@/components/useToast';
+import {GoogleIcon, AppleIcon} from '@/components/ui/Icons';
+import {useGoogleSignIn} from '@/hooks/useGoogleSignIn';
+import {useAppleSignIn} from '@/hooks/useAppleSignIn';
+import {usePasswordValidation, useEmailValidation} from '@/hooks/usePasswordValidation';
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
@@ -32,6 +38,7 @@ export default function RegisterScreen() {
     const {login, session} = useSession();
     const {t} = useTranslation();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
+    const {handleAppleSignIn, isLoading: appleLoading} = useAppleSignIn();
     const toast = useToast();
     const userDeviceStore = useUserDeviceStore();
     
@@ -249,42 +256,84 @@ export default function RegisterScreen() {
                         <Separator flex={1} borderColor="$borderColor"/>
                     </XStack>
 
-                    <Button
-                        variant="outlined"
-                        size="$4"
-                        onPress={async () => {
-                            const result = await handleGoogleSignIn('/');
-                            if (result?.success) {
-                                toast.success(t('auth.googleSignInSuccess'), {
-                                    message: t('auth.accountCreated'),
-                                    duration: 3000
-                                });
-                            } else if (result && !result.success) {
-                                toast.error(t('auth.googleSignInError'), {
-                                    message: result.error || t('auth.googleSignInErrorGeneric'),
-                                    duration: 5000
-                                });
-                            }
-                        }}
-                        disabled={googleLoading}
-                        opacity={googleLoading ? 0.6 : 1}
-                        borderColor="$borderColor"
-                        borderRadius="$6"
-                        hoverStyle={{backgroundColor: "$content2"}}
-                        width="100%"
-                    >
-                        {googleLoading ? (
-                            <XStack gap="$2" alignItems="center">
-                                <Spinner size="small"/>
-                                <Text color="$color">{t('auth.signingIn')}</Text>
-                            </XStack>
-                        ) : (
-                            <XStack gap="$3" alignItems="center">
-                                <GoogleIcon size={20}/>
-                                <Text color="$color">{t('auth.signUpWithGoogle')}</Text>
-                            </XStack>
+                    <YStack gap="$3" width="100%">
+                        <Button
+                            variant="outlined"
+                            size="$4"
+                            onPress={async () => {
+                                const result = await handleGoogleSignIn('/');
+                                if (result?.success) {
+                                    toast.success(t('auth.googleSignInSuccess'), {
+                                        message: t('auth.accountCreated'),
+                                        duration: 3000
+                                    });
+                                } else if (result && !result.success) {
+                                    toast.error(t('auth.googleSignInError'), {
+                                        message: result.error || t('auth.googleSignInErrorGeneric'),
+                                        duration: 5000
+                                    });
+                                }
+                            }}
+                            disabled={googleLoading}
+                            opacity={googleLoading ? 0.6 : 1}
+                            borderColor="$borderColor"
+                            borderRadius="$6"
+                            hoverStyle={{backgroundColor: "$content2"}}
+                            width="100%"
+                        >
+                            {googleLoading ? (
+                                <XStack gap="$2" alignItems="center">
+                                    <Spinner size="small"/>
+                                    <Text color="$color">{t('auth.signingIn')}</Text>
+                                </XStack>
+                            ) : (
+                                <XStack gap="$3" alignItems="center">
+                                    <GoogleIcon size={20}/>
+                                    <Text color="$color">{t('auth.signUpWithGoogle')}</Text>
+                                </XStack>
+                            )}
+                        </Button>
+
+                        {Platform.OS === 'ios' && (
+                            <Button
+                                variant="outlined"
+                                size="$4"
+                                onPress={async () => {
+                                    const result = await handleAppleSignIn('/');
+                                    if (result?.success) {
+                                        toast.success(t('auth.appleSignInSuccess'), {
+                                            message: t('auth.accountCreated'),
+                                            duration: 3000
+                                        });
+                                        handleRegisterUserDevice(result.userId || 0);
+                                    } else if (result && !result.success) {
+                                        toast.error(t('auth.appleSignInError'), {
+                                            message: result.error || t('auth.appleSignInErrorGeneric'),
+                                            duration: 5000
+                                        });
+                                    }
+                                }}
+                                disabled={appleLoading}
+                                opacity={appleLoading ? 0.6 : 1}
+                                borderColor="$borderColor"
+                                borderRadius="$6"
+                                hoverStyle={{backgroundColor: "$content2"}}
+                                width="100%"
+                            >
+                                {appleLoading ? (
+                                    <XStack gap="$2" alignItems="center">
+                                        <Spinner size="small"/>
+                                        <Text color="$color">{t('auth.signingIn')}</Text>
+                                    </XStack>
+                                ) : (
+                                    <XStack gap="$3" alignItems="center">
+                                        <AppleIcon size={24}/>
+                                        <Text color="$color">{t('auth.signUpWithApple')}</Text>
+                                    </XStack>
+                                )}
+                            </Button>
                         )}
-                    </Button>
+                    </YStack>
 
                     <Text fontSize={14} color="$color">
                         {t('auth.alreadyHaveAccount')}{' '}
