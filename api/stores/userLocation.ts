@@ -9,6 +9,9 @@ export function useUserLocationStore() {
     const httpClient = useHttpClient();
 
     return {
+        getAllUserLocationByUserId: (userId: number,) =>
+            httpClient.get<UserLocation[]>(`/user-locations/user/${userId}`).then(r => r.data),
+
         getUserLocationByUserIdAndLocationId: (userId: number, locationId: number) =>
             httpClient.get<UserLocation>(`/user-locations/${userId}/${locationId}`).then(r => r.data),
 
