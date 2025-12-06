@@ -341,6 +341,9 @@
     "measurementValue": "Messwert",
     "operator": "Operator",
     "active": "Aktiv",
-    "harborMasterNotification": "Hafenmeister Benachrichtigung"
+    "harborMasterNotification": "Hafenmeister Benachrichtigung",
+    "noLocationsTitle": "Hier können Sie Ihre Benachrichtigungen verwalten",
+    "noLocationsMessage": "Sie müssen einen Standort hinzufügen, um Benachrichtigungen zu verwalten.",
+    "selectUserLocation": "Hafen auswählen"
   }
 }

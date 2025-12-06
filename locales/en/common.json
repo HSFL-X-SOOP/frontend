@@ -341,6 +341,9 @@
     "measurementValue": "Measurement Value",
     "operator": "Operator",
     "active": "Active",
-    "harborMasterNotification": "Harbor Master Notification"
+    "harborMasterNotification": "Harbor Master Notification",
+    "noLocationsTitle": "Here you can manage your notifications",
+    "noLocationsMessage": "You need to add a location to manage notifications.",
+    "selectUserLocation": "Select Harbor"
   }
 }

@@ -97,7 +97,7 @@ export function MyNotificationsTab() {
                     })) || []}
                     value={(myLocationsSelect?.filter (location => location.locationId === selectedUserLocationId)[0]?.locationId.toString()) || ''}
                     onValueChange={handleValueChange}
-                    placeholder="Select User Location"
+                    placeholder={t("notificationMeasurementRule.selectUserLocation")}
                     triggerProps={{
                         width: 280,
                         iconAfter: ChevronDown,
@@ -105,32 +105,44 @@ export function MyNotificationsTab() {
                         borderColor: isDark ? '$gray7' : '$gray4'
                     }}
                 />
+                {selectedUserLocation && (
                     <Card key={"harbor-master-notification"} marginTop="$4" padding="$4" borderWidth={1} borderColor="$borderColor">
                         <XStack gap={"$4"} alignItems="center">
-                            <H4>{t("notificationMeasurementRule.harborMasterNotification")}</H4>
                             <Button
                                 size="$5"
                                 variant="outlined"
                                 icon={selectedUserLocation?.sentHarborNotifications ? BellOff : Bell}
                                 onPress={updateUserLocationSentHarborNotifications}
                                 circular
-                            />
+                                />
+                            <H4 color="$accent7" fontFamily="$oswald">{t("notificationMeasurementRule.harborMasterNotification")}</H4>
                         </XStack>
                     </Card>
+                )}
+
+                {selectedUserLocation == undefined && (
+                    <Card key={"harbor-master-notification"} marginTop="$4" padding="$4" borderWidth={1} borderColor="$borderColor">
+                        <YStack gap="$2" alignItems="center">
+                            <H4  color="$accent7" fontFamily="$oswald">{t("notificationMeasurementRule.noLocationsTitle")}</H4>
+                            <Text color="$color" opacity={0.7} textAlign="center">{t("notificationMeasurementRule.noLocationsMessage")}</Text>
+                        </YStack>
+                    </Card>
+                )}
+
                 {myNotifications?.sort((a, b) => a.id - b.id).map((notification) => (
                     <Card key={notification.id} marginTop="$4" padding="$4" borderWidth={1} borderColor="$borderColor">
-                        <H4>{getTextFromMeasurementType(notification.measurementTypeId.toString(), t)}</H4>
+                        <H4 color="$accent7" fontFamily="$oswald">{getTextFromMeasurementType(notification.measurementTypeId.toString(), t)}</H4>
                         <XStack justifyContent="space-between" alignItems="center">
                             <YStack>
-                                <Text>
+                                <Text color="$color" opacity={0.7}>
                                     {t('dashboard.measurements.condition')}: {notification.operator === '>' ? t('dashboard.measurements.greaterThanTargetValue') : t('dashboard.measurements.lessThanTargetValue')}
                                 </Text>
-                                <Text>{t('dashboard.measurements.targetValue')}: {notification.measurementValue} {getMeasurementTypeSymbol(notification.measurementTypeId.toString(), t)}</Text>
+                                <Text color="$color" opacity={0.7}>{t('dashboard.measurements.targetValue')}: {notification.measurementValue} {getMeasurementTypeSymbol(notification.measurementTypeId.toString(), t)}</Text>
                                 <XStack alignItems="center" gap="$2">
-                                <Text>{t('notificationMeasurementRule.active')}: </Text>
-                                    {notification.isActive ? <Check size={"$1"}/> : <X size={"$1"}/>}
+                                    <Text color="$color" opacity={0.7}>{t('notificationMeasurementRule.active')}:</Text>
+                                    <Text color="$color" opacity={0.7}>{notification.isActive ? <Check size={"$1"}/> : <X size={"$1"}/>}</Text>
                                 </XStack>
-                                <Text>{t("dashboard.measurements.lastNotifiedAt")}: {formatTimeToLocal(notification.lastNotifiedAt + "Z")}</Text>
+                                <Text color="$color" opacity={0.7}>{t("dashboard.measurements.lastNotifiedAt")}: {formatTimeToLocal(notification.lastNotifiedAt + "Z")}</Text>
                             <XStack gap="$2">
                             <Button onPress={() => {
                                 notifications.update(notification.id, 
