@@ -1,4 +1,4 @@
-import { PopoverProps } from "tamagui";
+import { H4, PopoverProps } from "tamagui";
 import { useState } from "react";
 import { useNotificationMeasurementRules } from "@/hooks/useNotificationMeasurementRules";
 import { NotificationMeasurementRule } from "@/api/models/notificationMeasurementRule";
@@ -53,12 +53,13 @@ export function DeleteNotificationMeasurementRulePopover({
                 exitStyle={{ opacity: 0, scale: 0.95 }}
                 >
 
-                <YStack gap="$4">
-                        <Text>{t('dashboard.measurements.deleteConfirmText')}</Text>
+                <YStack gap="$4" alignItems="center">
+                    <H4 color="$accent7" fontFamily="$oswald">{t('dashboard.measurements.deleteConfirmText')}</H4>
                     <Dialog.Close asChild>
                         <Button
                             size="$4"
-                            width="100%"
+                            backgroundColor="$accent7"
+                            color="white"
                             onPress={() => {
                             notifications.deleteNotificationMeasurementRule(notification.id)
                                 .then(async () => {
