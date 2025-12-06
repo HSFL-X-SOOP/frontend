@@ -42,6 +42,7 @@ export interface NotificationMeasurementRule {
     measurementValue: number;
     isActive: boolean;
     createdAt: string;
+    lastNotifiedAt: string;
 }
 
 export enum MeasurementType {
