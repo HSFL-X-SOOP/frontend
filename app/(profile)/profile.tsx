@@ -21,7 +21,7 @@ import {ProfileTab} from '@/components/profile/ProfileTab';
 import {BoatsTab} from '@/components/profile/BoatsTab';
 import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
 import {useLocationStore} from '@/api/stores/locationStore';
-import { MyNotificationsTab } from '@/components/profile/myNotifications/MyNotificationsTab';
+import { MyNotificationsTab } from '@/components/profile/MyNotificationsTab';
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -284,7 +284,7 @@ export default function ProfileScreen() {
                             </Tabs.Content>
 
                             <Tabs.Content value="myNotifications" padding="$0" marginTop="$4">
-                                <MyNotificationsTab userID={session?.profile?.userId}/>
+                                <MyNotificationsTab />
                             </Tabs.Content>
 
                             {isHarborMaster && (

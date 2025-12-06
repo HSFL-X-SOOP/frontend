@@ -1,4 +1,4 @@
-import React, { use, useEffect, useMemo, useState } from 'react';
+import React, { use, useCallback, useEffect, useMemo, useState } from 'react';
 import {
     YStack,
     Card,
@@ -10,7 +10,7 @@ import {
     XStack,
     PopoverProps
 } from 'tamagui';
-import { ChevronDown, Edit3, Trash, Check, X } from '@tamagui/lucide-icons';
+import { ChevronDown, Edit3, Trash, Check, X, Bell, BellOff } from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/useTranslation';
 import { useNotificationMeasurementRules } from '@/hooks/useNotificationMeasurementRules';
 import { useUserLocations } from '@/hooks/useUserLocations';
@@ -18,10 +18,11 @@ import { UserLocation } from '@/api/models/userLocation';
 import { NotificationMeasurementRule } from '@/api/models/notificationMeasurementRule';
 import { SelectWithSheet } from '@/components/ui/SelectWithSheet';
 import { getMeasurementTypeSymbol, getTextFromMeasurementType } from '@/utils/measurements';
-import { SetNotificationMeasurementRulePopover } from '@/app/(dashboard)/marina/[name]';
+import { SetNotificationMeasurementRulePopover } from '@/components/notifications/Popovers/SetNotificationMeasurementRulePopover';
 import { useSession } from '@/context/SessionContext';
 import { useLocations } from '@/hooks/useLocations';
 import { formatTimeToLocal } from '@/utils/time';
+import { DeleteNotificationMeasurementRulePopover } from '@/components/notifications/Popovers/DeleteNotificationMeasurementRulePopover';
 
 export function MyNotificationsTab() {
     const {t} = useTranslation();
@@ -30,6 +31,7 @@ export function MyNotificationsTab() {
     const [myNotifications, setMyNotifications] = useState<NotificationMeasurementRule[] | undefined>([]);
     const [myLocations, setMyLocations] = useState<UserLocation[] | undefined>([]);
     const [selectedUserLocationId, setSelectedUserLocationId] = useState<number | undefined>(undefined);
+    const [selectedUserLocation, setSelectedUserLocation] = useState<UserLocation | undefined>(undefined);
     const isDark = false;
     const session = useSession();
     const userID = session?.session?.profile?.id ?? -1;
@@ -40,6 +42,7 @@ export function MyNotificationsTab() {
             const userLocationsData = await userLocations.getAllUserLocationByUserId(userID);
             setMyLocations(userLocationsData);
             if (userLocationsData && userLocationsData.length > 0) {
+                setSelectedUserLocation(userLocationsData[0]);
                 setSelectedUserLocationId(userLocationsData[0]?.locationId);
             }
         };
@@ -57,6 +60,7 @@ export function MyNotificationsTab() {
 
     const handleValueChange = (value: string) => {
         setSelectedUserLocationId(Number(value))
+        setSelectedUserLocation(myLocations?.find(location => location.locationId === Number(value)));
     };
 
     const myLocationsSelect = useMemo(() => {
@@ -64,12 +68,22 @@ export function MyNotificationsTab() {
         return myLocations
             .filter(data => data?.id != null)
             .map(data => ({
-                id: data!.locationId,
+                id: data!.id,
+                locationId: data!.locationId,
                 name: location.data.filter(loc => loc.id === data!.locationId)[0]?.name || ''
             }));
     }, [myLocations, location.data]);
-    
 
+    const updateUserLocationSentHarborNotifications = useCallback(async () => {
+        if (!selectedUserLocation) return;
+        const updatedUserocation = await userLocations.update(selectedUserLocation.id, {
+            userId: userID,
+            locationId: selectedUserLocation.locationId,
+            sentHarborNotifications: !selectedUserLocation.sentHarborNotifications,
+        });
+        setSelectedUserLocation(updatedUserocation);
+    }, [selectedUserLocation, userLocations, selectedUserLocationId, userID]);
+    
     return (
         <YStack gap="$4">
             <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5"
@@ -78,10 +92,10 @@ export function MyNotificationsTab() {
                     id="user-location-select"
                     name="user-location"
                     items={myLocationsSelect?.map(location => ({
-                        value: location.id.toString(),
+                        value: location.locationId.toString(),
                         label: location.name.toString()
                     })) || []}
-                    value={(myLocationsSelect?.filter (location => location.id === selectedUserLocationId)[0]?.id.toString()) || ''}
+                    value={(myLocationsSelect?.filter (location => location.locationId === selectedUserLocationId)[0]?.locationId.toString()) || ''}
                     onValueChange={handleValueChange}
                     placeholder="Select User Location"
                     triggerProps={{
@@ -91,7 +105,19 @@ export function MyNotificationsTab() {
                         borderColor: isDark ? '$gray7' : '$gray4'
                     }}
                 />
-                {myNotifications?.map((notification) => (
+                    <Card key={"harbor-master-notification"} marginTop="$4" padding="$4" borderWidth={1} borderColor="$borderColor">
+                        <XStack gap={"$4"} alignItems="center">
+                            <H4>{t("notificationMeasurementRule.harborMasterNotification")}</H4>
+                            <Button
+                                size="$5"
+                                variant="outlined"
+                                icon={selectedUserLocation?.sentHarborNotifications ? BellOff : Bell}
+                                onPress={updateUserLocationSentHarborNotifications}
+                                circular
+                            />
+                        </XStack>
+                    </Card>
+                {myNotifications?.sort((a, b) => a.id - b.id).map((notification) => (
                     <Card key={notification.id} marginTop="$4" padding="$4" borderWidth={1} borderColor="$borderColor">
                         <H4>{getTextFromMeasurementType(notification.measurementTypeId.toString(), t)}</H4>
                         <XStack justifyContent="space-between" alignItems="center">
@@ -151,76 +177,3 @@ export function MyNotificationsTab() {
     );
 };
 
-export function DeleteNotificationMeasurementRulePopover({
-  Icon,
-  Name,
-  shouldAdapt,
-  notification,
-  fetchNotifications,
-  t,
-  ...props
-}: PopoverProps & { Icon?: any; Name?: string; shouldAdapt?: boolean; notification: NotificationMeasurementRule, t: any, fetchNotifications: () => void }) {
-    const [open, setOpen] = useState(false)
-    const notifications = useNotificationMeasurementRules();
-    return (
-        <Dialog
-        allowFlip
-        stayInFrame
-        offset={15}
-        {...props}
-        open={open}
-        onOpenChange={setOpen}
-        >
-            <Dialog.Trigger asChild>
-                <Button icon={Icon} onPress={() => setOpen(true)} />
-            </Dialog.Trigger>
-
-            <Dialog.Portal>
-                <Dialog.Overlay 
-                onPress={() => setOpen(false)} 
-                backgroundColor="rgba(0,0,0,0.3)" 
-                />
-
-                <Dialog.Content
-                key={`${notification.id}-${notification.measurementTypeId}`}
-                borderWidth={1}
-                borderColor="$borderColor"
-                elevate
-                p="$4"
-                maxWidth="90%"
-                width="100%"
-                borderRadius="$6"
-                animation={[
-                    'quick',
-                    {
-                    opacity: { overshootClamping: true },
-                    },
-                ]}
-                enterStyle={{ opacity: 0, scale: 0.95 }}
-                exitStyle={{ opacity: 0, scale: 0.95 }}
-                >
-
-                <YStack gap="$4">
-                    
-                        <Text>{t('dashboard.measurements.deleteConfirmText')}</Text>
-                    <Dialog.Close asChild>
-                        <Button
-                            size="$4"
-                            width="100%"
-                            onPress={() => {
-                            notifications.deleteNotificationMeasurementRule(notification.id)
-                                .then(async () => {
-                                    await fetchNotifications();
-                                });
-                            }}
-                        >
-                            {t('dashboard.measurements.delete')}
-                        </Button>
-                    </Dialog.Close>
-                
-                </YStack>
-                </Dialog.Content>
-            </Dialog.Portal>
-        </Dialog>
-  )
-}

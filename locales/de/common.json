@@ -340,6 +340,7 @@
     "measurementTypeId": "Messwert Typ",
     "measurementValue": "Messwert",
     "operator": "Operator",
-    "active": "Aktiv"
+    "active": "Aktiv",
+    "harborMasterNotification": "Hafenmeister Benachrichtigung"
   }
 }
