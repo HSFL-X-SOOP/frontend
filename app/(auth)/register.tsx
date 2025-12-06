@@ -319,7 +319,7 @@ export default function RegisterScreen() {
                                     </XStack>
                                 ) : (
                                     <XStack gap="$3" alignItems="center">
-                                        <AppleIcon size={20}/>
+                                        <AppleIcon size={24}/>
                                         <Text color="$color">{t('auth.signUpWithApple')}</Text>
                                     </XStack>
                                 )}
