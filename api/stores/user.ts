@@ -22,11 +22,19 @@ export function useUserStore() {
                 const response = await httpClient.post<UserProfile>('/user-profile', body);
                 return response.data;
             } catch (error: unknown) {
+                console.error('Failed to create profile:', error);
                 throw error;
             }
         },
 
-        updateProfile: (body: UpdateProfileRequest) =>
-            httpClient.put<UserProfile>('/user-profile', body).then(r => r.data),
+        updateProfile: async (body: UpdateProfileRequest) => {
+            try {
+                const response = await httpClient.put<UserProfile>('/user-profile', body);
+                return response.data;
+            } catch (error: unknown) {
+                console.error('Failed to update profile:', error);
+                throw error;
+            }
+        },
     };
 }

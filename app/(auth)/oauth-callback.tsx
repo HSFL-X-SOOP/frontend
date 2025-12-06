@@ -5,13 +5,15 @@ import {AuthorityRole} from '@/api/models/profile';
 import {SafeAreaView, Platform} from 'react-native';
 import {YStack, Text, Spinner} from 'tamagui';
 import {createLogger} from '@/utils/logger';
+import {useUser} from '@/hooks/data';
 
 const logger = createLogger('Auth:OAuthCallback');
 
 export default function OAuthCallbackHandler() {
     const router = useRouter();
     const params = useLocalSearchParams();
-    const {login, session} = useSession();
+    const {login, session, updateProfile: updateSessionProfile} = useSession();
+    const {getProfile} = useUser();
     const hasProcessed = useRef(false);
 
     useEffect(() => {
@@ -27,7 +29,7 @@ export default function OAuthCallbackHandler() {
             return;
         }
 
-        const handleCallback = () => {
+        const handleCallback = async () => {
             logger.info('Processing OAuth callback', { platform: Platform.OS });
             let accessToken: string | null = null;
             let refreshToken: string | null = null;
@@ -60,9 +62,31 @@ export default function OAuthCallbackHandler() {
                     role: AuthorityRole.USER
                 });
 
-                if (Platform.OS === 'web' && typeof window !== 'undefined') {
-                    logger.debug('Cleaning up URL after OAuth callback');
-                    window.history.replaceState({}, document.title, '/map');
+                // Try to fetch user profile
+                try {
+                    logger.debug('Fetching user profile');
+                    const profile = await getProfile();
+
+                    if (profile) {
+                        logger.info('Profile found, updating session');
+                        updateSessionProfile(profile);
+                    }
+
+                    // Redirect based on profile existence and creation status
+                    const hasProfile = profile && profile.profileCreatedAt;
+                    const redirectPath = hasProfile ? '/map' : '/(profile)/create-profile';
+                    logger.info('Redirecting to', { path: redirectPath, hasProfile, profileCreatedAt: profile?.profileCreatedAt });
+
+                    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                        logger.debug('Cleaning up URL after OAuth callback');
+                        window.history.replaceState({}, document.title, redirectPath);
+                        router.replace(redirectPath as any);
+                    } else {
+                        router.replace(redirectPath as any);
+                    }
+                } catch (error) {
+                    logger.error('Failed to fetch profile, redirecting to create-profile', error);
+                    router.replace('/(profile)/create-profile');
                 }
             } else {
                 logger.error('No tokens found in OAuth callback URL');
@@ -71,7 +95,7 @@ export default function OAuthCallbackHandler() {
         };
 
         handleCallback();
-    }, [params, login, router]);
+    }, [params, login, router, getProfile, updateSessionProfile]);
 
     return (
         <SafeAreaView style={{flex: 1}}>

@@ -11,6 +11,7 @@ import {EmailInput} from '@/components/auth/EmailInput';
 import {useTranslation} from '@/hooks/ui';
 import {useToast} from '@/hooks/ui';
 import {createLogger} from '@/utils/logger';
+import {UI_CONSTANTS} from '@/config/constants';
 
 const logger = createLogger('Auth:MagicLink');
 
@@ -37,7 +38,7 @@ export default function MagicLinkScreen() {
                 logger.info('Magic link sent successfully');
                 toast.success(t('auth.magicLink.linkSentSuccess'), {
                     message: t('auth.magicLink.checkYourEmail'),
-                    duration: 4000
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
                 });
                 setSent(true);
             }
@@ -46,7 +47,7 @@ export default function MagicLinkScreen() {
             const errorMessage = err?.response?.data?.message || err?.message || t('auth.magicLink.linkSentErrorGeneric');
             toast.error(t('auth.magicLink.linkSentError'), {
                 message: errorMessage,
-                duration: 5000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
         }
     };
@@ -74,7 +75,7 @@ export default function MagicLinkScreen() {
                     });
                     toast.success(t('auth.magicLink.loginSuccess'), {
                         message: t('auth.welcomeBack'),
-                        duration: 3000
+                        duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
                     });
                     router.replace("/map");
                 }
@@ -83,7 +84,7 @@ export default function MagicLinkScreen() {
                 const errorMessage = err?.response?.data?.message || err?.message || t('auth.magicLink.invalidOrExpired');
                 toast.error(t('auth.magicLink.loginError'), {
                     message: errorMessage,
-                    duration: 5000
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
                 });
             }
         })();

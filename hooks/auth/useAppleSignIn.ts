@@ -1,7 +1,7 @@
 import {Platform} from 'react-native';
 import {useRouter} from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import {useAuth} from '@/hooks/useAuth';
+import {useAuth} from '@/hooks/auth';
 import {useSession} from '@/context/SessionContext';
 import {AuthorityRole} from '@/api/models/profile';
 import {createLogger} from '@/utils/logger';
@@ -55,7 +55,14 @@ export const useAppleSignIn = () => {
                     role: res.profile?.authorityRole ?? AuthorityRole.USER,
                     profile: res.profile,
                 });
-                router.push(redirectPath);
+
+                // Check if user has a profile, if not redirect to create-profile
+                if (!res.profile || !res.profile.profileCreatedAt) {
+                    logger.info('No profile found or not created, redirecting to create-profile');
+                    router.push('/(profile)/create-profile');
+                } else {
+                    router.push(redirectPath);
+                }
                 return {success: true, userId: res.profile?.id};
             } else {
                 logger.error('Backend authentication failed');

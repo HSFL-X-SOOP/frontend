@@ -18,6 +18,7 @@ import {useToast} from '@/hooks/ui';
 import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/data';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
+import {UI_CONSTANTS} from '@/config/constants';
 
 export const ProfileTab: React.FC = () => {
     const {t, changeLanguage} = useTranslation();
@@ -32,9 +33,9 @@ export const ProfileTab: React.FC = () => {
 
     useEffect(() => {
         if (session?.profile) {
-            setSelectedLanguage(session.profile.language);
+            setSelectedLanguage(session.profile.language ?? Language.DE);
             setSelectedRoles(session.profile.roles || []);
-            setSelectedMeasurement(session.profile.measurementSystem);
+            setSelectedMeasurement(session.profile.measurementSystem ?? MeasurementSystem.METRIC);
         }
     }, [session?.profile]);
 
@@ -61,7 +62,7 @@ export const ProfileTab: React.FC = () => {
 
             toast.success(t('profile.saveSuccess'), {
                 message: t('profile.settingsUpdated'),
-                duration: 3000
+                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
             });
 
             setIsEditing(false);
@@ -69,16 +70,16 @@ export const ProfileTab: React.FC = () => {
             console.error('Failed to update profile:', error);
             toast.error(t('profile.saveError'), {
                 message: error instanceof Error ? error.message : t('profile.saveErrorGeneric'),
-                duration: 5000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
         }
     };
 
     const handleCancel = () => {
         if (session?.profile) {
-            setSelectedLanguage(session.profile.language);
+            setSelectedLanguage(session.profile.language ?? Language.DE);
             setSelectedRoles(session.profile.roles || []);
-            setSelectedMeasurement(session.profile.measurementSystem);
+            setSelectedMeasurement(session.profile.measurementSystem ?? MeasurementSystem.METRIC);
         }
         setIsEditing(false);
     };

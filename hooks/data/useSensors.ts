@@ -2,6 +2,7 @@ import {useState, useEffect} from 'react';
 import {LocationWithBoxes} from '@/api/models/sensor';
 import {useSensorStore} from '@/api/stores/sensors';
 import {useToast} from '@/hooks/ui';
+import {UI_CONSTANTS} from '@/config/constants';
 
 
 /**
@@ -27,7 +28,7 @@ export function useSensorDataNew() {
                 setData([]);
                 toast.error('Sensor Data Error', {
                     message: errorMessage,
-                    duration: 5000
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
                 });
             } finally {
                 setLoading(false);
@@ -48,7 +49,7 @@ export function useSensorDataNew() {
             setError(errorMessage);
             toast.error('Sensor Data Error', {
                 message: errorMessage,
-                duration: 5000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
         } finally {
             setLoading(false);
@@ -84,7 +85,7 @@ export function useSensorDataTimeRange(id: number | null, timeRange: string = '2
                 setData(null);
                 toast.error('Dashboard Data Error', {
                     message: errorMessage,
-                    duration: 5000
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
                 });
             } finally {
                 setLoading(false);
@@ -107,7 +108,7 @@ export function useSensorDataTimeRange(id: number | null, timeRange: string = '2
             setError(errorMessage);
             toast.error('Dashboard Data Error', {
                 message: errorMessage,
-                duration: 5000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
         } finally {
             setLoading(false);

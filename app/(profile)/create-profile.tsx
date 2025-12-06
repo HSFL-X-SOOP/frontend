@@ -2,11 +2,12 @@ import {useRouter} from 'expo-router';
 import {useState} from 'react';
 import {SafeAreaView, ScrollView} from 'react-native';
 import {Button, Text, YStack, XStack, H2, H5, Card, RadioGroup, Label, Separator, View, Spinner} from 'tamagui';
-import {Globe, Activity, Ruler, Check} from '@tamagui/lucide-icons';
+import {Globe, Activity, Ruler, Check, User} from '@tamagui/lucide-icons';
 import {useUser} from '@/hooks/data';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {useSession} from '@/context/SessionContext';
 import {useTranslation} from '@/hooks/ui';
+import {EmailInput} from '@/components/auth/EmailInput';
 
 export default function CreateProfileScreen() {
     const router = useRouter();
@@ -14,6 +15,8 @@ export default function CreateProfileScreen() {
     const {createProfile, createProfileStatus} = useUser();
     const {updateProfile: updateSessionProfile} = useSession();
 
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [selectedLanguage, setSelectedLanguage] = useState<Language>(Language.DE);
     const [selectedRoles, setSelectedRoles] = useState<ActivityRole[]>([]);
     const [selectedMeasurement, setSelectedMeasurement] = useState<MeasurementSystem>(MeasurementSystem.METRIC);
@@ -31,6 +34,8 @@ export default function CreateProfileScreen() {
 
     const handleSubmit = async () => {
         console.log('[CreateProfile] Starting profile creation with:', {
+            firstName,
+            lastName,
             language: selectedLanguage,
             selectedRoles: selectedRoles,
             selectedRolesLength: selectedRoles.length,
@@ -39,17 +44,22 @@ export default function CreateProfileScreen() {
         });
 
         // Validierung
+        if (!firstName.trim() || !lastName.trim()) {
+            alert('Bitte gib deinen Vor- und Nachnamen ein!');
+            return;
+        }
+
         if (selectedRoles.length === 0) {
             alert('Bitte wähle mindestens eine Aktivität aus!');
             return;
         }
 
         try {
-            // Versuche zuerst nur mit 'roles' (Backend erwartet möglicherweise nur dieses Feld)
             const requestData = {
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
                 language: selectedLanguage,
-                // activityRole: selectedRoles, // Auskommentiert - Backend kennt dieses Feld noch nicht
-                roles: selectedRoles, // Backend erwartet 'roles'
+                roles: selectedRoles,
                 measurementSystem: selectedMeasurement
             };
             console.log('[CreateProfile] Sending request:', JSON.stringify(requestData, null, 2));
@@ -93,6 +103,48 @@ export default function CreateProfileScreen() {
                         </YStack>
 
                         <YStack gap="$4">
+                            {/* Name Section */}
+                            <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5" borderWidth={1}
+                                  borderColor="$borderColor">
+                                <YStack gap="$4">
+                                    <XStack alignItems="center" gap="$3">
+                                        <View
+                                            width={40}
+                                            height={40}
+                                            backgroundColor="$accent2"
+                                            borderRadius="$8"
+                                            alignItems="center"
+                                            justifyContent="center"
+                                        >
+                                            <User size={22} color="$accent7"/>
+                                        </View>
+                                        <H5 color="$accent7" fontFamily="$oswald">
+                                            {t('profile.nameSection.title')}
+                                        </H5>
+                                    </XStack>
+                                    <Separator/>
+                                    <YStack gap="$3">
+                                        <YStack gap="$2">
+                                            <EmailInput
+                                                value={firstName}
+                                                onChangeText={setFirstName}
+                                                placeholder={t('profile.nameSection.firstNamePlaceholder')}
+                                                label={t('profile.nameSection.firstName')}
+                                            />
+                                        </YStack>
+                                        <YStack gap="$2">
+                                            <EmailInput
+                                                value={lastName}
+                                                onChangeText={setLastName}
+                                                placeholder={t('profile.nameSection.lastNamePlaceholder')}
+                                                label={t('profile.nameSection.lastName')}
+                                            />
+                                        </YStack>
+                                    </YStack>
+                                </YStack>
+                            </Card>
+
+                            {/* Language Section */}
                             <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5" borderWidth={1}
                                   borderColor="$borderColor">
                                 <YStack gap="$4">

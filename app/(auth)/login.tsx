@@ -7,8 +7,9 @@ import {Lock} from '@tamagui/lucide-icons';
 import {Button, Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {useTranslation} from '@/hooks/ui';
 import {useToast} from '@/hooks/ui';
-import {GoogleIcon} from '@/components/ui/Icons';
+import {GoogleIcon, AppleIcon} from '@/components/ui/Icons';
 import {useGoogleSignIn} from '@/hooks/auth';
+import {useAppleSignIn} from '@/hooks/auth/useAppleSignIn';
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
@@ -18,6 +19,7 @@ import {useIsMobile} from '@/hooks/ui';
 import messagingModule from '@react-native-firebase/messaging';
 import {PermissionsAndroid} from 'react-native';
 import {useUserDeviceStore} from '@/api/stores/userDevice';
+import {UI_CONSTANTS} from '@/config/constants';
 
 const logger = createLogger('Auth:Login');
 
@@ -44,23 +46,30 @@ export default function LoginScreen() {
     }, [session, router]);
 
     const handleRegisterUserDevice = async (userId: number) => {
-        const result = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-        );
+        // Skip device registration on web platform
+        if (Platform.OS === 'web') {
+            return;
+        }
 
-        if (result === PermissionsAndroid.RESULTS.GRANTED) {
-            if (Platform.OS !== 'web') {
-                if (Platform.OS === 'android') {
-                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-                }
+        try {
+            // Request notification permissions on Android
+            if (Platform.OS === 'android') {
+                const result = await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+                );
 
-                try {
-                    let token = await messagingModule().getToken();
-                    userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
-                } catch (error) {
-                    console.log('Error getting FCM token:', error);
+                if (result !== PermissionsAndroid.RESULTS.GRANTED) {
+                    logger.debug('Notification permission not granted');
+                    return;
                 }
             }
+
+            // Get FCM token and register device
+            const token = await messagingModule().getToken();
+            await userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+            logger.debug('User device registered successfully');
+        } catch (error) {
+            logger.error('Error registering user device:', error);
         }
     }
 
@@ -79,17 +88,24 @@ export default function LoginScreen() {
                 });
                 toast.success(t('auth.loginSuccess'), {
                     message: t('auth.welcomeBack'),
-                    duration: 3000
+                    duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
                 });
                 handleRegisterUserDevice(res.profile?.id || 0);
-                router.push("/map");
+
+                // Check if user has a profile, if not redirect to create-profile
+                if (!res.profile || !res.profile.profileCreatedAt) {
+                    logger.info('No profile found or not created, redirecting to create-profile');
+                    router.push("/(profile)/create-profile");
+                } else {
+                    router.push("/map");
+                }
             }
         } catch (err: any) {
             logger.error('Login failed', err);
             const errorMessage = err?.response?.data?.message || err?.message || t('auth.loginErrorGeneric');
             toast.error(t('auth.loginError'), {
                 message: errorMessage,
-                duration: 5000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
         }
     };
@@ -228,12 +244,12 @@ export default function LoginScreen() {
                                 if (result?.success) {
                                     toast.success(t('auth.googleSignInSuccess'), {
                                         message: t('auth.welcomeBack'),
-                                        duration: 3000
+                                        duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
                                     });
                                 } else if (result && !result.success) {
                                     toast.error(t('auth.googleSignInError'), {
                                         message: result.error || t('auth.googleSignInErrorGeneric'),
-                                        duration: 5000
+                                        duration: UI_CONSTANTS.TOAST_DURATION.LONG
                                     });
                                 }
                             }}
@@ -265,12 +281,12 @@ export default function LoginScreen() {
                                     if (result?.success) {
                                         toast.success(t('auth.appleSignInSuccess'), {
                                             message: t('auth.welcomeBack'),
-                                            duration: 3000
+                                            duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
                                         });
                                     } else if (result && !result.success) {
                                         toast.error(t('auth.appleSignInError'), {
                                             message: result.error || t('auth.appleSignInErrorGeneric'),
-                                            duration: 5000
+                                            duration: UI_CONSTANTS.TOAST_DURATION.LONG
                                         });
                                     }
                                 }}

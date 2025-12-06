@@ -8,22 +8,18 @@ import {Button, Checkbox, Text, View, YStack, XStack, Separator, Spinner, Scroll
 import {User} from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/ui';
 import {useToast} from '@/hooks/ui';
-import {GoogleIcon} from '@/components/ui/Icons';
-import {useGoogleSignIn} from '@/hooks/auth';
-import {usePasswordValidation, useEmailValidation} from '@/hooks/ui';
-import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/components/useToast';
 import {GoogleIcon, AppleIcon} from '@/components/ui/Icons';
-import {useGoogleSignIn} from '@/hooks/useGoogleSignIn';
-import {useAppleSignIn} from '@/hooks/useAppleSignIn';
-import {usePasswordValidation, useEmailValidation} from '@/hooks/usePasswordValidation';
+import {useGoogleSignIn} from '@/hooks/auth';
+import {useAppleSignIn} from '@/hooks/auth/useAppleSignIn';
+import {usePasswordValidation, useEmailValidation} from '@/hooks/ui';
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
 import {PasswordStrengthIndicator} from '@/components/auth/PasswordStrengthIndicator';
 import {createLogger} from '@/utils/logger';
-import { useUserDeviceStore } from '@/api/stores/userDevice';
+import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messagingModule from '@react-native-firebase/messaging';
+import {UI_CONSTANTS} from '@/config/constants';
 
 const logger = createLogger('Auth:Register');
 
@@ -61,7 +57,7 @@ export default function RegisterScreen() {
             logger.warn('Password mismatch');
             toast.error(t('auth.registerError'), {
                 message: t('auth.passwordsDoNotMatch'),
-                duration: 4000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
             return;
         }
@@ -69,7 +65,7 @@ export default function RegisterScreen() {
             logger.warn('Terms of service not accepted');
             toast.error(t('auth.registerError'), {
                 message: t('auth.agreeToTermsRequired'),
-                duration: 4000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
             return;
         }
@@ -77,7 +73,7 @@ export default function RegisterScreen() {
             logger.warn('Invalid password format');
             toast.error(t('auth.registerError'), {
                 message: t('auth.invalidPasswordFormat'),
-                duration: 4000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
             return;
         }
@@ -85,7 +81,7 @@ export default function RegisterScreen() {
             logger.warn('Invalid email format');
             toast.error(t('auth.registerError'), {
                 message: t('auth.invalidEmail'),
-                duration: 4000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
             return;
         }
@@ -105,7 +101,7 @@ export default function RegisterScreen() {
                 });
                 toast.success(t('auth.registerSuccess'), {
                     message: t('auth.accountCreated'),
-                    duration: 3000
+                    duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
                 });
                 handleRegisterUserDevice(res.profile?.id || 0);
                 router.push("/");
@@ -115,7 +111,7 @@ export default function RegisterScreen() {
             const errorMessage = err?.response?.data?.message || err?.message || t('auth.registerErrorGeneric');
             toast.error(t('auth.registerError'), {
                 message: errorMessage,
-                duration: 5000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
         }
     };
@@ -265,12 +261,12 @@ export default function RegisterScreen() {
                                 if (result?.success) {
                                     toast.success(t('auth.googleSignInSuccess'), {
                                         message: t('auth.accountCreated'),
-                                        duration: 3000
+                                        duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
                                     });
                                 } else if (result && !result.success) {
                                     toast.error(t('auth.googleSignInError'), {
                                         message: result.error || t('auth.googleSignInErrorGeneric'),
-                                        duration: 5000
+                                        duration: UI_CONSTANTS.TOAST_DURATION.LONG
                                     });
                                 }
                             }}
@@ -303,13 +299,13 @@ export default function RegisterScreen() {
                                     if (result?.success) {
                                         toast.success(t('auth.appleSignInSuccess'), {
                                             message: t('auth.accountCreated'),
-                                            duration: 3000
+                                            duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
                                         });
                                         handleRegisterUserDevice(result.userId || 0);
                                     } else if (result && !result.success) {
                                         toast.error(t('auth.appleSignInError'), {
                                             message: result.error || t('auth.appleSignInErrorGeneric'),
-                                            duration: 5000
+                                            duration: UI_CONSTANTS.TOAST_DURATION.LONG
                                         });
                                     }
                                 }}

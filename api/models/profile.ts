@@ -1,16 +1,24 @@
 export interface UserProfile {
     id: number;
-    userId: number;
-    language: Language;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    language: Language | null;
     activityRoles: ActivityRole[];
     roles?: ActivityRole[]; // Alias for activityRoles
-    authorityRole: AuthorityRole
-    measurementSystem: MeasurementSystem;
-    createdAt: string;
-    updatedAt?: string;
+    authorityRole: AuthorityRole;
+    measurementSystem: MeasurementSystem | null;
+    assignedLocation?: object | null;
+    verified: boolean;
+    profileCreatedAt: string | null;
+    profileUpdatedAt: string | null;
+    userCreatedAt: string;
+    userUpdatedAt: string | null;
 }
 
 export interface UpdateProfileRequest {
+    firstName?: string;
+    lastName?: string;
     language?: Language;
     roles?: ActivityRole[];
     measurementSystem?: MeasurementSystem;

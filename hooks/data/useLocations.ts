@@ -3,6 +3,7 @@ import {DetailedLocationDTO} from '@/api/models/location';
 import {useToast} from '@/hooks/ui';
 import {useSession} from '@/context/SessionContext';
 import {useLocationStore} from '@/api/stores/location.service';
+import {UI_CONSTANTS} from '@/config/constants';
 
 /**
  * Hook to fetch all locations from the /locations endpoint
@@ -36,7 +37,7 @@ export function useLocations() {
                 setData([]);
                 toast.error('Locations Error', {
                     message: errorMessage,
-                    duration: 5000
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
                 });
             } finally {
                 setLoading(false);
@@ -61,7 +62,7 @@ export function useLocations() {
             setError(errorMessage);
             toast.error('Locations Error', {
                 message: errorMessage,
-                duration: 5000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
         } finally {
             setLoading(false);

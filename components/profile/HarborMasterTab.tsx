@@ -38,6 +38,7 @@ import {useToast} from '@/hooks/ui';
 import {Platform} from 'react-native';
 import {useLocationInfo} from '@/hooks/data';
 import {UpdateLocationRequest, DetailedLocationDTO} from '@/api/models/location';
+import {UI_CONSTANTS} from '@/config/constants';
 
 interface HarborMasterTabProps {
     initialLocationData?: DetailedLocationDTO | null;
@@ -140,7 +141,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
         if (!updateLocation) {
             toast.error(t('harbor.noPermission'), {
                 message: t('harbor.noPermissionMessage'),
-                duration: 5000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
             return;
         }
@@ -162,7 +163,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
 
             toast.success(t('harbor.saveSuccess'), {
                 message: t('harbor.infoUpdated'),
-                duration: 3000
+                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
             });
 
             // Refresh data to get updated info
@@ -179,7 +180,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
             console.error('Failed to save harbor info:', error);
             toast.error(t('harbor.saveError'), {
                 message: t('harbor.saveErrorMessage'),
-                duration: 5000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
         } finally {
             setIsSaving(false);
@@ -190,7 +191,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
         if (!file.type.startsWith('image/')) {
             toast.error(t('harbor.invalidFileType'), {
                 message: t('harbor.pleaseSelectImage'),
-                duration: 3000
+                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
             });
             return;
         }
@@ -199,7 +200,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
         if (file.size > 5 * 1024 * 1024) {
             toast.error(t('harbor.fileTooLarge'), {
                 message: t('harbor.maxFileSize'),
-                duration: 3000
+                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
             });
             return;
         }
@@ -225,7 +226,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
 
             toast.success(t('harbor.imageUploaded'), {
                 message: file.name,
-                duration: 2000
+                duration: UI_CONSTANTS.TOAST_DURATION.SHORT
             });
         };
         reader.readAsDataURL(file);

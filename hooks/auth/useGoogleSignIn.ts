@@ -63,7 +63,14 @@ export const useGoogleSignIn = () => {
           role: res.profile?.authorityRole ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
           profile: res.profile,
         });
-        router.push(redirectPath);
+
+        // Check if user has a profile, if not redirect to create-profile
+        if (!res.profile || !res.profile.profileCreatedAt) {
+          logger.info('No profile found or not created, redirecting to create-profile');
+          router.push('/(profile)/create-profile');
+        } else {
+          router.push(redirectPath);
+        }
         return { success: true };
       } else {
         logger.error('Backend authentication failed');

@@ -12,6 +12,7 @@ import {useTranslation} from '@/hooks/ui';
 import {LanguageSelector} from '@/components/common/LanguageSelector';
 import {useIsMobileWeb} from '@/hooks/ui';
 import {useViewportHeight} from '@/hooks/ui';
+import {UI_CONSTANTS} from '@/config/constants';
 
 
 export function NavbarWeb() {
@@ -28,7 +29,7 @@ export function NavbarWeb() {
         logout();
         toast.info(translate('auth.logoutSuccess'), {
             message: translate('auth.logoutMessage'),
-            duration: 3000
+            duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
         });
         router.push('/map');
     };
