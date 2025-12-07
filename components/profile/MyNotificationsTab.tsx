@@ -11,16 +11,16 @@ import {
     PopoverProps
 } from 'tamagui';
 import { ChevronDown, Edit3, Trash, Check, X, Bell, BellOff } from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/useTranslation';
-import { useNotificationMeasurementRules } from '@/hooks/useNotificationMeasurementRules';
-import { useUserLocations } from '@/hooks/useUserLocations';
+import {useTranslation} from '@/hooks/ui/useTranslation';
+import { useNotificationMeasurementRules } from '@/hooks/ui/useNotificationMeasurementRules';
+import { useUserLocations } from '@/hooks/data/useUserLocations';
 import { UserLocation } from '@/api/models/userLocation';
 import { NotificationMeasurementRule } from '@/api/models/notificationMeasurementRule';
 import { SelectWithSheet } from '@/components/ui/SelectWithSheet';
 import { getMeasurementTypeSymbol, getTextFromMeasurementType } from '@/utils/measurements';
 import { SetNotificationMeasurementRulePopover } from '@/components/notifications/Popovers/SetNotificationMeasurementRulePopover';
 import { useSession } from '@/context/SessionContext';
-import { useLocations } from '@/hooks/useLocations';
+import { useLocations } from '@/hooks/data/useLocations';
 import { formatTimeToLocal } from '@/utils/time';
 import { DeleteNotificationMeasurementRulePopover } from '@/components/notifications/Popovers/DeleteNotificationMeasurementRulePopover';
 
@@ -70,7 +70,7 @@ export function MyNotificationsTab() {
             .map(data => ({
                 id: data!.id,
                 locationId: data!.locationId,
-                name: location.data.filter(loc => loc.id === data!.locationId)[0]?.name || ''
+                name: location.data.filter((loc) => loc.id === data!.locationId)[0]?.name || ''
             }));
     }, [myLocations, location.data]);
 

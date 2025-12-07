@@ -428,7 +428,7 @@ export default function DashboardScreen() {
                                                         MeasurementType={measurement.measurementType}
                                                         marinaID={marinaID}
                                                         userID={userID}
-                                                        measurementId={index}
+                                                        measurement={measurement}
                                                         t={t}
                                                     />
                                                 )}

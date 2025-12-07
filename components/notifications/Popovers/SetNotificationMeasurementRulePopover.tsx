@@ -1,6 +1,6 @@
 import { PopoverProps } from "tamagui";
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNotificationMeasurementRules } from '@/hooks/useNotificationMeasurementRules';
+import { useNotificationMeasurementRules } from '@/hooks/ui/useNotificationMeasurementRules';
 import { NotificationMeasurementRule } from '@/api/models/notificationMeasurementRule';
 import { YStack, Dialog, Button, Text, XStack, Input, Checkbox, H2 } from 'tamagui';
 import { getMeasurementTypeSymbol, getTextFromMeasurementType, getMeasurementColor, formatMeasurementValue } from '@/utils/measurements';

@@ -1,6 +1,6 @@
 import { PopoverProps } from "tamagui";
 import { useState, useCallback } from 'react';
-import { useNotificationLocations } from '@/hooks/useNotificationLocations';
+import { useNotificationLocations } from '@/hooks/ui/useNotificationLocations';
 import { YStack, Popover, Button, TextArea, Text, XStack, Label, Sheet, Adapt, Input } from 'tamagui';
 
 export function HarborMasterBroadcastNotificationPopover({
