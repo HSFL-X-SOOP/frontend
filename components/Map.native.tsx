@@ -12,6 +12,7 @@ import {SpeedDial} from "@/components/speeddial";
 import {Plus} from "@tamagui/lucide-icons";
 import MapFilterButton, {MapFilterState} from "./map/controls/MapFilterButton";
 import {useTranslation} from '@/hooks/ui';
+import {MAP_CONSTANTS} from '@/config/constants';
 
 interface MapProps {
     module1Visible?: boolean;
@@ -19,18 +20,6 @@ interface MapProps {
     module3Visible?: boolean;
     isDark?: boolean;
 }
-
-const MAP_CONSTANTS = {
-    highlightDuration: 3000,
-    animationDuration: 500,
-    homeCoordinate: [9.26, 54.47926] as [number, number],
-    zoomLevels: {
-        min: 3,
-        max: 18,
-        default: 7,
-        sensorDetail: 12
-    }
-};
 
 export default function NativeMap(props: MapProps) {
     const {isDark = false} = props;
@@ -138,13 +127,13 @@ export default function NativeMap(props: MapProps) {
 
     const setCameraSafe = (options: Parameters<CameraRef["setCamera"]>[0]) => {
         cameraRef.current?.setCamera({
-            animationDuration: MAP_CONSTANTS.animationDuration,
+            animationDuration: MAP_CONSTANTS.ANIMATION.CAMERA_DURATION,
             ...options,
         });
     };
 
     const flyTo = (lon: number, lat: number, zoom?: number) => {
-        const targetZoom = zoom ?? Math.max(zoomLevel, MAP_CONSTANTS.zoomLevels.sensorDetail);
+        const targetZoom = zoom ?? Math.max(zoomLevel, MAP_CONSTANTS.ZOOM_LEVELS.SENSOR_DETAIL);
         setCameraSafe({
             centerCoordinate: [lon, lat],
             zoomLevel: targetZoom,
@@ -161,7 +150,7 @@ export default function NativeMap(props: MapProps) {
         setHighlightedSensorId(sensor.location.id);
         flyTo(lon, lat);
         bottomSheetRef.current?.snapToPeek();
-        setTimeout(() => setHighlightedSensorId(null), MAP_CONSTANTS.highlightDuration);
+        setTimeout(() => setHighlightedSensorId(null), MAP_CONSTANTS.ANIMATION.HIGHLIGHT_DURATION);
     };
 
     const handleClusterPress = (longitude: number, latitude: number, clusterId: number) => {
@@ -232,7 +221,7 @@ export default function NativeMap(props: MapProps) {
 
     const handleZoomIn = async () => {
         const currentZoom = (await mapRef.current?.getZoom?.()) ?? zoomLevel;
-        if (currentZoom < MAP_CONSTANTS.zoomLevels.max) {
+        if (currentZoom < MAP_CONSTANTS.ZOOM_LEVELS.MAX) {
             const newZoom = currentZoom + 1;
             setCameraSafe({zoomLevel: newZoom});
             setZoomLevel(newZoom);
@@ -241,7 +230,7 @@ export default function NativeMap(props: MapProps) {
 
     const handleZoomOut = async () => {
         const currentZoom = (await mapRef.current?.getZoom?.()) ?? zoomLevel;
-        if (currentZoom > MAP_CONSTANTS.zoomLevels.min) {
+        if (currentZoom > MAP_CONSTANTS.ZOOM_LEVELS.MIN) {
             const newZoom = currentZoom - 1;
             setCameraSafe({zoomLevel: newZoom});
             setZoomLevel(newZoom);
@@ -254,9 +243,9 @@ export default function NativeMap(props: MapProps) {
 
     const handleGoHome = () => {
         flyTo(
-            MAP_CONSTANTS.homeCoordinate[0],
-            MAP_CONSTANTS.homeCoordinate[1],
-            MAP_CONSTANTS.zoomLevels.default
+            MAP_CONSTANTS.HOME_COORDINATE[0],
+            MAP_CONSTANTS.HOME_COORDINATE[1],
+            MAP_CONSTANTS.ZOOM_LEVELS.DEFAULT
         );
     };
 
@@ -285,8 +274,8 @@ export default function NativeMap(props: MapProps) {
                 <Camera
                     ref={cameraRef}
                     defaultSettings={{
-                        centerCoordinate: MAP_CONSTANTS.homeCoordinate,
-                        zoomLevel: MAP_CONSTANTS.zoomLevels.default,
+                        centerCoordinate: MAP_CONSTANTS.HOME_COORDINATE,
+                        zoomLevel: MAP_CONSTANTS.ZOOM_LEVELS.DEFAULT,
                         pitch: 0,
                         heading: 0,
                     }}

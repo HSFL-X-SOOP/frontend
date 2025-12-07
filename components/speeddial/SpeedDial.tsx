@@ -254,7 +254,7 @@ export function SpeedDial({
                     testID={testID}
                     accessibilityLabel={fabAccessibilityLabel}
                     accessibilityRole="button"
-                    backgroundColor="$accent8"
+                    backgroundColor="$accent7"
                     elevation={getTokenSize(elevation as string)}
                     animation="quick"
                     animateOnly={['transform']}

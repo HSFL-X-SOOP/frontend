@@ -2,8 +2,8 @@
     --scrollbar-width: 8px;
     --scrollbar-thumb-light: #315666;
     --scrollbar-thumb-hover-light: #04293a;
-    --scrollbar-thumb-dark: #5a8f5a;
-    --scrollbar-thumb-hover-dark: #6ba06b;
+    --scrollbar-thumb-dark: #0084c7;
+    --scrollbar-thumb-hover-dark: #1798db;
     /* Dynamic viewport height for mobile browsers */
     --vh: 1vh;
     --safe-bottom: 0px;

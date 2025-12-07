@@ -19,9 +19,8 @@ import MapFilterButton, {MapFilterState} from './map/controls/MapFilterButton';
 import {useTranslation} from '@/hooks/ui';
 import * as Location from 'expo-location';
 import {Marker} from "@vis.gl/react-maplibre";
-import { YStack, Text } from 'tamagui';
-import GPSMarker from './map/markers/GPSMarker';
 import GpsPin from './map/markers/GPSMarker';
+import {MAP_CONSTANTS} from '@/config/constants';
 
 interface MapProps {
     module1Visible?: boolean;
@@ -61,18 +60,16 @@ export default function WebMap(props: MapProps) {
     const isMobileWeb = useIsMobileWeb();
     const isMobile = useIsMobile();
 
-    const homeCoordinate: [number, number] = [9.26, 54.47926];
-    const minMaxZoomLevel = {min: 3, max: 16};
-    const mapBoundariesLongLat: LngLatBoundsLike = [[-31.266001, 27.560001], [49.869301, 71.185001]];
+    const mapBoundariesLongLat: LngLatBoundsLike = [MAP_CONSTANTS.BOUNDARIES.SW, MAP_CONSTANTS.BOUNDARIES.NE];
 
-    const [zoomLevel, setZoomLevel] = useState(7);
+    const [zoomLevel, setZoomLevel] = useState<number>(MAP_CONSTANTS.ZOOM_LEVELS.DEFAULT);
     const [bearing, setBearing] = useState(0);
     const [pitch, setPitch] = useState(0);
-    const [currentCoordinate, setCurrentCoordinate] = useState<[number, number]>(homeCoordinate);
-    const [viewState, setViewState] = useState({
-        longitude: homeCoordinate[0],
-        latitude: homeCoordinate[1],
-        zoom: zoomLevel
+    const [currentCoordinate, setCurrentCoordinate] = useState<[number, number]>(MAP_CONSTANTS.HOME_COORDINATE);
+    const [viewState, setViewState] = useState<{longitude: number; latitude: number; zoom: number}>({
+        longitude: MAP_CONSTANTS.HOME_COORDINATE[0],
+        latitude: MAP_CONSTANTS.HOME_COORDINATE[1],
+        zoom: MAP_CONSTANTS.ZOOM_LEVELS.DEFAULT
     });
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [highlightedSensorId, setHighlightedSensorId] = useState<number | null>(null);
@@ -132,8 +129,8 @@ export default function WebMap(props: MapProps) {
 
         mapRef.current?.flyTo({
             center: [lon, lat],
-            zoom: Math.max(zoomLevel, 12),
-            duration: 1000,
+            zoom: Math.max(zoomLevel, MAP_CONSTANTS.ZOOM_LEVELS.SENSOR_DETAIL),
+            duration: MAP_CONSTANTS.ANIMATION.CAMERA_DURATION * 2,
         });
 
         if (isMobile) {
@@ -142,7 +139,7 @@ export default function WebMap(props: MapProps) {
 
         setTimeout(() => {
             setHighlightedSensorId(null);
-        }, 3000);
+        }, MAP_CONSTANTS.ANIMATION.HIGHLIGHT_DURATION);
     };
 
 
@@ -312,7 +309,7 @@ export default function WebMap(props: MapProps) {
                             closeOnPress: false,
                             icon: ZoomIn,
                             onPress: () => {
-                                if (zoomLevel < minMaxZoomLevel.max) {
+                                if (zoomLevel < MAP_CONSTANTS.ZOOM_LEVELS.MAX) {
                                     const newZoom = zoomLevel + 1;
                                     setZoomLevel(newZoom);
                                     setViewState({
@@ -329,7 +326,7 @@ export default function WebMap(props: MapProps) {
                             closeOnPress: false,
                             icon: ZoomOut,
                             onPress: () => {
-                                if (zoomLevel > minMaxZoomLevel.min) {
+                                if (zoomLevel > MAP_CONSTANTS.ZOOM_LEVELS.MIN) {
                                     const newZoom = zoomLevel - 1;
                                     setZoomLevel(newZoom);
                                     setViewState({
@@ -356,10 +353,10 @@ export default function WebMap(props: MapProps) {
                             closeOnPress: false,
                             icon: Home,
                             onPress: () => {
-                                setCurrentCoordinate(homeCoordinate);
+                                setCurrentCoordinate(MAP_CONSTANTS.HOME_COORDINATE);
                                 setViewState({
-                                    longitude: homeCoordinate[0],
-                                    latitude: homeCoordinate[1],
+                                    longitude: MAP_CONSTANTS.HOME_COORDINATE[0],
+                                    latitude: MAP_CONSTANTS.HOME_COORDINATE[1],
                                     zoom: zoomLevel
                                 });
                             },

@@ -75,12 +75,22 @@ export default function MapSensorDrawer({
                             >
                                 <Button
                                     size="$3"
-                                    chromeless
                                     icon={ChevronLeft}
-                                    backgroundColor={"$background"}
+                                    backgroundColor="transparent"
+                                    color="$accent8"
                                     onPress={onToggle}
-                                    borderColor={"$borderColor"}
+                                    borderWidth={1}
+                                    borderColor="$accent6"
                                     circular
+                                    hoverStyle={{
+                                        backgroundColor: "$accent3",
+                                        borderColor: "$accent7"
+                                    }}
+                                    pressStyle={{
+                                        backgroundColor: "$accent4",
+                                        scale: 0.95
+                                    }}
+                                    animation="quick"
                                     aria-label="Collapse drawer"
                                 />
                             </View>
@@ -90,12 +100,22 @@ export default function MapSensorDrawer({
                     {!isOpen && (
                         <Button
                             size="$3"
-                            chromeless
-                            backgroundColor={"$background"}
-                            borderColor={"$borderColor"}
                             icon={ChevronRight}
+                            backgroundColor="transparent"
+                            color="$accent8"
                             onPress={onToggle}
+                            borderWidth={1}
+                            borderColor="$accent6"
                             circular
+                            hoverStyle={{
+                                backgroundColor: "$accent3",
+                                borderColor: "$accent7"
+                            }}
+                            pressStyle={{
+                                backgroundColor: "$accent4",
+                                scale: 0.95
+                            }}
+                            animation="quick"
                             aria-label="Expand drawer"
                         />
                     )}
@@ -128,6 +148,7 @@ export default function MapSensorDrawer({
                                     onPress={() => onSensorSelect?.(sensor)}
                                     backgroundColor={isDark ? "$content2" : "$content1"}
                                     borderRadius="$2"
+                                    borderColor={"$borderColor"}
                                     hoverStyle={{
                                         backgroundColor: "$accent1"
                                     }}

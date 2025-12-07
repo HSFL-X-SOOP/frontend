@@ -29,26 +29,29 @@ const defaultDark = [
     '#0d0d0e', '#19191c', '#26262a', '#323238', '#3f3f46', '#52525b',
     '#65656b', '#8c8c90', '#b2b2b5', '#d9d9da', '#efeff0', '#ffffff',
 ]
+
 const primaryLight = [
-    '#e7edf3', '#c9d7e2', '#a8bfce', '#88a8ba',
-    '#6891a6', '#4f7b91', '#3d657a', '#2e5063',
-    '#213c4c', '#182c39', '#10202b', '#0b1720',
+    '#0e2530', '#112a38', '#143140', '#17394a',
+    '#1c4659', '#225468', '#286278', '#1a5570',
+    '#1f6382', '#257194', '#2b7fa6', '#328db8',
 ]
 
 const primaryDark = [
-    '#003d67', '#004d7f', '#005d97', '#0070b0', '#0084c7', '#1798db',
-    '#3aaced', '#5dc0fc', '#80d0ff', '#a3dfff', '#c6ecff', '#e8f7ff',
+    '#003d67', '#004d7f', '#005d97', '#0070b0',
+    '#0084c7', '#1798db', '#3aaced', '#5dc0fc',
+    '#80d0ff', '#a3dfff', '#c6ecff', '#e8f7ff',
 ]
 
 const secondaryLight = [
-    '#003d67', '#004d7f', '#005d97', '#0070b0', '#0084c7', '#1798db',
-    '#3aaced', '#5dc0fc', '#80d0ff', '#a3dfff', '#c6ecff', '#e8f7ff',
+    '#003d67', '#004d7f', '#005d97', '#0070b0',
+    '#0084c7', '#1798db', '#3aaced', '#5dc0fc',
+    '#80d0ff', '#a3dfff', '#c6ecff', '#e8f7ff',
 ]
 
 const secondaryDark = [
-    '#e7edf3', '#c9d7e2', '#a8bfce', '#88a8ba',
-    '#6891a6', '#4f7b91', '#3d657a', '#2e5063',
-    '#213c4c', '#182c39', '#10202b', '#0b1720',
+    '#0e2530', '#112a38', '#143140', '#17394a',
+    '#1c4659', '#225468', '#286278', '#1a5570',
+    '#1f6382', '#257194', '#2b7fa6', '#328db8',
 ]
 
 const successLight = [
@@ -99,7 +102,7 @@ export const themes = createThemes({
                 ...Colors.purple,
                 ...Colors.cyan,
                 ...Colors.red,
-                background: '#f8f8ff',
+                background: '#f0f4f7',
                 color: '#1f1f21',
                 borderColor: '#e4e4e7',
                 placeholderColor: '#8a8a8c',
@@ -134,10 +137,10 @@ export const themes = createThemes({
                 content2: '#27272a',
                 content3: '#3f3f46',
                 content4: '#52525b',
-                ctaBg: '#63ad63',
-                ctaBgHover: '#a7e2a7',
-                ctaBgPress: '#4e894e',
-                ctaText: '#000000',
+                ctaBg: '#0084c7',
+                ctaBgHover: '#1798db',
+                ctaBgPress: '#0070b0',
+                ctaText: '#ffffff',
             },
         },
     },
