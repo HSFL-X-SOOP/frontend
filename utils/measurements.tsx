@@ -166,13 +166,17 @@ export const getIconBackground = (measurementType: string): string => {
 export const getTextFromMeasurementType = (measurementType: string, t: TFunction): string => {
     switch (measurementType) {
         case "Wave Height":
+        case "-1705811922":
             return t('dashboard.measurements.waveHeight');
         case "Temperature, water":
         case "WTemp":
+        case "1603253327":
             return t('dashboard.measurements.waterTemperature');
         case "Tide":
+        case "2606550":
             return t('dashboard.measurements.waterLevel');
         case "Battery, voltage":
+        case "182132765":
             return t('dashboard.measurements.batteryVoltage');
         default:
             return measurementType;
@@ -182,13 +186,17 @@ export const getTextFromMeasurementType = (measurementType: string, t: TFunction
 export const getIDFromMeasurementType = (measurementType: string): number => {
     switch (measurementType) {
         case "Wave Height":
+        case "-1705811922":
             return MeasurementType.WaveHeight;
         case "Temperature, water":
         case "WTemp":
+        case "1603253327":
             return MeasurementType.WaterTemperature;
         case "Tide":
+        case "2606550":
             return MeasurementType.Tide;
         case "Battery, voltage":
+        case "182132765":
             return MeasurementType.BatteryVoltage;
         default:
             return 0;
@@ -198,18 +206,23 @@ export const getIDFromMeasurementType = (measurementType: string): number => {
 export const getMeasurementTypeSymbol = (measurementType: string, t: TFunction): string => {
     switch (measurementType) {
         case "Wave Height":
+        case "-1705811922":
             return t('dashboard.units.centimeters');
         case "Temperature, water":
         case "WTemp":
+        case "1603253327":
             return t('dashboard.units.celsius');
         case "Tide":
+        case "2606550":
             return t('dashboard.units.centimeters');
         case "Battery, voltage":
+        case "182132765":
             return t('dashboard.units.volts');
         default:
             return "";
     }
 };
+
 
 export const formatMeasurementValue = (value: number): string => {
     return value < 1 ? value.toFixed(2) : value.toFixed(1);

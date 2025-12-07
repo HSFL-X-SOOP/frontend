@@ -41,7 +41,7 @@ import {
 } from '@tamagui/lucide-icons';
 import {LinearGradient} from 'expo-linear-gradient';
 import {useLocalSearchParams, useRouter} from 'expo-router';
-import {useEffect, useMemo, useCallback, useRef, useState} from 'react';
+import {useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import type {ComponentProps} from 'react';
 import {Animated, LayoutChangeEvent, SafeAreaView, ScrollView, View} from 'react-native';
 import {
@@ -428,7 +428,7 @@ export default function DashboardScreen() {
                                                         MeasurementType={measurement.measurementType}
                                                         marinaID={marinaID}
                                                         userID={userID}
-                                                        measurement={measurement}
+                                                        measurementId={index}
                                                         t={t}
                                                     />
                                                 )}
@@ -512,3 +512,6 @@ export default function DashboardScreen() {
         </SafeAreaView>
     );
 }
+
+
+
