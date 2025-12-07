@@ -20,6 +20,7 @@ import {createLogger} from '@/utils/logger';
 import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messagingModule from '@react-native-firebase/messaging';
 import {UI_CONSTANTS} from '@/config/constants';
+import {PrimaryButton, SecondaryButton} from '@/types/button';
 
 const logger = createLogger('Auth:Register');
 
@@ -224,16 +225,10 @@ export default function RegisterScreen() {
                             </Text>
                         </XStack>
 
-                        <Button
-                            backgroundColor="$accent7"
-                            color="white"
+                        <PrimaryButton
                             size="$4"
                             onPress={handleSubmit}
                             disabled={!isFormValid || registerStatus.loading}
-                            opacity={!isFormValid || registerStatus.loading ? 0.6 : 1}
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent4"}}
-                            pressStyle={{backgroundColor: "$accent6"}}
                         >
                             {registerStatus.loading ? (
                                 <XStack gap="$2" alignItems="center">
@@ -243,7 +238,7 @@ export default function RegisterScreen() {
                             ) : (
                                 <Text color="white" fontWeight="600">{t('auth.createAccount')}</Text>
                             )}
-                        </Button>
+                        </PrimaryButton>
                     </YStack>
 
                     <XStack gap="$3" alignItems="center" width="100%">
@@ -253,8 +248,7 @@ export default function RegisterScreen() {
                     </XStack>
 
                     <YStack gap="$3" width="100%">
-                        <Button
-                            variant="outlined"
+                        <SecondaryButton
                             size="$4"
                             onPress={async () => {
                                 const result = await handleGoogleSignIn('/');
@@ -271,10 +265,6 @@ export default function RegisterScreen() {
                                 }
                             }}
                             disabled={googleLoading}
-                            opacity={googleLoading ? 0.6 : 1}
-                            borderColor="$borderColor"
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$content2"}}
                             width="100%"
                         >
                             {googleLoading ? (
@@ -288,11 +278,10 @@ export default function RegisterScreen() {
                                     <Text color="$color">{t('auth.signUpWithGoogle')}</Text>
                                 </XStack>
                             )}
-                        </Button>
+                        </SecondaryButton>
 
                         {Platform.OS === 'ios' && (
-                            <Button
-                                variant="outlined"
+                            <SecondaryButton
                                 size="$4"
                                 onPress={async () => {
                                     const result = await handleAppleSignIn('/');
@@ -310,10 +299,6 @@ export default function RegisterScreen() {
                                     }
                                 }}
                                 disabled={appleLoading}
-                                opacity={appleLoading ? 0.6 : 1}
-                                borderColor="$borderColor"
-                                borderRadius="$6"
-                                hoverStyle={{backgroundColor: "$content2"}}
                                 width="100%"
                             >
                                 {appleLoading ? (
@@ -327,7 +312,7 @@ export default function RegisterScreen() {
                                         <Text color="$color">{t('auth.signUpWithApple')}</Text>
                                     </XStack>
                                 )}
-                            </Button>
+                            </SecondaryButton>
                         )}
                     </YStack>
 

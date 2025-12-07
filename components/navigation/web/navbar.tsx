@@ -215,19 +215,19 @@ export function NavbarWeb() {
                     {session && (
                         <XStack gap="$2">
                             <Link href={"/(profile)/profile" as Href}>
-                                <Button variant="outlined">
+                                <SecondaryButton>
                                     <XStack alignItems="center" gap="$2">
                                         <User size={20} color={"$accent8"}/>
                                         <Text>{translate('navigation.profile')}</Text>
                                     </XStack>
-                                </Button>
+                                </SecondaryButton>
                             </Link>
-                            <Button variant="outlined" onPress={handleLogout}>
+                            <SecondaryButton onPress={handleLogout}>
                                 <XStack alignItems="center" gap="$2">
                                     <LogOut size={20} color={"$accent8"}/>
                                     <Text>{translate('auth.logout')}</Text>
                                 </XStack>
-                            </Button>
+                            </SecondaryButton>
                         </XStack>
                     )}
                 </XStack>
@@ -469,14 +469,14 @@ export function NavbarWeb() {
                             {session && (
                                 <YStack gap="$3" paddingTop="$4">
                                     <Link href={"/(profile)/profile" as Href} onPress={() => setIsMenuOpen(false)}>
-                                        <Button variant="outlined" width="100%">
+                                        <SecondaryButton width="100%">
                                             <XStack alignItems="center" gap="$2">
                                                 <User size={24} color={"$accent8"}/>
                                                 <Text fontSize="$5">{translate('navigation.profile')}</Text>
                                             </XStack>
-                                        </Button>
+                                        </SecondaryButton>
                                     </Link>
-                                    <Button variant="outlined" width="100%" onPress={() => {
+                                    <SecondaryButton width="100%" onPress={() => {
                                         handleLogout();
                                         setIsMenuOpen(false);
                                     }}>
@@ -484,7 +484,7 @@ export function NavbarWeb() {
                                             <LogOut size={24} color={"$accent8"}/>
                                             <Text fontSize="$5">{translate('auth.logout')}</Text>
                                         </XStack>
-                                    </Button>
+                                    </SecondaryButton>
                                 </YStack>
                             )}
                         </YStack>

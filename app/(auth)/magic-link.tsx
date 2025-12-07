@@ -12,6 +12,7 @@ import {useTranslation} from '@/hooks/ui';
 import {useToast} from '@/hooks/ui';
 import {createLogger} from '@/utils/logger';
 import {UI_CONSTANTS} from '@/config/constants';
+import {PrimaryButton} from '@/types/button';
 
 const logger = createLogger('Auth:MagicLink');
 
@@ -162,16 +163,10 @@ export default function MagicLinkScreen() {
                             )}
                         </YStack>
 
-                        <Button
-                            backgroundColor="$accent7"
-                            color="white"
+                        <PrimaryButton
                             size="$4"
                             onPress={handleSendMagicLink}
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent4"}}
-                            pressStyle={{backgroundColor: "$accent6"}}
                             disabled={!email || hasErrors() || requestMagicLinkStatus.loading}
-                            opacity={!email || hasErrors() || requestMagicLinkStatus.loading ? 0.6 : 1}
                         >
                             {requestMagicLinkStatus.loading ? (
                                 <XStack alignItems="center" gap="$2">
@@ -184,7 +179,7 @@ export default function MagicLinkScreen() {
                                     <Text color="white" fontWeight="600">{t('auth.magicLink.sendMagicLink')}</Text>
                                 </XStack>
                             )}
-                        </Button>
+                        </PrimaryButton>
                     </YStack>
 
                     <YStack gap="$2" alignItems="center">

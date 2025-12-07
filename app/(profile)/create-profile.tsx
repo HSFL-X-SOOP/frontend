@@ -8,6 +8,7 @@ import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {useSession} from '@/context/SessionContext';
 import {useTranslation} from '@/hooks/ui';
 import {EmailInput} from '@/components/auth/EmailInput';
+import {PrimaryButton} from '@/types/button';
 
 export default function CreateProfileScreen() {
     const router = useRouter();
@@ -299,19 +300,15 @@ export default function CreateProfileScreen() {
                                     </Card>
                                 )}
                                 <XStack gap="$3" justifyContent="flex-end">
-                                    <Button
+                                    <PrimaryButton
                                         flex={1}
                                         size="$4"
-                                        backgroundColor="$accent7"
-                                        color="white"
-                                        pressStyle={{backgroundColor: "$accent6"}}
-                                        hoverStyle={{backgroundColor: "$accent4"}}
                                         disabled={isLoading || selectedRoles.length === 0}
                                         onPress={handleSubmit}
                                         icon={isLoading ? <Spinner color="white"/> : undefined}
                                     >
                                         {isLoading ? t('profile.actions.saving') : t('profile.createProfile')}
-                                    </Button>
+                                    </PrimaryButton>
                                 </XStack>
                             </YStack>
                         </YStack>

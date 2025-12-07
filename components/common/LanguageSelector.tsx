@@ -1,9 +1,10 @@
 import React from 'react';
-import {Button, YStack, XStack, Text} from 'tamagui';
+import {YStack, XStack, Text} from 'tamagui';
 import {useTranslation} from '@/hooks/ui';
 import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/data';
 import {Language} from '@/api/models/profile';
+import {PrimaryButton, SecondaryButton} from '@/types/button';
 
 const languages = [
     {code: 'de', name: 'Deutsch', flag: '🇩🇪', profileLang: Language.DE},
@@ -34,19 +35,21 @@ export const LanguageSelector: React.FC = () => {
 
     return (
         <YStack gap="$3" padding="$2" minWidth={200}>
-            {languages.map((language) => (
-                <Button
-                    key={language.code}
-                    variant={currentLanguage === language.code ? "outlined" : undefined}
-                    justifyContent="flex-start"
-                    onPress={() => handleLanguageChange(language.code, language.profileLang)}
-                >
-                    <XStack alignItems="center" gap="$3" width="100%">
-                        <Text fontSize={"$5"}>{language.flag}</Text>
-                        <Text color="$color">{language.name}</Text>
-                    </XStack>
-                </Button>
-            ))}
+            {languages.map((language) => {
+                const ButtonComponent = currentLanguage === language.code ? PrimaryButton : SecondaryButton;
+                return (
+                    <ButtonComponent
+                        key={language.code}
+                        justifyContent="flex-start"
+                        onPress={() => handleLanguageChange(language.code, language.profileLang)}
+                    >
+                        <XStack alignItems="center" gap="$3" width="100%">
+                            <Text fontSize={"$5"}>{language.flag}</Text>
+                            <Text color="$color">{language.name}</Text>
+                        </XStack>
+                    </ButtonComponent>
+                );
+            })}
         </YStack>
     );
 };

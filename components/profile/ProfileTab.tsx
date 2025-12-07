@@ -19,6 +19,7 @@ import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/data';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {UI_CONSTANTS} from '@/config/constants';
+import {PrimaryButton, SecondaryButton} from '@/types/button';
 
 export const ProfileTab: React.FC = () => {
     const {t, changeLanguage} = useTranslation();
@@ -88,16 +89,12 @@ export const ProfileTab: React.FC = () => {
         <YStack gap="$4">
             <XStack justifyContent="flex-end" alignItems="center">
                 {!isEditing && (
-                    <Button
+                    <PrimaryButton
                         size="$3"
-                        backgroundColor="$accent7"
-                        color="white"
-                        pressStyle={{backgroundColor: "$accent6"}}
-                        hoverStyle={{backgroundColor: "$accent4"}}
                         onPress={() => setIsEditing(true)}
                     >
                         {t('profile.edit')}
-                    </Button>
+                    </PrimaryButton>
                 )}
             </XStack>
 
@@ -295,35 +292,24 @@ export const ProfileTab: React.FC = () => {
                         </Card>
                     )}
                     <XStack gap="$3" justifyContent="flex-end">
-                        <Button
+                        <SecondaryButton
                             flex={1}
                             size="$4"
-                            backgroundColor="$content2"
-                            color="$color"
-                            borderWidth={1}
-                            borderColor="$borderColor"
-                            pressStyle={{backgroundColor: "$content3"}}
-                            hoverStyle={{backgroundColor: "$content1"}}
                             onPress={handleCancel}
                             disabled={updateProfileStatus.loading}
                         >
                             {t('profile.actions.cancel')}
-                        </Button>
-                        <Button
+                        </SecondaryButton>
+                        <PrimaryButton
                             flex={1}
                             size="$4"
-                            backgroundColor="$accent7"
-                            color="white"
-                            pressStyle={{backgroundColor: "$accent6"}}
-                            hoverStyle={{backgroundColor: "$accent2"}}
                             disabled={updateProfileStatus.loading || selectedRoles.length === 0}
-                            opacity={updateProfileStatus.loading || selectedRoles.length === 0 ? 0.6 : 1}
                             onPress={handleSave}
                             icon={updateProfileStatus.loading ?
                                 <Spinner color="white"/> : undefined}
                         >
                             {updateProfileStatus.loading ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
-                        </Button>
+                        </PrimaryButton>
                     </XStack>
                 </YStack>
             )}

@@ -20,6 +20,7 @@ import messagingModule from '@react-native-firebase/messaging';
 import {PermissionsAndroid} from 'react-native';
 import {useUserDeviceStore} from '@/api/stores/userDevice';
 import {UI_CONSTANTS} from '@/config/constants';
+import {PrimaryButton, SecondaryButton} from '@/types/button';
 
 const logger = createLogger('Auth:Login');
 
@@ -207,16 +208,10 @@ export default function LoginScreen() {
                             </XStack>
                         )}
 
-                        <Button
-                            backgroundColor="$accent7"
-                            color="white"
-                            size="$4"
+                        <PrimaryButton
                             onPress={handleSubmit}
                             disabled={loginStatus.loading}
                             opacity={loginStatus.loading ? 0.6 : 1}
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent4"}}
-                            pressStyle={{backgroundColor: "$accent6"}}
                         >
                             {loginStatus.loading ? (
                                 <XStack gap="$2" alignItems="center">
@@ -226,7 +221,7 @@ export default function LoginScreen() {
                             ) : (
                                 <Text color="white" fontWeight="600">{t('auth.signIn')}</Text>
                             )}
-                        </Button>
+                        </PrimaryButton>
                     </YStack>
 
                     <XStack gap="$3" alignItems="center" width="100%">
@@ -236,9 +231,7 @@ export default function LoginScreen() {
                     </XStack>
 
                     <YStack gap="$3" width="100%">
-                        <Button
-                            variant="outlined"
-                            size="$4"
+                        <SecondaryButton
                             onPress={async () => {
                                 const result = await handleGoogleSignIn('/map');
                                 if (result?.success) {
@@ -255,9 +248,6 @@ export default function LoginScreen() {
                             }}
                             disabled={googleLoading}
                             opacity={googleLoading ? 0.6 : 1}
-                            borderColor="$borderColor"
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$content2"}}
                         >
                             {googleLoading ? (
                                 <XStack gap="$2" alignItems="center">
@@ -270,12 +260,10 @@ export default function LoginScreen() {
                                     <Text color="$color">{t('auth.signInWithGoogle')}</Text>
                                 </XStack>
                             )}
-                        </Button>
+                        </SecondaryButton>
 
                         {Platform.OS === 'ios' && (
-                            <Button
-                                variant="outlined"
-                                size="$4"
+                            <SecondaryButton
                                 onPress={async () => {
                                     const result = await handleAppleSignIn('/map');
                                     if (result?.success) {
@@ -292,9 +280,6 @@ export default function LoginScreen() {
                                 }}
                                 disabled={appleLoading}
                                 opacity={appleLoading ? 0.6 : 1}
-                                borderColor="$borderColor"
-                                borderRadius="$6"
-                                hoverStyle={{backgroundColor: "$content2"}}
                             >
                                 {appleLoading ? (
                                     <XStack gap="$2" alignItems="center">
@@ -307,22 +292,17 @@ export default function LoginScreen() {
                                         <Text color="$color">{t('auth.signInWithApple')}</Text>
                                     </XStack>
                                 )}
-                            </Button>
+                            </SecondaryButton>
                         )}
 
-                        <Button
-                            variant="outlined"
-                            size="$4"
+                        <SecondaryButton
                             onPress={() => router.push("/(auth)/magic-link")}
-                            borderColor="$borderColor"
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$content2"}}
                         >
                             <XStack gap="$2" alignItems="center">
                                 <Text>✨</Text>
                                 <Text color="$color">{t('auth.signInWithMagicLink')}</Text>
                             </XStack>
-                        </Button>
+                        </SecondaryButton>
                     </YStack>
 
                     <YStack alignItems="center">

@@ -1,8 +1,9 @@
 import {Link, Href} from 'expo-router';
 import {SafeAreaView, ScrollView, Linking} from 'react-native';
-import {Text, YStack, Card, H1, H2, XStack, View, Button} from 'tamagui';
+import {Text, YStack, Card, H1, H2, XStack, View} from 'tamagui';
 import {Code, Database, Key, ExternalLink} from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/ui';
+import {PrimaryButton} from '@/types/button';
 
 export default function APIScreen() {
     const {t} = useTranslation('api');
@@ -138,15 +139,9 @@ export default function APIScreen() {
                                             <Text fontSize={16} color="$color" opacity={0.9} lineHeight={22}>
                                                 {t('api.documentationDesc')}
                                             </Text>
-                                            <Button
-                                                backgroundColor="$accent7"
-                                                color="white"
-                                                borderRadius="$6"
-                                                paddingHorizontal="$4"
-                                                paddingVertical="$3"
+                                            <PrimaryButton
                                                 marginTop="$2"
                                                 alignSelf="flex-start"
-                                                hoverStyle={{backgroundColor: "$accent4"}}
                                                 onPress={() => Linking.openURL('https://www.marlin-live.com/api/')}
                                             >
                                                 <XStack alignItems="center" gap="$2">
@@ -154,7 +149,7 @@ export default function APIScreen() {
                                                     <Text color="white" fontWeight="600"
                                                           fontSize={14}>{t('api.viewDocs')}</Text>
                                                 </XStack>
-                                            </Button>
+                                            </PrimaryButton>
                                         </YStack>
                                     </XStack>
                                 </Card>
@@ -178,11 +173,9 @@ export default function APIScreen() {
                                     {t('api.readyDescription')}
                                 </Text>
                                 <Link href={"/(other)/prices" as Href}>
-                                    <Button backgroundColor="$accent7" color="white" borderRadius="$6"
-                                            paddingHorizontal="$6" paddingVertical="$4"
-                                            hoverStyle={{backgroundColor: "$accent4"}}>
+                                    <PrimaryButton>
                                         <Text color="white" fontWeight="600" fontSize={16}>{t('api.viewPricing')}</Text>
-                                    </Button>
+                                    </PrimaryButton>
                                 </Link>
                             </YStack>
                         </Card>

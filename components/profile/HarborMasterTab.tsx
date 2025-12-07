@@ -39,6 +39,7 @@ import {Platform} from 'react-native';
 import {useLocationInfo} from '@/hooks/data';
 import {UpdateLocationRequest, DetailedLocationDTO} from '@/api/models/location';
 import {UI_CONSTANTS} from '@/config/constants';
+import {PrimaryButton, SecondaryButton} from '@/types/button';
 
 interface HarborMasterTabProps {
     initialLocationData?: DetailedLocationDTO | null;
@@ -356,17 +357,13 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             </Button>
                         )}
                         {!isEditing && (
-                            <Button
+                            <PrimaryButton
                                 size="$3"
-                                backgroundColor="$accent7"
-                                color="white"
-                                pressStyle={{backgroundColor: "$accent6"}}
-                                hoverStyle={{backgroundColor: "$accent4"}}
                                 onPress={handleEdit}
                                 disabled={isLoading}
                             >
                                 {t('profile.edit')}
-                            </Button>
+                            </PrimaryButton>
                         )}
                     </XStack>
                 </XStack>
@@ -797,35 +794,24 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
 
                 {isEditing && (
                     <XStack gap="$3" justifyContent="flex-end" paddingBottom="$4">
-                        <Button
+                        <SecondaryButton
                             flex={1}
                             size="$4"
-                            backgroundColor="$content2"
-                            color="$color"
-                            borderWidth={1}
-                            borderColor="$borderColor"
-                            pressStyle={{backgroundColor: "$content3"}}
-                            hoverStyle={{backgroundColor: "$content1"}}
                             onPress={handleCancel}
                             disabled={isSaving}
                             icon={<X size={20}/>}
                         >
                             {t('profile.actions.cancel')}
-                        </Button>
-                        <Button
+                        </SecondaryButton>
+                        <PrimaryButton
                             flex={1}
                             size="$4"
-                            backgroundColor="$accent7"
-                            color="white"
-                            pressStyle={{backgroundColor: "$accent6"}}
-                            hoverStyle={{backgroundColor: "$accent4"}}
                             disabled={isSaving}
-                            opacity={isSaving ? 0.6 : 1}
                             onPress={handleSave}
                             icon={isSaving ? <Spinner color="white"/> : <Save size={20}/>}
                         >
                             {isSaving ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
-                        </Button>
+                        </PrimaryButton>
                     </XStack>
                 )}
             </YStack>

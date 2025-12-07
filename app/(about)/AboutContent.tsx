@@ -1,8 +1,9 @@
 import {Href, Link} from 'expo-router';
 import {ScrollView, SafeAreaView} from 'react-native';
-import {Card, Text, XStack, YStack, View, Button, H1, H2, Separator} from 'tamagui';
+import {Card, Text, XStack, YStack, View, H1, H2, Separator} from 'tamagui';
 import {ExternalLink, Globe, Database, MapPin, TrendingUp} from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/ui';
+import {SecondaryButton} from '@/types/button';
 
 type StudentCardProps = {
     id: string;
@@ -158,10 +159,10 @@ function AboutScreen() {
                 </Text>
                 {feature.link && (
                     <Link href={feature.link as Href}>
-                        <Button size="$3" variant="outlined">
+                        <SecondaryButton size="$3">
                             <ExternalLink size={16} />
                             {t('common.learnMore')}
-                        </Button>
+                        </SecondaryButton>
                     </Link>
                 )}
             </YStack>

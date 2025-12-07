@@ -7,7 +7,8 @@ export const PrimaryButton = styled(Button, {
     paddingVertical: '$4',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '$accent7',
+    backgroundColor: '$accent5',
+    color: 'white',
     borderWidth: 1,
     borderColor: '$accent7',
     fontWeight: '600',
@@ -21,7 +22,7 @@ export const PrimaryButton = styled(Button, {
         backgroundColor: '$accent8',
         borderColor: '$accent8',
         shadowOpacity: 0.3,
-        scale: 1.02,
+        scale: 1.01,
     },
 
     pressStyle: {
@@ -64,14 +65,15 @@ export const SecondaryButton = styled(Button, {
     shadowRadius: 2,
     elevation: 1,
     hoverStyle: {
-        backgroundColor: '$accent1',
+        backgroundColor: '$ctaBgHover',
+        opacity: 0.8,
         borderColor: '$accent8',
-        shadowOpacity: 0.2,
-        scale: 1.02,
+        shadowOpacity: 0.15,
+        scale: 1.01,
     },
 
     pressStyle: {
-        backgroundColor: '$accent1',
+        backgroundColor: '$accent3',
         borderColor: '$accent6',
         scale: 0.98,
     },
