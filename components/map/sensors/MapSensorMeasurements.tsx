@@ -18,7 +18,8 @@ import {
 import {LinearGradient} from "expo-linear-gradient";
 import {useRouter} from "expo-router";
 import {useState} from "react";
-import {Button, Card, H3, H4, Separator, Text, XStack, YStack, useTheme} from "tamagui";
+import {Card, H3, H4, Separator, Text, XStack, YStack, useTheme} from "tamagui";
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from "@/types/button";
 
 type SensorPopupProps = {
     locationWithBoxes: LocationWithBoxes,
@@ -94,31 +95,18 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
                 {hasMultipleBoxes && (
                     <XStack gap="$2" flexWrap="wrap">
                         {locationWithBoxes.boxes.map((box, index) => (
-                            <Button
+                            <SecondaryButton
                                 key={index}
-                                size="$3"
+                                size="$2"
                                 flex={1}
                                 minWidth={80}
-                                variant={"outlined"}
-                                backgroundColor="$content2"
-                                color="$color"
                                 onPress={() => setSelectedBoxIndex(index)}
-                                borderWidth={selectedBoxIndex === index ? 1 : 0}
-                                borderColor="$gray10"
-                                pressStyle={{
-                                    backgroundColor: '$gray5',
-                                    scale: 0.97
-                                }}
-                                hoverStyle={{
-                                    backgroundColor: '$gray5',
-                                    borderColor: selectedBoxIndex === index ? '$blue10' : '$gray6'
-                                }}
-                                borderRadius="$3"
-                                fontWeight={selectedBoxIndex === index ? '700' : '500'}
-                                fontSize="$3"
+                                opacity={selectedBoxIndex === index ? 1 : 0.7}
                             >
-                                {getBoxTypeName(box.type, t)}
-                            </Button>
+                                <SecondaryButtonText>
+                                    {getBoxTypeName(box.type, t)}
+                                </SecondaryButtonText>
+                            </SecondaryButton>
                         ))}
                     </XStack>
                 )}
@@ -134,28 +122,15 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
 
             {/* Footer - Dashboard Button */}
             <YStack padding="$3" paddingTop="$2.5" backgroundColor="$background">
-                <Button
-                    size="$3"
-                    backgroundColor="$accent5"
-                    color="white"
+                <PrimaryButton
                     width="100%"
                     onPress={handleNavigateToDashboard}
-                    iconAfter={<ArrowRight size={18}/>}
-                    pressStyle={{
-                        backgroundColor: '$accent3',
-                        scale: 0.98
-                    }}
-                    hoverStyle={{
-                        backgroundColor: '$accent3',
-                        scale: 1.01
-                    }}
-                    borderRadius="$3"
-                    fontWeight="600"
-                    userSelect="none"
-                    fontSize="$4"
+                    iconAfter={<ArrowRight size={18} color="white"/>}
                 >
-                    {t('sensor.viewDashboard')}
-                </Button>
+                    <PrimaryButtonText>
+                        {t('sensor.viewDashboard')}
+                    </PrimaryButtonText>
+                </PrimaryButton>
             </YStack>
         </Card>
     );

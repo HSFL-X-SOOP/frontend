@@ -66,7 +66,7 @@ const NativeClusterMarker = ({
         <ClusterMarkerSvg
           count={pointCount}
           accentColor={accentColor}
-          enableAnimations={false}
+          enableAnimations={true}
         />
       </View>
     </PointAnnotation>
