@@ -151,7 +151,10 @@ function BoxMeasurements({box}: BoxMeasurementsProps) {
                 alignItems="center"
                 gap="$2"
                 padding="$2"
-                backgroundColor="$content2"
+                borderRadius={"$3"}
+                borderWidth={1}
+                borderColor={"$borderColor"}
+                backgroundColor="$content1"
             >
                 <YStack
                     width={26}
@@ -167,6 +170,8 @@ function BoxMeasurements({box}: BoxMeasurementsProps) {
                     {getBoxTypeName(box.type, t)}
                 </H4>
             </XStack>
+
+            <Separator backgroundColor={"$accent6"}/>
 
             <XStack flexWrap="wrap" gap="$2.5" justifyContent="space-between">
                 {box.type === BoxType.WaterBox && (
@@ -219,7 +224,9 @@ function BoxMeasurements({box}: BoxMeasurementsProps) {
                 alignItems="center"
                 gap="$1.5"
                 padding="$2"
-                backgroundColor="$content3"
+                backgroundColor="$content2"
+                borderWidth={1}
+                borderColor={"$borderColor"}
                 borderRadius="$2"
             >
                 <Activity size={16} color="$green10"/>
@@ -229,7 +236,7 @@ function BoxMeasurements({box}: BoxMeasurementsProps) {
                 </Text>
                 </Text>
             </XStack>
-            <Separator/>
+            <Separator backgroundColor={"$accent6"}/>
         </YStack>
     );
 }
@@ -247,7 +254,7 @@ function MeasurementCard({measurementType, value}: MeasurementCardProps) {
     return (
         <Card
             width="100%"
-            backgroundColor="$content2"
+            backgroundColor="$content1"
             padding="$2.5"
             borderRadius="$3"
             borderWidth={1}
@@ -283,7 +290,7 @@ function MeasurementCard({measurementType, value}: MeasurementCardProps) {
                     <Text fontSize="$7" fontWeight="800" color={color} letterSpacing={-0.5}>
                         {Math.round(value * 10) / 10}
                     </Text>
-                    <Text fontSize="$3" color="$gray10" fontWeight="700">
+                    <Text fontSize="$3" color={color} fontWeight="700">
                         {getMeasurementUnit(measurementType, t)}
                     </Text>
                 </XStack>

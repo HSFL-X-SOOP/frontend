@@ -1,5 +1,5 @@
 import { Box } from "@/api/models/sensor";
-import { LatestMeasurement, MeasurementDictionary } from "@/types/measurement";
+import { LatestMeasurement, MeasurementDictionary } from "@/types/measurements";
 import { Activity, Battery, HelpCircle, Thermometer, Waves } from "@tamagui/lucide-icons";
 import { formatTimeToLocal } from "@/utils/time";
 import { MeasurementType } from "@/api/models/notificationMeasurementRule";
