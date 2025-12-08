@@ -7,7 +7,7 @@ import SensorListItem from './SensorListItem';
 import {SelectWithSheet} from '@/components/ui/SelectWithSheet';
 import {SelectItem} from '@/types/select';
 import {fuzzyMatch} from '@/utils/searchUtils';
-import {PrimaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText} from '@/types/button';
 import {calculateDistance, filterSensorsByType, getLatestMeasurementTime} from '@/utils/sensorUtils';
 
 interface SensorListProps {
@@ -43,16 +43,16 @@ export default function SensorList({
 
     // Select items for filter type
     const filterTypeItems: SelectItem<FilterType>[] = [
-        { value: 'all', label: t('sensor.allTypes') },
-        { value: 'water', label: t('sensor.waterSensors') },
-        { value: 'air', label: t('sensor.airSensors') },
+        {value: 'all', label: t('sensor.allTypes')},
+        {value: 'water', label: t('sensor.waterSensors')},
+        {value: 'air', label: t('sensor.airSensors')},
     ];
 
     // Select items for sort by
     const sortByItems: SelectItem<SortOption>[] = [
-        { value: 'distance', label: t('sensor.sortByDistance') },
-        { value: 'name', label: t('sensor.sortByName') },
-        { value: 'recent', label: t('sensor.sortByRecent') },
+        {value: 'distance', label: t('sensor.sortByDistance')},
+        {value: 'name', label: t('sensor.sortByName')},
+        {value: 'recent', label: t('sensor.sortByRecent')},
     ];
 
     const getDistance = (sensor: LocationWithBoxes) =>
@@ -179,17 +179,18 @@ export default function SensorList({
                 <YStack paddingHorizontal="$3" paddingBottom="$2">
                     <XStack alignItems="center" gap="$2" position="relative">
                         <XStack position="absolute" left="$3" zIndex={1} pointerEvents="none">
-                            <Search size={16} color="$gray10"/>
+                            <Search size={16}/>
                         </XStack>
                         <Input
                             placeholder={t('sensor.searchSensors')}
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                             size="$3"
+                            placeholderTextColor={"$color"}
                             flex={1}
                             paddingLeft="$8"
                             borderColor="$borderColor"
-                            backgroundColor="$content2"
+                            backgroundColor="$content4"
                         />
                     </XStack>
                 </YStack>
@@ -207,22 +208,6 @@ export default function SensorList({
                                 value={filterType}
                                 onValueChange={setFilterType}
                                 placeholder={t('sensor.filterType')}
-                                triggerProps={{
-                                    flex: 1,
-                                    size: "$3",
-                                    iconAfter: null,
-                                    backgroundColor: "$content2",
-                                    borderColor: "$borderColor",
-                                    borderWidth: 1,
-                                    hoverStyle: {
-                                        backgroundColor: "$content3",
-                                        borderColor: "$accent6"
-                                    },
-                                    pressStyle: {
-                                        backgroundColor: "$content3",
-                                        borderColor: "$accent7"
-                                    }
-                                }}
                             />
                         </XStack>
 
@@ -236,22 +221,6 @@ export default function SensorList({
                                 value={sortBy}
                                 onValueChange={setSortBy}
                                 placeholder={t('sensor.sortBy')}
-                                triggerProps={{
-                                    flex: 1,
-                                    size: "$3",
-                                    iconAfter: null,
-                                    backgroundColor: "$content2",
-                                    borderColor: "$borderColor",
-                                    borderWidth: 1,
-                                    hoverStyle: {
-                                        backgroundColor: "$content3",
-                                        borderColor: "$accent6"
-                                    },
-                                    pressStyle: {
-                                        backgroundColor: "$content3",
-                                        borderColor: "$accent7"
-                                    }
-                                }}
                             />
                         </XStack>
                     </XStack>
@@ -311,7 +280,9 @@ export default function SensorList({
                                         setFilterType('all');
                                     }}
                                 >
-                                    {t('sensor.clearFilters')}
+                                    <PrimaryButtonText>
+                                        {t('sensor.clearFilters')}
+                                    </PrimaryButtonText>
                                 </PrimaryButton>
                             )}
                         </YStack>
@@ -377,7 +348,9 @@ export default function SensorList({
                                             setFilterType('all');
                                         }}
                                     >
-                                        {t('sensor.clearFilters')}
+                                        <PrimaryButtonText>
+                                            {t('sensor.clearFilters')}
+                                        </PrimaryButtonText>
                                     </PrimaryButton>
                                 )}
                             </YStack>

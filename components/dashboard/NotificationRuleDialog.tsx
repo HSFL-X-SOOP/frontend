@@ -19,7 +19,7 @@ import {
     getMeasurementTypeSymbol,
     getTextFromMeasurementType
 } from '@/utils/measurements';
-import {PrimaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText} from '@/types/button';
 
 interface NotificationRuleDialogProps extends PopoverProps {
     Icon?: any;
@@ -226,7 +226,9 @@ export function NotificationRuleDialog({
                                     handleSave(measurementValue);
                                 }}
                             >
-                                {t('dashboard.measurements.save')}
+                                <PrimaryButtonText>
+                                    {t('dashboard.measurements.save')}
+                                </PrimaryButtonText>
                             </PrimaryButton>
                         </Dialog.Close>
                     </YStack>

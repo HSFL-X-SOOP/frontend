@@ -58,7 +58,6 @@ export function SelectWithSheet<T extends string = string>({
                                                                defaultValue,
                                                                onValueChange,
                                                                placeholder = 'Select...',
-                                                               triggerProps,
                                                                disabled = false,
                                                                id,
                                                                name,
@@ -95,7 +94,22 @@ export function SelectWithSheet<T extends string = string>({
             id={id}
             name={name}
         >
-            <Select.Trigger {...triggerProps} disabled={disabled}>
+            <Select.Trigger {...{
+                flex: 1,
+                size: "$3",
+                iconAfter: null,
+                backgroundColor: "$content4",
+                borderColor: "$borderColor",
+                borderWidth: 1,
+                hoverStyle: {
+                    backgroundColor: "$content2",
+                    borderColor: "$accent6"
+                },
+                pressStyle: {
+                    backgroundColor: "$content3",
+                    borderColor: "$accent7"
+                }
+            }} disabled={disabled}>
                 <Select.Value placeholder={placeholder}/>
             </Select.Trigger>
 

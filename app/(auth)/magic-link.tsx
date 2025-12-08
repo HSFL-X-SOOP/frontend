@@ -12,7 +12,7 @@ import {useTranslation} from '@/hooks/ui';
 import {useToast} from '@/hooks/ui';
 import {createLogger} from '@/utils/logger';
 import {UI_CONSTANTS} from '@/config/constants';
-import {PrimaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText} from '@/types/button';
 
 const logger = createLogger('Auth:MagicLink');
 
@@ -171,12 +171,16 @@ export default function MagicLinkScreen() {
                             {requestMagicLinkStatus.loading ? (
                                 <XStack alignItems="center" gap="$2">
                                     <Spinner size="small" color="white"/>
-                                    <Text color="white" fontWeight="600">{t('auth.magicLink.sending')}</Text>
+                                    <PrimaryButtonText>
+                                        {t('auth.magicLink.sending')}
+                                    </PrimaryButtonText>
                                 </XStack>
                             ) : (
                                 <XStack alignItems="center" gap="$2">
                                     <Sparkles size={16} color="white"/>
-                                    <Text color="white" fontWeight="600">{t('auth.magicLink.sendMagicLink')}</Text>
+                                    <PrimaryButtonText>
+                                        {t('auth.magicLink.sendMagicLink')}
+                                    </PrimaryButtonText>
                                 </XStack>
                             )}
                         </PrimaryButton>

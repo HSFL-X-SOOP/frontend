@@ -62,7 +62,7 @@ import {useUserLocations} from '@/hooks/data';
 import {UserLocation} from '@/api/models/userLocation';
 import {useSession} from '@/context/SessionContext';
 import {ENV} from '@/config/environment';
-import {SecondaryButton} from '@/types/button';
+import {IconButton} from '@/types/button';
 
 // ============================================================================
 // Constants
@@ -383,8 +383,8 @@ export default function DashboardScreen() {
                                             <H3 fontSize="$6" fontWeight="600">{harbourName}</H3>
                                         </YStack>
                                     </XStack>
-                                    <SecondaryButton size="$3" icon={showInfo ? ChevronUp : ChevronDown}
-                                            onPress={toggleInfo} circular/>
+                                    <IconButton size="$3" icon={showInfo ? ChevronUp : ChevronDown}
+                                            onPress={toggleInfo}/>
                                 </XStack>
                             </Card.Header>
                             <View style={{position: 'absolute', opacity: 0, pointerEvents: 'none', width: '100%', top: 0, left: 0, right: 0}}

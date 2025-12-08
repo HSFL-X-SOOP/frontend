@@ -19,7 +19,7 @@ import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/data';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {UI_CONSTANTS} from '@/config/constants';
-import {PrimaryButton, SecondaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
 export const ProfileTab: React.FC = () => {
     const {t, changeLanguage} = useTranslation();
@@ -93,7 +93,9 @@ export const ProfileTab: React.FC = () => {
                         size="$3"
                         onPress={() => setIsEditing(true)}
                     >
-                        {t('profile.edit')}
+                        <PrimaryButtonText>
+                            {t('profile.edit')}
+                        </PrimaryButtonText>
                     </PrimaryButton>
                 )}
             </XStack>
@@ -298,7 +300,9 @@ export const ProfileTab: React.FC = () => {
                             onPress={handleCancel}
                             disabled={updateProfileStatus.loading}
                         >
-                            {t('profile.actions.cancel')}
+                            <SecondaryButtonText>
+                                {t('profile.actions.cancel')}
+                            </SecondaryButtonText>
                         </SecondaryButton>
                         <PrimaryButton
                             flex={1}
@@ -308,7 +312,9 @@ export const ProfileTab: React.FC = () => {
                             icon={updateProfileStatus.loading ?
                                 <Spinner color="white"/> : undefined}
                         >
-                            {updateProfileStatus.loading ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
+                            <PrimaryButtonText>
+                                {updateProfileStatus.loading ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
+                            </PrimaryButtonText>
                         </PrimaryButton>
                     </XStack>
                 </YStack>

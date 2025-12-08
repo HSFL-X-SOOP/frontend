@@ -7,7 +7,7 @@ import {ThemeSwitch} from '@/context/ThemeSwitch';
 import {LOGO, BadgeIcon, MapIcon, CloudIcon} from '@/components/ui/Icons';
 import {User, Languages, Menu, LogOut, LayoutDashboard, BookOpen} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
-import {PrimaryButton, SecondaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 import {useTranslation} from '@/hooks/ui';
 import {LanguageSelector} from '@/components/common/LanguageSelector';
 import {useIsMobileWeb} from '@/hooks/ui';
@@ -201,13 +201,17 @@ export function NavbarWeb() {
                         <XStack gap="$2">
                             <Link href={"/login" as Href}>
                                 <PrimaryButton>
-                                    <Text color="#ffffff">{translate('auth.login')}</Text>
+                                    <PrimaryButtonText>
+                                        {translate('auth.login')}
+                                    </PrimaryButtonText>
                                 </PrimaryButton>
                             </Link>
 
                             <Link href={"/register" as Href}>
                                 <SecondaryButton>
-                                    <Text>{translate('auth.register')}</Text>
+                                    <SecondaryButtonText color="$accent8">
+                                        {translate('auth.register')}
+                                    </SecondaryButtonText>
                                 </SecondaryButton>
                             </Link>
                         </XStack>
@@ -218,14 +222,18 @@ export function NavbarWeb() {
                                 <SecondaryButton>
                                     <XStack alignItems="center" gap="$2">
                                         <User size={20} color={"$accent8"}/>
-                                        <Text>{translate('navigation.profile')}</Text>
+                                        <SecondaryButtonText color="$accent8">
+                                            {translate('navigation.profile')}
+                                        </SecondaryButtonText>
                                     </XStack>
                                 </SecondaryButton>
                             </Link>
                             <SecondaryButton onPress={handleLogout}>
                                 <XStack alignItems="center" gap="$2">
                                     <LogOut size={20} color={"$accent8"}/>
-                                    <Text>{translate('auth.logout')}</Text>
+                                    <SecondaryButtonText color="$accent8">
+                                        {translate('auth.logout')}
+                                    </SecondaryButtonText>
                                 </XStack>
                             </SecondaryButton>
                         </XStack>
@@ -455,12 +463,16 @@ export function NavbarWeb() {
                                 <YStack gap="$3" paddingTop="$4">
                                     <Link href={"/login" as Href} onPress={() => setIsMenuOpen(false)}>
                                         <PrimaryButton width="100%">
-                                            <Text color="#ffffff" fontSize="$5">{translate('auth.login')}</Text>
+                                            <PrimaryButtonText fontSize="$5">
+                                                {translate('auth.login')}
+                                            </PrimaryButtonText>
                                         </PrimaryButton>
                                     </Link>
                                     <Link href={"/register" as Href} onPress={() => setIsMenuOpen(false)}>
                                         <SecondaryButton width="100%">
-                                            <Text fontSize="$5">{translate('auth.register')}</Text>
+                                            <SecondaryButtonText color="$accent8" fontSize="$5">
+                                                {translate('auth.register')}
+                                            </SecondaryButtonText>
                                         </SecondaryButton>
                                     </Link>
                                 </YStack>
@@ -472,7 +484,9 @@ export function NavbarWeb() {
                                         <SecondaryButton width="100%">
                                             <XStack alignItems="center" gap="$2">
                                                 <User size={24} color={"$accent8"}/>
-                                                <Text fontSize="$5">{translate('navigation.profile')}</Text>
+                                                <SecondaryButtonText color="$accent8" fontSize="$5">
+                                                    {translate('navigation.profile')}
+                                                </SecondaryButtonText>
                                             </XStack>
                                         </SecondaryButton>
                                     </Link>
@@ -482,7 +496,9 @@ export function NavbarWeb() {
                                     }}>
                                         <XStack alignItems="center" gap="$2">
                                             <LogOut size={24} color={"$accent8"}/>
-                                            <Text fontSize="$5">{translate('auth.logout')}</Text>
+                                            <SecondaryButtonText color="$accent8" fontSize="$5">
+                                                {translate('auth.logout')}
+                                            </SecondaryButtonText>
                                         </XStack>
                                     </SecondaryButton>
                                 </YStack>
@@ -494,4 +510,3 @@ export function NavbarWeb() {
         </XStack>
     );
 }
-

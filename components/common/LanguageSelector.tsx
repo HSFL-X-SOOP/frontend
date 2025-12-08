@@ -4,7 +4,7 @@ import {useTranslation} from '@/hooks/ui';
 import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/data';
 import {Language} from '@/api/models/profile';
-import {PrimaryButton, SecondaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
 const languages = [
     {code: 'de', name: 'Deutsch', flag: '🇩🇪', profileLang: Language.DE},
@@ -37,6 +37,7 @@ export const LanguageSelector: React.FC = () => {
         <YStack gap="$3" padding="$2" minWidth={200}>
             {languages.map((language) => {
                 const ButtonComponent = currentLanguage === language.code ? PrimaryButton : SecondaryButton;
+                const TextComponent = currentLanguage === language.code ? PrimaryButtonText : SecondaryButtonText;
                 return (
                     <ButtonComponent
                         key={language.code}
@@ -45,7 +46,9 @@ export const LanguageSelector: React.FC = () => {
                     >
                         <XStack alignItems="center" gap="$3" width="100%">
                             <Text fontSize={"$5"}>{language.flag}</Text>
-                            <Text color="$color">{language.name}</Text>
+                            <TextComponent color="$color">
+                                {language.name}
+                            </TextComponent>
                         </XStack>
                     </ButtonComponent>
                 );
@@ -53,4 +56,3 @@ export const LanguageSelector: React.FC = () => {
         </YStack>
     );
 };
-

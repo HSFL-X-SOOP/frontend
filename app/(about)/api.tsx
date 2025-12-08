@@ -3,7 +3,7 @@ import {SafeAreaView, ScrollView, Linking} from 'react-native';
 import {Text, YStack, Card, H1, H2, XStack, View} from 'tamagui';
 import {Code, Database, Key, ExternalLink} from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/ui';
-import {PrimaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText} from '@/types/button';
 
 export default function APIScreen() {
     const {t} = useTranslation('api');
@@ -146,8 +146,9 @@ export default function APIScreen() {
                                             >
                                                 <XStack alignItems="center" gap="$2">
                                                     <ExternalLink size={16} color="white"/>
-                                                    <Text color="white" fontWeight="600"
-                                                          fontSize={14}>{t('api.viewDocs')}</Text>
+                                                    <PrimaryButtonText fontSize={14}>
+                                                        {t('api.viewDocs')}
+                                                    </PrimaryButtonText>
                                                 </XStack>
                                             </PrimaryButton>
                                         </YStack>
@@ -174,7 +175,9 @@ export default function APIScreen() {
                                 </Text>
                                 <Link href={"/(other)/prices" as Href}>
                                     <PrimaryButton>
-                                        <Text color="white" fontWeight="600" fontSize={16}>{t('api.viewPricing')}</Text>
+                                        <PrimaryButtonText fontSize={16}>
+                                            {t('api.viewPricing')}
+                                        </PrimaryButtonText>
                                     </PrimaryButton>
                                 </Link>
                             </YStack>

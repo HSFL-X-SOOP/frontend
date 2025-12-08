@@ -39,7 +39,7 @@ import {Platform} from 'react-native';
 import {useLocationInfo} from '@/hooks/data';
 import {UpdateLocationRequest, DetailedLocationDTO} from '@/api/models/location';
 import {UI_CONSTANTS} from '@/config/constants';
-import {PrimaryButton, SecondaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
 interface HarborMasterTabProps {
     initialLocationData?: DetailedLocationDTO | null;
@@ -362,7 +362,9 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                 onPress={handleEdit}
                                 disabled={isLoading}
                             >
-                                {t('profile.edit')}
+                                <PrimaryButtonText>
+                                    {t('profile.edit')}
+                                </PrimaryButtonText>
                             </PrimaryButton>
                         )}
                     </XStack>
@@ -801,7 +803,9 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             disabled={isSaving}
                             icon={<X size={20}/>}
                         >
-                            {t('profile.actions.cancel')}
+                            <SecondaryButtonText>
+                                {t('profile.actions.cancel')}
+                            </SecondaryButtonText>
                         </SecondaryButton>
                         <PrimaryButton
                             flex={1}
@@ -810,7 +814,9 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             onPress={handleSave}
                             icon={isSaving ? <Spinner color="white"/> : <Save size={20}/>}
                         >
-                            {isSaving ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
+                            <PrimaryButtonText>
+                                {isSaving ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
+                            </PrimaryButtonText>
                         </PrimaryButton>
                     </XStack>
                 )}

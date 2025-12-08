@@ -13,7 +13,7 @@ import {
     YStack
 } from 'tamagui';
 import {useNotificationLocations} from '@/hooks/ui';
-import {PrimaryButton, SecondaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton} from '@/types/button';
 
 interface BroadcastNotificationPopoverProps extends PopoverProps {
     Icon?: any;
@@ -124,7 +124,9 @@ export function BroadcastNotificationPopover({
                                 handleSend();
                             }}
                         >
-                            {t('harbor.sendToAllSubscribers')}
+                            <PrimaryButtonText>
+                                {t('harbor.sendToAllSubscribers')}
+                            </PrimaryButtonText>
                         </PrimaryButton>
                     </Popover.Close>
                 </YStack>

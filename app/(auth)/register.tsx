@@ -20,7 +20,7 @@ import {createLogger} from '@/utils/logger';
 import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messagingModule from '@react-native-firebase/messaging';
 import {UI_CONSTANTS} from '@/config/constants';
-import {PrimaryButton, SecondaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
 const logger = createLogger('Auth:Register');
 
@@ -233,10 +233,14 @@ export default function RegisterScreen() {
                             {registerStatus.loading ? (
                                 <XStack gap="$2" alignItems="center">
                                     <Spinner size="small" color="white"/>
-                                    <Text color="white" fontWeight="600">{t('auth.creating')}</Text>
+                                    <PrimaryButtonText>
+                                        {t('auth.creating')}
+                                    </PrimaryButtonText>
                                 </XStack>
                             ) : (
-                                <Text color="white" fontWeight="600">{t('auth.createAccount')}</Text>
+                                <PrimaryButtonText>
+                                    {t('auth.createAccount')}
+                                </PrimaryButtonText>
                             )}
                         </PrimaryButton>
                     </YStack>
@@ -270,12 +274,16 @@ export default function RegisterScreen() {
                             {googleLoading ? (
                                 <XStack gap="$2" alignItems="center">
                                     <Spinner size="small"/>
-                                    <Text color="$color">{t('auth.signingIn')}</Text>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signingIn')}
+                                    </SecondaryButtonText>
                                 </XStack>
                             ) : (
                                 <XStack gap="$3" alignItems="center">
                                     <GoogleIcon size={20}/>
-                                    <Text color="$color">{t('auth.signUpWithGoogle')}</Text>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signUpWithGoogle')}
+                                    </SecondaryButtonText>
                                 </XStack>
                             )}
                         </SecondaryButton>
@@ -304,12 +312,16 @@ export default function RegisterScreen() {
                                 {appleLoading ? (
                                     <XStack gap="$2" alignItems="center">
                                         <Spinner size="small"/>
-                                        <Text color="$color">{t('auth.signingIn')}</Text>
+                                        <SecondaryButtonText color="$color">
+                                            {t('auth.signingIn')}
+                                        </SecondaryButtonText>
                                     </XStack>
                                 ) : (
                                     <XStack gap="$3" alignItems="center">
                                         <AppleIcon size={24}/>
-                                        <Text color="$color">{t('auth.signUpWithApple')}</Text>
+                                        <SecondaryButtonText color="$color">
+                                            {t('auth.signUpWithApple')}
+                                        </SecondaryButtonText>
                                     </XStack>
                                 )}
                             </SecondaryButton>

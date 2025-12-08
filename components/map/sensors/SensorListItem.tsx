@@ -95,13 +95,13 @@ function SensorListItem({
             marginHorizontal="$3"
             marginVertical="$2"
             height={210}
-            backgroundColor={isHighlighted ? '$accent2' : '$content1'}
+            backgroundColor={'$content1'}
             borderColor={isHighlighted ? '$accent8' : '$borderColor'}
             borderWidth={isHighlighted ? 2 : 1}
             onPress={onPress}
             pressStyle={{
                 scale: 0.98,
-                backgroundColor: '$content2'
+                backgroundColor: '$ctaBgHover'
             }}
             hoverStyle={{
                 scale: 1.01,

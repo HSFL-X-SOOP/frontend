@@ -20,7 +20,7 @@ import messagingModule from '@react-native-firebase/messaging';
 import {PermissionsAndroid} from 'react-native';
 import {useUserDeviceStore} from '@/api/stores/userDevice';
 import {UI_CONSTANTS} from '@/config/constants';
-import {PrimaryButton, SecondaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
 const logger = createLogger('Auth:Login');
 
@@ -216,10 +216,14 @@ export default function LoginScreen() {
                             {loginStatus.loading ? (
                                 <XStack gap="$2" alignItems="center">
                                     <Spinner size="small" color="white"/>
-                                    <Text color="white" fontWeight="600">{t('auth.signingIn')}</Text>
+                                    <PrimaryButtonText>
+                                        {t('auth.signingIn')}
+                                    </PrimaryButtonText>
                                 </XStack>
                             ) : (
-                                <Text color="white" fontWeight="600">{t('auth.signIn')}</Text>
+                                <PrimaryButtonText>
+                                    {t('auth.signIn')}
+                                </PrimaryButtonText>
                             )}
                         </PrimaryButton>
                     </YStack>
@@ -252,12 +256,16 @@ export default function LoginScreen() {
                             {googleLoading ? (
                                 <XStack gap="$2" alignItems="center">
                                     <Spinner size="small"/>
-                                    <Text color="$color">{t('auth.signingIn')}</Text>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signingIn')}
+                                    </SecondaryButtonText>
                                 </XStack>
                             ) : (
                                 <XStack gap="$3" alignItems="center">
                                     <GoogleIcon size={20}/>
-                                    <Text color="$color">{t('auth.signInWithGoogle')}</Text>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signInWithGoogle')}
+                                    </SecondaryButtonText>
                                 </XStack>
                             )}
                         </SecondaryButton>
@@ -280,29 +288,35 @@ export default function LoginScreen() {
                                 }}
                                 disabled={appleLoading}
                                 opacity={appleLoading ? 0.6 : 1}
-                            >
-                                {appleLoading ? (
-                                    <XStack gap="$2" alignItems="center">
-                                        <Spinner size="small"/>
-                                        <Text color="$color">{t('auth.signingIn')}</Text>
-                                    </XStack>
-                                ) : (
-                                    <XStack gap="$3" alignItems="center">
-                                        <AppleIcon size={24}/>
-                                        <Text color="$color">{t('auth.signInWithApple')}</Text>
-                                    </XStack>
-                                )}
-                            </SecondaryButton>
-                        )}
-
-                        <SecondaryButton
-                            onPress={() => router.push("/(auth)/magic-link")}
                         >
-                            <XStack gap="$2" alignItems="center">
-                                <Text>✨</Text>
-                                <Text color="$color">{t('auth.signInWithMagicLink')}</Text>
-                            </XStack>
+                            {appleLoading ? (
+                                <XStack gap="$2" alignItems="center">
+                                    <Spinner size="small"/>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signingIn')}
+                                    </SecondaryButtonText>
+                                </XStack>
+                            ) : (
+                                <XStack gap="$3" alignItems="center">
+                                    <AppleIcon size={24}/>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signInWithApple')}
+                                    </SecondaryButtonText>
+                                </XStack>
+                            )}
                         </SecondaryButton>
+                    )}
+
+                    <SecondaryButton
+                        onPress={() => router.push("/(auth)/magic-link")}
+                    >
+                        <XStack gap="$2" alignItems="center">
+                            <Text>✨</Text>
+                            <SecondaryButtonText color="$color">
+                                {t('auth.signInWithMagicLink')}
+                            </SecondaryButtonText>
+                        </XStack>
+                    </SecondaryButton>
                     </YStack>
 
                     <YStack alignItems="center">

@@ -6,6 +6,7 @@ import {SmallBadgeIcon} from "@/components/ui/Icons.tsx";
 import {useIsMobileWeb} from '@/hooks/ui';
 import {useViewportHeight} from '@/hooks/ui';
 import {useThemeContext} from "@/context/ThemeSwitch.tsx";
+import {IconButton} from '@/types/button';
 
 interface MapSensorDrawerProps {
     isOpen: boolean;
@@ -73,24 +74,11 @@ export default function MapSensorDrawer({
                                 enterStyle={{opacity: 0, x: -10}}
                                 exitStyle={{opacity: 0, x: -10}}
                             >
-                                <Button
+                                <IconButton
                                     size="$3"
                                     icon={ChevronLeft}
-                                    backgroundColor="transparent"
                                     color="$accent8"
                                     onPress={onToggle}
-                                    borderWidth={1}
-                                    borderColor="$accent6"
-                                    circular
-                                    hoverStyle={{
-                                        backgroundColor: "$accent3",
-                                        borderColor: "$accent7"
-                                    }}
-                                    pressStyle={{
-                                        backgroundColor: "$accent4",
-                                        scale: 0.95
-                                    }}
-                                    animation="quick"
                                     aria-label="Collapse drawer"
                                 />
                             </View>
@@ -98,24 +86,11 @@ export default function MapSensorDrawer({
                     </AnimatePresence>
 
                     {!isOpen && (
-                        <Button
+                        <IconButton
                             size="$3"
                             icon={ChevronRight}
-                            backgroundColor="transparent"
                             color="$accent8"
                             onPress={onToggle}
-                            borderWidth={1}
-                            borderColor="$accent6"
-                            circular
-                            hoverStyle={{
-                                backgroundColor: "$accent3",
-                                borderColor: "$accent7"
-                            }}
-                            pressStyle={{
-                                backgroundColor: "$accent4",
-                                scale: 0.95
-                            }}
-                            animation="quick"
                             aria-label="Expand drawer"
                         />
                     )}
@@ -150,7 +125,7 @@ export default function MapSensorDrawer({
                                     borderRadius="$2"
                                     borderColor={"$borderColor"}
                                     hoverStyle={{
-                                        backgroundColor: "$accent1"
+                                        backgroundColor: "$ctaBgHover"
                                     }}
                                     pressStyle={{
                                         backgroundColor: "$accent2",

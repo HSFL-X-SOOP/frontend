@@ -8,7 +8,6 @@ export const PrimaryButton = styled(Button, {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '$accent5',
-    color: 'white',
     borderWidth: 1,
     borderColor: '$accent7',
     fontWeight: '600',
@@ -66,7 +65,7 @@ export const SecondaryButton = styled(Button, {
     elevation: 1,
     hoverStyle: {
         backgroundColor: '$ctaBgHover',
-        opacity: 0.8,
+        opacity: 1,
         borderColor: '$accent8',
         shadowOpacity: 0.15,
         scale: 1.01,
@@ -90,4 +89,45 @@ export const SecondaryButton = styled(Button, {
     },
 })
 
+export const PrimaryButtonText = styled(Button.Text, {
+    name: 'PrimaryButtonText',
+    color: 'white',
+    fontWeight: '600',
+    fontSize: '$4',
+})
 
+export const SecondaryButtonText = styled(Button.Text, {
+    name: 'SecondaryButtonText',
+    color: '$accent9',
+    fontWeight: '600',
+    fontSize: '$4',
+})
+
+export const IconButton = styled(Button, {
+    name: 'IconButton',
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '$accent6',
+    circular: true,
+    animation: 'quick',
+
+    hoverStyle: {
+        backgroundColor: '$ctaBgHover',
+        borderColor: '$accent7',
+    },
+
+    pressStyle: {
+        opacity: 0.2,
+        scale: 0.95,
+    },
+
+    focusStyle: {
+        borderColor: '$accent8',
+    },
+
+    disabledStyle: {
+        opacity: 0.5,
+        pointerEvents: 'none',
+        borderColor: '$accent4',
+    },
+})

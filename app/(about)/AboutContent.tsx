@@ -3,7 +3,7 @@ import {ScrollView, SafeAreaView} from 'react-native';
 import {Card, Text, XStack, YStack, View, H1, H2, Separator} from 'tamagui';
 import {ExternalLink, Globe, Database, MapPin, TrendingUp} from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/ui';
-import {SecondaryButton} from '@/types/button';
+import {SecondaryButton, SecondaryButtonText} from '@/types/button';
 
 type StudentCardProps = {
     id: string;
@@ -161,7 +161,9 @@ function AboutScreen() {
                     <Link href={feature.link as Href}>
                         <SecondaryButton size="$3">
                             <ExternalLink size={16} />
-                            {t('common.learnMore')}
+                            <SecondaryButtonText color="$accent8">
+                                {t('common.learnMore')}
+                            </SecondaryButtonText>
                         </SecondaryButton>
                     </Link>
                 )}
