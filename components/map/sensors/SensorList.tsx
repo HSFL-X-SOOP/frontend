@@ -190,7 +190,7 @@ export default function SensorList({
                             flex={1}
                             paddingLeft="$8"
                             borderColor="$borderColor"
-                            backgroundColor="$content4"
+                            backgroundColor="$content3"
                         />
                     </XStack>
                 </YStack>

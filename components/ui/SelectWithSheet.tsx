@@ -63,7 +63,6 @@ export function SelectWithSheet<T extends string = string>({
                                                                name,
                                                            }: SelectWithSheetProps<T>) {
     const isNative = Platform.OS !== 'web';
-    const isMobileWeb = useIsMobileWeb();
 
     // Styling logic:
     // - Native (iOS/Android): Full styling with borders, backgrounds, etc.
@@ -71,20 +70,19 @@ export function SelectWithSheet<T extends string = string>({
     // - Desktop Web: Default Tamagui styling
     const itemStyle = isNative
         ? defaultSelectItemStyles.native
-        : isMobileWeb
-            ? {
-                backgroundColor: '$content1',
-                hoverStyle: {
-                    backgroundColor: '$accent3'
-                },
-                pressStyle: {
-                    backgroundColor: '$accent4'
-                },
-                focusStyle: {
-                    backgroundColor: '$accent2'
-                }
+        : {
+            backgroundColor: '$content2',
+            hoverStyle: {
+                backgroundColor: '$ctaBgHover'
+            },
+            pressStyle: {
+                backgroundColor: '$ctaBgHover'
+            },
+            focusStyle: {
+                backgroundColor: '$ctaBgHover'
             }
-            : {};
+        }
+
 
     return (
         <Select
@@ -98,11 +96,11 @@ export function SelectWithSheet<T extends string = string>({
                 flex: 1,
                 size: "$3",
                 iconAfter: null,
-                backgroundColor: "$content4",
+                backgroundColor: "$content3",
                 borderColor: "$borderColor",
                 borderWidth: 1,
                 hoverStyle: {
-                    backgroundColor: "$content2",
+                    backgroundColor: "$content4",
                     borderColor: "$accent6"
                 },
                 pressStyle: {
