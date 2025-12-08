@@ -44,3 +44,11 @@ export interface VerifyEmailRequest {
 export interface GoogleLoginRequest {
     idToken: string;
 }
+
+export interface AppleLoginRequest {
+    identityToken: string;
+    user?: string;
+    email?: string;
+    givenName?: string;
+    familyName?: string;
+}

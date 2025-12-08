@@ -16,4 +16,4 @@ local.properties
 *.jsbundle
 
 # Firebase
-google-services.json
+app/google-services.json

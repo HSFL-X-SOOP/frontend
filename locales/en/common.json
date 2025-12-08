@@ -69,6 +69,11 @@
     "googleSignInSuccess": "Google Sign-In Successful",
     "googleSignInError": "Google Sign-In Failed",
     "googleSignInErrorGeneric": "An error occurred during Google Sign-In. Please try again.",
+    "signInWithApple": "Sign in with Apple",
+    "signUpWithApple": "Sign up with Apple",
+    "appleSignInSuccess": "Apple Sign-In Successful",
+    "appleSignInError": "Apple Sign-In Failed",
+    "appleSignInErrorGeneric": "An error occurred during Apple Sign-In. Please try again.",
     "logoutSuccess": "Logged Out Successfully",
     "logoutMessage": "You have been logged out. See you soon!",
     "magicLink": {

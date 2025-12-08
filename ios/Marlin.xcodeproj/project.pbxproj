@@ -106,7 +106,7 @@
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				AF22CC2F8B1F4FD89740D041 /* Remove signature files (Xcode workaround) */,
+				5AE11F900ACE4863B5B22138 /* Remove signature files (Xcode workaround) */,
 			);
 			buildRules = (
 			);
@@ -221,7 +221,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Marlin/Pods-Marlin-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		AF22CC2F8B1F4FD89740D041 /* Remove signature files (Xcode workaround) */ = {
+		5AE11F900ACE4863B5B22138 /* Remove signature files (Xcode workaround) */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
