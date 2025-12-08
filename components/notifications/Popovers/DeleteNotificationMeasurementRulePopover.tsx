@@ -1,8 +1,8 @@
-import { H4, PopoverProps } from "tamagui";
+import { H4, PopoverProps , YStack, Dialog, Button } from "tamagui";
 import { useState } from "react";
 import { useNotificationMeasurementRules } from "@/hooks/ui/useNotificationMeasurementRules";
 import { NotificationMeasurementRule } from "@/api/models/notificationMeasurementRule";
-import { YStack, Dialog, Button, Text } from "tamagui";
+
 
 export function DeleteNotificationMeasurementRulePopover({
   Icon,

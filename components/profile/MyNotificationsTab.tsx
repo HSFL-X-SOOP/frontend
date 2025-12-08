@@ -1,14 +1,11 @@
-import React, { use, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     YStack,
     Card,
     H4,
     Text,
     Button,
-    View,
-    Dialog,
-    XStack,
-    PopoverProps
+    XStack
 } from 'tamagui';
 import { ChevronDown, Edit3, Trash, Check, X, Bell, BellOff } from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/ui/useTranslation';
@@ -120,7 +117,7 @@ export function MyNotificationsTab() {
                     </Card>
                 )}
 
-                {selectedUserLocation == undefined && (
+                {selectedUserLocation === undefined && (
                     <Card key={"harbor-master-notification"} marginTop="$4" padding="$4" borderWidth={1} borderColor="$borderColor">
                         <YStack gap="$2" alignItems="center">
                             <H4  color="$accent7" fontFamily="$oswald">{t("notificationMeasurementRule.noLocationsTitle")}</H4>

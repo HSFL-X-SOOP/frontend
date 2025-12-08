@@ -5,7 +5,6 @@ import {
     Card,
     H5,
     Text,
-    Button,
     Spinner,
     View,
     Separator,
@@ -13,8 +12,8 @@ import {
     Label
 } from 'tamagui';
 import {Globe, Activity, Ruler, Check} from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/ui';
-import {useToast} from '@/hooks/ui';
+import {useTranslation,useToast} from '@/hooks/ui';
+
 import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/data';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';

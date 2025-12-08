@@ -1,7 +1,7 @@
 import {useSensorDataNew} from '@/hooks/data';
 import {useSupercluster} from '@/hooks/map';
 import type {MapRef} from '@vis.gl/react-maplibre';
-import {LngLatBoundsLike, Map} from '@vis.gl/react-maplibre';
+import {LngLatBoundsLike, Map,Marker} from '@vis.gl/react-maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import * as React from 'react';
 import {useMemo, useState, useRef, useEffect} from 'react';
@@ -12,13 +12,11 @@ import {BoxType, LocationWithBoxes} from '@/api/models/sensor';
 import MapSensorDrawer from './map/drawers/MapSensorDrawer';
 import SensorList from './map/sensors/SensorList';
 import MapSensorBottomSheet, {MapSensorBottomSheetRef} from './map/controls/MapSensorBottomSheet';
-import {useIsMobileWeb, useIsMobile} from '@/hooks/ui';
+import {useIsMobileWeb, useIsMobile,useTranslation} from '@/hooks/ui';
 import {SpeedDial} from '@/components/speeddial';
 import {Plus, Home, Navigation, ZoomIn, ZoomOut, List, Filter} from '@tamagui/lucide-icons';
 import MapFilterButton, {MapFilterState} from './map/controls/MapFilterButton';
-import {useTranslation} from '@/hooks/ui';
 import * as Location from 'expo-location';
-import {Marker} from "@vis.gl/react-maplibre";
 import GpsPin from './map/markers/GPSMarker';
 import {MAP_CONSTANTS} from '@/config/constants';
 
@@ -184,13 +182,11 @@ export default function WebMap(props: MapProps) {
     }, [clusters, getClusterExpansionZoom, highlightedSensorId]);
 
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
-    const [errorMsg, setErrorMsg] = useState("");
 
     useEffect(() => {
         (async () => {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') {
-            setErrorMsg('Permission denied');
             return;
         }
 

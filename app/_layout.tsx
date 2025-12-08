@@ -7,7 +7,7 @@ import {
     useFonts
 } from '@expo-google-fonts/oswald'
 import {StatusBar} from 'expo-status-bar'
-import {Platform, View, LogBox, PermissionsAndroid} from 'react-native'
+import {Platform, View, LogBox} from 'react-native'
 import {useEffect} from 'react'
 import 'react-native-reanimated'
 import '../global.css'

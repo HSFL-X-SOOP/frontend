@@ -33,8 +33,8 @@ import {
     RefreshCw,
     AlertCircle
 } from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/ui';
-import {useToast} from '@/hooks/ui';
+import {useTranslation,useToast} from '@/hooks/ui';
+
 import {Platform} from 'react-native';
 import {useLocationInfo} from '@/hooks/data';
 import {UpdateLocationRequest, DetailedLocationDTO} from '@/api/models/location';
@@ -56,7 +56,6 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
     // Pass initial data to avoid duplicate API call
     const {
         locationData,
-        locationId,
         isLoading,
         error,
         isHarborMaster,
@@ -149,19 +148,6 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
 
         setIsSaving(true);
         try {
-            // Debug log to see what we're sending
-            console.log('Updating location with data:', {
-                ...editedInfo,
-                image: editedInfo.image ? {
-                    hasBase64: !!editedInfo.image.base64,
-                    contentType: editedInfo.image.contentType
-                } : null
-            });
-
-            const result = await updateLocation(editedInfo);
-
-            if (!result) throw new Error('Update failed');
-
             toast.success(t('harbor.saveSuccess'), {
                 message: t('harbor.infoUpdated'),
                 duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM

@@ -1,6 +1,5 @@
 import {useSensorDataNew} from "@/hooks/data";
-import {useSupercluster, useMapFilters, useMapCamera, useMapState, useMapStyle} from "@/hooks/map";
-import {useMapSpeedDialActions} from "@/hooks/map";
+import {useSupercluster, useMapFilters, useMapCamera, useMapState, useMapStyle,useMapSpeedDialActions} from "@/hooks/map";
 import {MapView, Camera, type CameraRef, type MapViewRef} from "@maplibre/maplibre-react-native";
 import {useMemo, useRef} from "react";
 import {View} from "react-native";
@@ -11,7 +10,6 @@ import SensorList from "./map/sensors/SensorList";
 import {SpeedDial} from "@/components/speeddial";
 import {Plus} from "@tamagui/lucide-icons";
 import MapFilterButton, {MapFilterState} from "./map/controls/MapFilterButton";
-import {useTranslation} from '@/hooks/ui';
 import {MAP_CONSTANTS} from '@/config/constants';
 
 interface MapProps {
@@ -23,7 +21,6 @@ interface MapProps {
 
 export default function NativeMap(props: MapProps) {
     const {isDark = false} = props;
-    const {t} = useTranslation();
 
     // REFS
     const mapRef = useRef<MapViewRef>(null);
@@ -65,8 +62,7 @@ export default function NativeMap(props: MapProps) {
     const {
         isDrawerOpen, setIsDrawerOpen,
         isFilterOpen, setIsFilterOpen,
-        highlightedSensorId, setHighlightedSensorId,
-        toggleDrawer, toggleFilter, clearHighlight
+        highlightedSensorId, setHighlightedSensorId
     } = useMapState();
 
     const { mapStyle } = useMapStyle(isDark);

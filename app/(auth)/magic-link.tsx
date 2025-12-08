@@ -1,15 +1,15 @@
 import {Link, useRouter, useLocalSearchParams, Href} from 'expo-router';
 import {useState, useEffect, useRef} from 'react';
 import {SafeAreaView} from 'react-native';
-import {Button, Text, YStack, XStack, Spinner, ScrollView} from 'tamagui';
+import {Text, YStack, XStack, Spinner, ScrollView} from 'tamagui';
 import {Sparkles, CheckCircle, AlertCircle} from '@tamagui/lucide-icons';
 import {useAuth} from '@/hooks/auth';
 import {useSession} from '@/context/SessionContext';
 import {AuthorityRole} from '@/api/models/profile';
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
-import {useTranslation} from '@/hooks/ui';
-import {useToast} from '@/hooks/ui';
+import {useTranslation,useToast} from '@/hooks/ui';
+
 import {createLogger} from '@/utils/logger';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText} from '@/types/button';

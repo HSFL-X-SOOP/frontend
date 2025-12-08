@@ -1,6 +1,4 @@
-import { Select } from 'tamagui';
-import { GetProps } from 'tamagui';
-import { ReactNode } from 'react';
+import { Select, GetProps } from 'tamagui';
 
 /**
  * Generic item type for Select options
@@ -130,12 +128,10 @@ export const defaultSelectItemStyles: PlatformSelectItemStyles = {
         borderRadius: '$3',
         marginVertical: '$1.5',
         hoverStyle: {
-            backgroundColor: '$accent3',
-            borderColor: '$accent6',
+            backgroundColor: '$ctaBgHover',
         },
         pressStyle: {
-            backgroundColor: '$accent4',
-            borderColor: '$accent7',
+            backgroundColor: '$ctaBgHover',
         },
     },
 };

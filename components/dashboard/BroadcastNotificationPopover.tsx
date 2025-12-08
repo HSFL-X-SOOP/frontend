@@ -1,7 +1,6 @@
 import {useState, useCallback} from 'react';
 import {
     Adapt,
-    Button,
     Input,
     Label,
     Popover,

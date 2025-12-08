@@ -10,7 +10,7 @@ import {
     TimeRangeDropdown
 } from '@/components/dashboard';
 import {useThemeContext} from '@/context/ThemeSwitch';
-import {useSensorDataNew, useSensorDataTimeRange} from '@/hooks/data';
+import {useSensorDataNew, useSensorDataTimeRange,useUserLocations} from '@/hooks/data';
 import {useTranslation} from '@/hooks/ui';
 import {ChartDataPoint} from '@/types/chart';
 import {useLocationStore} from '@/api/stores/location.service';
@@ -58,7 +58,7 @@ import {
     YStack,
     useMedia
 } from 'tamagui';
-import {useUserLocations} from '@/hooks/data';
+
 import {UserLocation} from '@/api/models/userLocation';
 import {useSession} from '@/context/SessionContext';
 import {ENV} from '@/config/environment';

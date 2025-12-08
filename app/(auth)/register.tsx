@@ -1,17 +1,17 @@
 import {useSession} from '@/context/SessionContext';
-import {useAuth} from '@/hooks/auth';
+import {useAuth,useGoogleSignIn} from '@/hooks/auth';
 import {AuthorityRole} from '@/api/models/profile';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
 import {PermissionsAndroid, Platform, SafeAreaView} from 'react-native';
-import {Button, Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
+import {Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {User} from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/ui';
-import {useToast} from '@/hooks/ui';
+import {useTranslation,useToast,usePasswordValidation, useEmailValidation} from '@/hooks/ui';
+
 import {GoogleIcon, AppleIcon} from '@/components/ui/Icons';
-import {useGoogleSignIn} from '@/hooks/auth';
+
 import {useAppleSignIn} from '@/hooks/auth/useAppleSignIn';
-import {usePasswordValidation, useEmailValidation} from '@/hooks/ui';
+
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';

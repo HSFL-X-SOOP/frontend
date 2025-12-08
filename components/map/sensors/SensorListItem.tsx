@@ -35,7 +35,7 @@ function SensorListItem({
     const {t} = useTranslation();
 
     const getKeyMeasurements = () => {
-        const measurements: Array<{ label: string; value: string; icon: React.ReactNode }> = [];
+        const measurements: { label: string; value: string; icon: React.ReactNode }[] = [];
 
         for (const box of locationWithBoxes.boxes) {
             if (!box.measurementTimes[0]) continue;
