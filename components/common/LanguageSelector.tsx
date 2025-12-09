@@ -23,8 +23,6 @@ export const LanguageSelector: React.FC = () => {
             try {
                 const updatedProfile = await updateProfile({
                     language: profileLang,
-                    roles: session.profile.roles, // Backend erwartet 'roles'
-                    measurementSystem: session.profile.measurementSystem ?? undefined
                 });
                 updateSessionProfile(updatedProfile);
             } catch (error) {
@@ -38,6 +36,7 @@ export const LanguageSelector: React.FC = () => {
             {languages.map((language) => {
                 const ButtonComponent = currentLanguage === language.code ? PrimaryButton : SecondaryButton;
                 const TextComponent = currentLanguage === language.code ? PrimaryButtonText : SecondaryButtonText;
+                const TextFlagComponentColor = ButtonComponent === SecondaryButton ? "$accent9" : "white";
                 return (
                     <ButtonComponent
                         key={language.code}
@@ -45,8 +44,8 @@ export const LanguageSelector: React.FC = () => {
                         onPress={() => handleLanguageChange(language.code, language.profileLang)}
                     >
                         <XStack alignItems="center" gap="$3" width="100%">
-                            <Text fontSize={"$5"}>{language.flag}</Text>
-                            <TextComponent color="$color">
+                            <Text fontSize={"$5"} color={TextFlagComponentColor}>{language.flag}</Text>
+                            <TextComponent >
                                 {language.name}
                             </TextComponent>
                         </XStack>
