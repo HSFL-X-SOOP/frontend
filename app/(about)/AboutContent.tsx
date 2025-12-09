@@ -106,7 +106,7 @@ function AboutScreen() {
                         </Text>
                     </View>
                     <YStack>
-                        <H2 fontSize="$6">{card.name}</H2>
+                        <H2 fontSize="$6" fontFamily="$oswald">{card.name}</H2>
                         <Text fontSize="$3" color="$color" opacity={0.7}>
                             {card.role}
                         </Text>
@@ -152,7 +152,7 @@ function AboutScreen() {
             <YStack gap="$3">
                 <XStack alignItems="center" gap="$2">
                     <feature.icon size={28} color="$accent10" />
-                    <H2 fontSize="$6">{feature.title}</H2>
+                    <H2 fontSize="$6" fontFamily="$oswald">{feature.title}</H2>
                 </XStack>
                 <Text fontSize="$3" color="$color" opacity={0.8}>
                     {feature.description}
@@ -177,7 +177,7 @@ function AboutScreen() {
                 <YStack padding="$4" gap="$6">
                     {/* Header */}
                     <YStack gap="$2">
-                        <H1>{t('title')}</H1>
+                        <H1 fontFamily="$oswald">{t('title')}</H1>
                         <Text fontSize="$5" color="$color" opacity={0.7}>
                             {t('subtitle')}
                         </Text>
@@ -187,7 +187,7 @@ function AboutScreen() {
 
                     {/* Features */}
                     <YStack gap="$3">
-                        <H2>{t('features.title')}</H2>
+                        <H2 fontFamily="$oswald">{t('features.title')}</H2>
                         <XStack gap="$3" flexWrap="wrap">
                             {features.map((feature, index) => (
                                 <FeatureCard key={index} feature={feature} />
@@ -199,7 +199,7 @@ function AboutScreen() {
 
                     {/* Team */}
                     <YStack gap="$3">
-                        <H2>{t('team.title')}</H2>
+                        <H2 fontFamily="$oswald">{t('team.title')}</H2>
                         <XStack gap="$3" flexWrap="wrap">
                             {studentCards.map((card) => (
                                 <StudentCard key={card.id} card={card} />

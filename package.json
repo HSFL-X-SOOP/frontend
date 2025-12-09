@@ -27,6 +27,7 @@
     "web:build:prod": "cross-env APP_MODE=prod expo export --platform web"
   },
   "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
     "@expo-google-fonts/oswald": "^0.4.2",
     "@expo/metro-runtime": "~5.0.5",
     "@expo/vector-icons": "^14.1.0",

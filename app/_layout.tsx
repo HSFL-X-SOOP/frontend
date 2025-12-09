@@ -4,8 +4,14 @@ import {
     Oswald_500Medium,
     Oswald_600SemiBold,
     Oswald_700Bold,
-    useFonts
 } from '@expo-google-fonts/oswald'
+import {
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    useFonts
+} from '@expo-google-fonts/inter'
 import {StatusBar} from 'expo-status-bar'
 import {Platform, View, LogBox} from 'react-native'
 import {useEffect} from 'react'
@@ -166,6 +172,10 @@ export default function RootLayout() {
         Oswald_500Medium,
         Oswald_600SemiBold,
         Oswald_700Bold,
+        Inter_400Regular,
+        Inter_500Medium,
+        Inter_600SemiBold,
+        Inter_700Bold,
     })
 
     if (!loaded) return null

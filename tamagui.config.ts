@@ -2,6 +2,20 @@ import {createTamagui, createFont} from 'tamagui'
 import {config as defaultConfig} from '@tamagui/config/v3'
 import {themes} from './themes'
 
+const interFont = createFont({
+    family: 'Inter_400Regular',
+    size: defaultConfig.fonts.body.size,
+    lineHeight: defaultConfig.fonts.body.lineHeight,
+    letterSpacing: defaultConfig.fonts.body.letterSpacing,
+    weight: defaultConfig.fonts.body.weight,
+    face: {
+        400: {normal: 'Inter_400Regular'},
+        500: {normal: 'Inter_500Medium'},
+        600: {normal: 'Inter_600SemiBold'},
+        700: {normal: 'Inter_700Bold'},
+    },
+})
+
 const oswaldFont = createFont({
     family: 'Oswald_400Regular',
     size: defaultConfig.fonts.body.size,
@@ -20,6 +34,8 @@ export const config = createTamagui({
     ...defaultConfig,
     fonts: {
         ...defaultConfig.fonts,
+        body: interFont,
+        heading: interFont,
         oswald: oswaldFont,
     },
     themes: {

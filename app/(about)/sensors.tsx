@@ -27,7 +27,7 @@ export default function SensorsScreen() {
 
               <Card padding="$5" backgroundColor="$content2" borderRadius="$6" borderWidth={1} borderColor="$borderColor">
                 <YStack gap="$3">
-                  <H2 fontSize={24} fontWeight="600" color="$accent7">{t('sensors.waterTemperature')}</H2>
+                  <H2 fontSize={24} fontWeight="600" color="$accent7" fontFamily="$oswald">{t('sensors.waterTemperature')}</H2>
                   <Text fontSize={16} lineHeight={22} color="$color" opacity={0.9}>
                     {t('sensors.waterTempDesc')}
                   </Text>
