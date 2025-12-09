@@ -51,4 +51,4 @@ app-example
 .tamagui/
 
 # Firebase config file for push notifications
-android/app/google-services.jsonTODO.md
+android/app/google-services.json
