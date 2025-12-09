@@ -1,13 +1,5 @@
 import React, { useEffect } from 'react';
 import Svg, {
-  Defs,
-  RadialGradient,
-  LinearGradient,
-  Stop,
-  Filter,
-  FeGaussianBlur,
-  FeMerge,
-  FeMergeNode,
   G,
   Circle,
   Text as SvgText,
@@ -29,6 +21,8 @@ interface ClusterMarkerSvgProps {
   width?: number;
   height?: number;
   accentColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
   enableAnimations?: boolean;
 }
 
@@ -36,7 +30,9 @@ export const ClusterMarkerSvg: React.FC<ClusterMarkerSvgProps> = ({
   count,
   width = 96,
   height = 96,
-  accentColor = '#7db07d',
+  accentColor = '#1798db',
+  backgroundColor = '#1c1c1c',
+  textColor = 'white',
   enableAnimations = false,
 }) => {
   const pulseT = useSharedValue(0);
@@ -63,29 +59,11 @@ export const ClusterMarkerSvg: React.FC<ClusterMarkerSvgProps> = ({
 
   return (
     <Svg width={width} height={height} viewBox="0 0 96 96">
-      <Defs>
-        <RadialGradient id="g-accent" cx="50%" cy="45%" r="60%">
-          <Stop offset="0%" stopColor="#7EE3FF" stopOpacity="1" />
-          <Stop offset="100%" stopColor={accentColor} stopOpacity="1" />
-        </RadialGradient>
-        <LinearGradient id="g-dark" x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0%" stopColor="#111111" />
-          <Stop offset="100%" stopColor="#000000" />
-        </LinearGradient>
-        <Filter id="f-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <FeGaussianBlur stdDeviation="4" result="blur" />
-          <FeMerge>
-            <FeMergeNode in="blur" />
-            <FeMergeNode in="SourceGraphic" />
-          </FeMerge>
-        </Filter>
-      </Defs>
-
       <G id="marker-minimal-badge">
-        <Circle cx="48" cy="48" r="26" fill="url(#g-accent)" opacity="0.35" />
-        <Circle cx="48" cy="48" r="34" fill="url(#g-dark)" />
-        <Circle cx="48" cy="48" r="28" fill="url(#g-accent)" />
-        <Circle cx="48" cy="48" r="20" fill="url(#g-dark)" opacity="0.85" />
+        <Circle cx="48" cy="48" r="26" fill={accentColor} opacity="0.35" />
+        <Circle cx="48" cy="48" r="34" fill={backgroundColor} />
+        <Circle cx="48" cy="48" r="28" fill={accentColor} />
+        <Circle cx="48" cy="48" r="20" fill={backgroundColor} opacity="0.85" />
 
         <G id="logo-wrap">
           <SvgText
@@ -94,7 +72,7 @@ export const ClusterMarkerSvg: React.FC<ClusterMarkerSvgProps> = ({
             fontFamily="Arial, sans-serif"
             fontSize="18"
             fontWeight="bold"
-            fill="white"
+            fill={textColor}
             textAnchor="middle"
           >
             {displayCount}

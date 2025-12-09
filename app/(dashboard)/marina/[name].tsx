@@ -424,7 +424,7 @@ export default function DashboardScreen() {
                                                         placement="top"
                                                         Icon={Bell}
                                                         Name={getTextFromMeasurementType(measurement.measurementType, t)}
-                                                        Value={measurement.value}
+                                                        Value={measurement.value ?? undefined}
                                                         MeasurementType={measurement.measurementType}
                                                         marinaID={marinaID}
                                                         userID={userID}
@@ -443,7 +443,7 @@ export default function DashboardScreen() {
                                                     <XStack alignItems="baseline" gap="$2">
                                                         <H2 fontSize="$10" fontWeight="700"
                                                             color={getMeasurementColor(measurement.measurementType)}>
-                                                            {formatMeasurementValue(measurement.value)}
+                                                            {formatMeasurementValue(measurement.value ?? 0)}
                                                         </H2>
                                                         <Text fontSize="$6" color={getMeasurementColor(measurement.measurementType)}
                                                               fontWeight="600">
@@ -465,7 +465,7 @@ export default function DashboardScreen() {
                                 <XStack flexWrap="wrap" gap="$3" justifyContent={media.lg ? 'flex-start' : 'center'}>
                                     {filteredMeasurements.slice(3).map((m, index) => (
                                         <MeasurementCard key={index} measurementType={m.measurementType}
-                                                         value={formatMeasurementValue(m.value)}/>
+                                                         value={formatMeasurementValue(m.value ?? 0)}/>
                                     ))}
                                 </XStack>
                             </YStack>
@@ -488,21 +488,21 @@ export default function DashboardScreen() {
                                     icon={<Thermometer size={20} color="#F97316"/>}
                                     chartData={chartData.waterTemperature}
                                     color="#F97316"
-                                    currentValue={currentValues.waterTemp}
+                                    currentValue={currentValues.waterTemp ?? undefined}
                                 />
                                 <LineChartCard
                                     title={t('dashboard.charts.waterLevel')}
                                     icon={<Activity size={20} color="#3B82F6"/>}
                                     chartData={chartData.tide}
                                     color="#3B82F6"
-                                    currentValue={currentValues.waterLevel}
+                                    currentValue={currentValues.waterLevel ?? undefined}
                                 />
                                 <LineChartCard
                                     title={t('dashboard.charts.waveHeight')}
                                     icon={<Waves size={20} color="#10B981"/>}
                                     chartData={chartData.waveHeight}
                                     color="#10B981"
-                                    currentValue={currentValues.waveHeight}
+                                    currentValue={currentValues.waveHeight ?? undefined}
                                 />
                             </YStack>
                         </YStack>
