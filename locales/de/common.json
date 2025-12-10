@@ -69,6 +69,11 @@
     "googleSignInSuccess": "Google-Anmeldung erfolgreich",
     "googleSignInError": "Google-Anmeldung fehlgeschlagen",
     "googleSignInErrorGeneric": "Bei der Google-Anmeldung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+    "signInWithApple": "Mit Apple anmelden",
+    "signUpWithApple": "Mit Apple registrieren",
+    "appleSignInSuccess": "Apple-Anmeldung erfolgreich",
+    "appleSignInError": "Apple-Anmeldung fehlgeschlagen",
+    "appleSignInErrorGeneric": "Bei der Apple-Anmeldung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
     "logoutSuccess": "Erfolgreich abgemeldet",
     "logoutMessage": "Sie wurden abgemeldet. Bis bald!",
     "magicLink": {

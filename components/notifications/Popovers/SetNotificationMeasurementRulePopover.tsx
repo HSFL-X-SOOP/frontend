@@ -162,9 +162,6 @@ export function SetNotificationMeasurementRulePopover({
                             if (/^-?\d*\.?\d*$/.test(text)) {
                                 let value = text === "" ? 0 : parseFloat(text);
 
-                                if (value < TEMPERATURE_MIN_VALUE) value = TEMPERATURE_MIN_VALUE;
-                                if (value > TEMPERATURE_MAX_VALUE) value = TEMPERATURE_MAX_VALUE;
-
                                 setMeasurementValue(value);
                             }
                         }}

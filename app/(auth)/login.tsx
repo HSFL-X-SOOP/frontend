@@ -7,8 +7,9 @@ import {Lock} from '@tamagui/lucide-icons';
 import {Button, Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {useTranslation} from '@/hooks/useTranslation';
 import {useToast} from '@/components/useToast';
-import {GoogleIcon} from '@/components/ui/Icons';
+import {GoogleIcon, AppleIcon} from '@/components/ui/Icons';
 import {useGoogleSignIn} from '@/hooks/useGoogleSignIn';
+import {useAppleSignIn} from '@/hooks/useAppleSignIn';
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
@@ -17,7 +18,6 @@ import {AuthorityRole} from '@/api/models/profile';
 import {useIsMobile} from '@/hooks/useIsMobileWeb';
 import { useUserDeviceStore } from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
-
 const logger = createLogger('Auth:Login');
 
 export default function LoginScreen() {
@@ -32,6 +32,7 @@ export default function LoginScreen() {
     const {login, loginStatus} = useAuth();
     const {login: logUserIn, session} = useSession();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
+    const {handleAppleSignIn, isLoading: appleLoading} = useAppleSignIn();
     const userDeviceStore = useUserDeviceStore();
 
     useEffect(() => {
@@ -138,7 +139,8 @@ export default function LoginScreen() {
                                         backgroundColor={rememberMe ? "$accent7" : "transparent"}
                                     >
                                         <Checkbox.Indicator>
-                                            <View width="100%" height="100%" alignItems="center" justifyContent="center">
+                                            <View width="100%" height="100%" alignItems="center"
+                                                  justifyContent="center">
                                                 <Text color="white" fontWeight="bold">✓</Text>
                                             </View>
                                         </Checkbox.Indicator>
@@ -153,7 +155,8 @@ export default function LoginScreen() {
                             </YStack>
                         ) : (
                             // Horizontal layout for larger screens
-                            <XStack justifyContent="space-between" alignItems="center" width="100%" flexWrap="wrap" gap="$2">
+                            <XStack justifyContent="space-between" alignItems="center" width="100%" flexWrap="wrap"
+                                    gap="$2">
                                 <XStack gap="$2" alignItems="center" pressStyle={{opacity: 0.7}}
                                         onPress={() => setRememberMe(!rememberMe)} flexShrink={1}>
                                     <Checkbox
@@ -166,7 +169,8 @@ export default function LoginScreen() {
                                         backgroundColor={rememberMe ? "$accent7" : "transparent"}
                                     >
                                         <Checkbox.Indicator>
-                                            <View width="100%" height="100%" alignItems="center" justifyContent="center">
+                                            <View width="100%" height="100%" alignItems="center"
+                                                  justifyContent="center">
                                                 <Text color="white" fontWeight="bold">✓</Text>
                                             </View>
                                         </Checkbox.Indicator>
@@ -174,7 +178,8 @@ export default function LoginScreen() {
                                     <Text fontSize={14} color="$color" numberOfLines={1}>{t('auth.rememberMe')}</Text>
                                 </XStack>
                                 <Link href={"/(auth)/magic-link" as Href}>
-                                    <Text color="$accent7" fontSize={14} textDecorationLine="underline" numberOfLines={1}>
+                                    <Text color="$accent7" fontSize={14} textDecorationLine="underline"
+                                          numberOfLines={1}>
                                         {t('auth.forgotPassword')}
                                     </Text>
                                 </Link>
@@ -246,6 +251,44 @@ export default function LoginScreen() {
                             )}
                         </Button>
 
+                        {Platform.OS === 'ios' && (
+                            <Button
+                                variant="outlined"
+                                size="$4"
+                                onPress={async () => {
+                                    const result = await handleAppleSignIn('/map');
+                                    if (result?.success) {
+                                        toast.success(t('auth.appleSignInSuccess'), {
+                                            message: t('auth.welcomeBack'),
+                                            duration: 3000
+                                        });
+                                    } else if (result && !result.success) {
+                                        toast.error(t('auth.appleSignInError'), {
+                                            message: result.error || t('auth.appleSignInErrorGeneric'),
+                                            duration: 5000
+                                        });
+                                    }
+                                }}
+                                disabled={appleLoading}
+                                opacity={appleLoading ? 0.6 : 1}
+                                borderColor="$borderColor"
+                                borderRadius="$6"
+                                hoverStyle={{backgroundColor: "$content2"}}
+                            >
+                                {appleLoading ? (
+                                    <XStack gap="$2" alignItems="center">
+                                        <Spinner size="small"/>
+                                        <Text color="$color">{t('auth.signingIn')}</Text>
+                                    </XStack>
+                                ) : (
+                                    <XStack gap="$3" alignItems="center">
+                                        <AppleIcon size={24}/>
+                                        <Text color="$color">{t('auth.signInWithApple')}</Text>
+                                    </XStack>
+                                )}
+                            </Button>
+                        )}
+
                         <Button
                             variant="outlined"
                             size="$4"
@@ -260,7 +303,6 @@ export default function LoginScreen() {
                             </XStack>
                         </Button>
                     </YStack>
-                    
 
                     <YStack alignItems="center">
                         <Text fontSize={14} color="$color">
