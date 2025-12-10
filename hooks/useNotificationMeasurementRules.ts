@@ -15,6 +15,9 @@ export const useNotificationMeasurementRules = () => {
     const [getAllNotificationMeasurementRulesByUserId, getAllNotificationMeasurementRulesByUserIdStatus] =
         AsyncHandler.useAsync<[number], NotificationMeasurementRule[]>(notificationMeasurementRuleStore.getAllNotificationMeasurementRulesByUserId);
 
+    const [getAllNotificationMeasurementRulesByUserIdAndLocationId, getAllNotificationMeasurementRulesByUserIdAndLocationIdStatus] =
+        AsyncHandler.useAsync<[number, number], NotificationMeasurementRule[]>(notificationMeasurementRuleStore.getAllNotificationMeasurementRulesByUserIdAndLocationId);
+
     const [getNotificationMeasurementRule, getNotificationMeasurementRuleStatus] =
         AsyncHandler.useAsync<[number, number, number], NotificationMeasurementRule | null>(notificationMeasurementRuleStore.getNotificationMeasurementRule);
 
@@ -30,8 +33,12 @@ export const useNotificationMeasurementRules = () => {
     return {
         getNotificationMeasurementRuleById,
         getNotificationMeasurementRuleByIdStatus,
+
         getAllNotificationMeasurementRulesByUserId,
         getAllNotificationMeasurementRulesByUserIdStatus,
+
+        getAllNotificationMeasurementRulesByUserIdAndLocationId,
+        getAllNotificationMeasurementRulesByUserIdAndLocationIdStatus,
 
         getNotificationMeasurementRule,
         getNotificationMeasurementRuleStatus,
