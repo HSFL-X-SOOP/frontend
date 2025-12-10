@@ -6,20 +6,24 @@ interface EnvironmentConfig {
   mode: AppMode;
   apiUrl: string;
   googleWebClientId: string;
+  googleIosClientId: string;
 }
 
-const ENV_CONFIG: Record<AppMode, { apiUrl: string; googleWebClientId: string }> = {
+const ENV_CONFIG: Record<AppMode, { apiUrl: string; googleWebClientId: string; googleIosClientId: string }> = {
   dev: {
     apiUrl: 'http://localhost:8080',
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
+    googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '',
   },
   test: {
     apiUrl: 'https://test.marlin-live.com/api',
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
+    googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '',
   },
   prod: {
     apiUrl: 'https://marlin-live.com/api',
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || '',
+    googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '',
   },
 };
 
@@ -30,6 +34,7 @@ function getEnvironment(): EnvironmentConfig {
     mode,
     apiUrl: ENV_CONFIG[mode].apiUrl,
     googleWebClientId: ENV_CONFIG[mode].googleWebClientId,
+    googleIosClientId: ENV_CONFIG[mode].googleIosClientId,
   };
 }
 

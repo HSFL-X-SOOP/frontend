@@ -20,6 +20,7 @@ export const useGoogleSignIn = () => {
       logger.debug('Configuring Google Sign-In', { platform: Platform.OS });
       GoogleSignin.configure({
         webClientId: ENV.googleWebClientId,
+        iosClientId: Platform.OS === 'ios' ? ENV.googleIosClientId : undefined,
         offlineAccess: true,
       });
     }
