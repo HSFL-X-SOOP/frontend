@@ -115,7 +115,8 @@
     "tabs": {
       "profile": "Profile",
       "boats": "Boats",
-      "settings": "Settings"
+      "settings": "Settings",
+      "myNotifications": "My Notifications"
     },
     "boats": {
       "title": "My Boats",
@@ -194,7 +195,9 @@
     "retry": "Retry",
     "back": "Back",
     "next": "Next",
-    "finish": "Finish"
+    "finish": "Finish",
+    "enable": "Enable",
+    "disable": "Disable"
   },
   "Heute": "Today",
   "Gestern": "Yesterday",
@@ -326,12 +329,26 @@
       "greaterThanTargetValue": "greater than target value",
       "targetValue": "Target Value",
       "active": "Active",
-      "save": "Save"
+      "save": "Save",
+      "condition": "Condition",
+      "lastNotifiedAt": "Last Notified At",
+      "delete": "Delete",
+      "deleteConfirmText": "Are you sure you want to delete this notification rule?"
     },
     "units": {
       "celsius": "°C",
       "centimeters": "cm",
       "volts": "V"
     }
+  },
+  "notificationMeasurementRule": {
+    "measurementTypeId": "Measurement Type",
+    "measurementValue": "Measurement Value",
+    "operator": "Operator",
+    "active": "Active",
+    "harborMasterNotification": "Harbor Master Notification",
+    "noLocationsTitle": "Here you can manage your notifications",
+    "noLocationsMessage": "You need to add a location to manage notifications.",
+    "selectUserLocation": "Select Harbor"
   }
 }
