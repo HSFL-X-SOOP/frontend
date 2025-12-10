@@ -18,7 +18,7 @@ import {PasswordInput} from '@/components/auth/PasswordInput';
 import {PasswordStrengthIndicator} from '@/components/auth/PasswordStrengthIndicator';
 import {createLogger} from '@/utils/logger';
 import { useUserDeviceStore } from '@/api/stores/userDevice';
-import messagingModule from '@react-native-firebase/messaging';
+import messaging from '@react-native-firebase/messaging';
 
 const logger = createLogger('Auth:Register');
 
@@ -113,22 +113,20 @@ export default function RegisterScreen() {
     };
 
     const handleRegisterUserDevice = async (userId: number) => {
-        const result = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-        );
+        if (Platform.OS === 'web') {return;}
 
-        if (result === PermissionsAndroid.RESULTS.GRANTED) {
-            if (Platform.OS !== 'web') {
-                if (Platform.OS === 'android') {
-                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-                }
-                
-                try {
-                    let token = await messagingModule().getToken();
-                    userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
-                } catch (error) {
-                    console.log('Error getting FCM token:', error);
-                }
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+        if (enabled) {
+            try {
+                let token = await messaging().getToken();
+                console.log('FCM Token:', token);
+                userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+            } catch (error) {
+                console.log('Error getting FCM token:', error);
             }
         }
     }

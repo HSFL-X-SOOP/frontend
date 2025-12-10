@@ -157,8 +157,6 @@ export function SetNotificationMeasurementRulePopover({
                         <Input
                         size="$3"
                         width={90}
-                        keyboardType="decimal-pad"
-                        inputMode="decimal"
                         value={measurementValue.toString()}
                         onChangeText={(text) => {
                             if (/^-?\d*\.?\d*$/.test(text)) {
