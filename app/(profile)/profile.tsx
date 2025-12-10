@@ -21,6 +21,7 @@ import {ProfileTab} from '@/components/profile/ProfileTab';
 import {BoatsTab} from '@/components/profile/BoatsTab';
 import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
 import {useLocationStore} from '@/api/stores/locationStore';
+import { MyNotificationsTab } from '@/components/profile/MyNotificationsTab';
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -206,6 +207,37 @@ export default function ProfileScreen() {
                                         </Text>
                                     </XStack>
                                 </Tabs.Tab>
+                                <Tabs.Tab
+                                    flex={1}
+                                    value="myNotifications"
+                                    borderRadius="$4"
+                                    paddingVertical="$3.5"
+                                    paddingHorizontal="$4"
+                                    backgroundColor={activeTab === "myNotifications" ? "$accent7" : "transparent"}
+                                    borderWidth={activeTab === "myNotifications" ? 2 : 0}
+                                    borderColor={activeTab === "myNotifications" ? "$accent8" : "transparent"}
+                                    elevation={activeTab === "myNotifications" ? "$2" : 0}
+                                    pressStyle={{
+                                        backgroundColor: activeTab === "myNotifications" ? "$accent6" : "$accent2",
+                                        scale: 0.98
+                                    }}
+                                    hoverStyle={{backgroundColor: activeTab === "myNotifications" ? "$accent5" : "$content2"}}
+                                    animation="quick"
+                                    scale={activeTab === "myNotifications" ? 1 : 0.95}
+                                >
+                                    <XStack gap="$3" alignItems="center" justifyContent="center">
+                                        <Anchor size={activeTab === "myNotifications" ? 22 : 20}
+                                                color={"$accent7"}/>
+                                        <Text
+                                            fontSize={activeTab === "myNotifications" ? "$5" : "$4"}
+                                            fontWeight={activeTab === "myNotifications" ? "800" : "600"}
+                                            color={"$accent7"}
+                                            letterSpacing={activeTab === "myNotifications" ? 0.5 : 0}
+                                        >
+                                            {t('profile.tabs.myNotifications')}
+                                        </Text>
+                                    </XStack>
+                                </Tabs.Tab>
                                 {isHarborMaster && (
                                     <Tabs.Tab
                                         flex={1}
@@ -249,6 +281,10 @@ export default function ProfileScreen() {
 
                             <Tabs.Content value="boats" padding="$0" marginTop="$4">
                                 <BoatsTab/>
+                            </Tabs.Content>
+
+                            <Tabs.Content value="myNotifications" padding="$0" marginTop="$4">
+                                <MyNotificationsTab />
                             </Tabs.Content>
 
                             {isHarborMaster && (

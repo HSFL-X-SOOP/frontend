@@ -16,8 +16,9 @@ import {createLogger} from '@/utils/logger';
 import {AuthorityRole} from '@/api/models/profile';
 import {useIsMobile} from '@/hooks/useIsMobileWeb';
 import messagingModule from '@react-native-firebase/messaging';
-import { PermissionsAndroid } from 'react-native';
 import { useUserDeviceStore } from '@/api/stores/userDevice';
+import messaging from '@react-native-firebase/messaging';
+
 const logger = createLogger('Auth:Login');
 
 export default function LoginScreen() {
@@ -31,7 +32,7 @@ export default function LoginScreen() {
 
     const {login, loginStatus} = useAuth();
     const {login: logUserIn, session} = useSession();
-    const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
+    // const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
     const userDeviceStore = useUserDeviceStore();
 
     useEffect(() => {
@@ -42,22 +43,21 @@ export default function LoginScreen() {
     }, [session, router]);
 
     const handleRegisterUserDevice = async (userId: number) => {
-        const result = await PermissionsAndroid.request(
-            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-        );
+        if (Platform.OS === 'web') {return;}
 
-        if (result === PermissionsAndroid.RESULTS.GRANTED) {
-            if (Platform.OS !== 'web') {
-                if (Platform.OS === 'android') {
-                    await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
-                }
-                
-                try {
-                    let token = await messagingModule().getToken();
-                    userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
-                } catch (error) {
-                    console.log('Error getting FCM token:', error);
-                }
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+        if (enabled) {
+            try {
+                let token = await messaging().getToken();
+                console.log('FCM Token:', token);
+                console.log('Registering user device with userId:', userId);
+                userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+            } catch (error) {
+                console.log('Error getting FCM token:', error);
             }
         }
     }
@@ -211,7 +211,7 @@ export default function LoginScreen() {
                         <Separator flex={1} borderColor="$borderColor"/>
                     </XStack>
 
-                    <YStack gap="$3" width="100%">
+                    {/* <YStack gap="$3" width="100%">
                         <Button
                             variant="outlined"
                             size="$4"
@@ -261,7 +261,7 @@ export default function LoginScreen() {
                                 <Text color="$color">{t('auth.signInWithMagicLink')}</Text>
                             </XStack>
                         </Button>
-                    </YStack>
+                    </YStack> */}
                     
 
                     <YStack alignItems="center">

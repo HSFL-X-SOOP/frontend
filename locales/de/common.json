@@ -110,7 +110,8 @@
     "tabs": {
       "profile": "Profil",
       "boats": "Boote",
-      "settings": "Einstellungen"
+      "settings": "Einstellungen",
+      "myNotifications": "Meine Benachrichtigungen"
     },
     "boats": {
       "title": "Meine Boote",
@@ -189,7 +190,9 @@
     "retry": "Wiederholen",
     "back": "Zurück",
     "next": "Weiter",
-    "finish": "Fertig"
+    "finish": "Fertig",
+    "enable": "Aktivieren",
+    "disable": "Deaktivieren"
   },
   "Heute": "Heute",
   "Gestern": "Gestern",
@@ -267,7 +270,11 @@
     "email": "E-Mail",
     "emailPlaceholder": "hafen@beispiel.de",
     "website": "Webseite",
-    "websitePlaceholder": "https://www.hafen-webseite.de"
+    "websitePlaceholder": "https://www.hafen-webseite.de",
+    "harborMasterNotification": "Hafenmeister Benachrichtigung",
+    "sendToAllSubscribers": "An alle Abonnenten senden",
+    "title": "Titel",
+    "message": "Nachricht"
   },
   "dashboard": {
     "dashboard": "Dashboard",
@@ -311,12 +318,32 @@
       "waveHeight": "Wellenhöhe",
       "waterTemperature": "Wassertemperatur",
       "waterLevel": "Wasserstand",
-      "batteryVoltage": "Batteriespannung"
+      "batteryVoltage": "Batteriespannung",
+      "notifyMeWhen": "Benachrichtige mich, wenn…",
+      "lessThanTargetValue": "weniger als Zielwert",
+      "greaterThanTargetValue": "größer als Zielwert",
+      "targetValue": "Zielwert",
+      "active": "Aktiv",
+      "save": "Speichern",
+      "condition": "Bedingung",
+      "lastNotifiedAt": "Zuletzt benachrichtigt am",
+      "delete": "Löschen",
+      "deleteConfirmText": "Sind Sie sicher, dass Sie diese Benachrichtigungsregel löschen möchten?"
     },
     "units": {
       "celsius": "°C",
       "centimeters": "cm",
       "volts": "V"
     }
+  },
+  "notificationMeasurementRule": {
+    "measurementTypeId": "Messwert Typ",
+    "measurementValue": "Messwert",
+    "operator": "Operator",
+    "active": "Aktiv",
+    "harborMasterNotification": "Hafenmeister Benachrichtigung",
+    "noLocationsTitle": "Hier können Sie Ihre Benachrichtigungen verwalten",
+    "noLocationsMessage": "Sie müssen einen Standort hinzufügen, um Benachrichtigungen zu verwalten.",
+    "selectUserLocation": "Hafen auswählen"
   }
 }
