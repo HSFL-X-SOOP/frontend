@@ -122,7 +122,6 @@ export default function RegisterScreen() {
             try {
                 let token = await messaging().getToken();
                 console.log('FCM Token:', token);
-                console.log('Registering user device with userId:', userId);
                 userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
             } catch (error) {
                 console.log('Error getting FCM token:', error);

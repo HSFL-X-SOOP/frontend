@@ -15,7 +15,6 @@ import {PasswordInput} from '@/components/auth/PasswordInput';
 import {createLogger} from '@/utils/logger';
 import {AuthorityRole} from '@/api/models/profile';
 import {useIsMobile} from '@/hooks/useIsMobileWeb';
-import messagingModule from '@react-native-firebase/messaging';
 import { useUserDeviceStore } from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
 
@@ -32,7 +31,7 @@ export default function LoginScreen() {
 
     const {login, loginStatus} = useAuth();
     const {login: logUserIn, session} = useSession();
-    // const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
+    const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
     const userDeviceStore = useUserDeviceStore();
 
     useEffect(() => {
@@ -54,7 +53,6 @@ export default function LoginScreen() {
             try {
                 let token = await messaging().getToken();
                 console.log('FCM Token:', token);
-                console.log('Registering user device with userId:', userId);
                 userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
             } catch (error) {
                 console.log('Error getting FCM token:', error);
@@ -211,7 +209,7 @@ export default function LoginScreen() {
                         <Separator flex={1} borderColor="$borderColor"/>
                     </XStack>
 
-                    {/* <YStack gap="$3" width="100%">
+                    <YStack gap="$3" width="100%">
                         <Button
                             variant="outlined"
                             size="$4"
@@ -261,7 +259,7 @@ export default function LoginScreen() {
                                 <Text color="$color">{t('auth.signInWithMagicLink')}</Text>
                             </XStack>
                         </Button>
-                    </YStack> */}
+                    </YStack>
                     
 
                     <YStack alignItems="center">
