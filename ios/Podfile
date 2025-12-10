@@ -15,6 +15,7 @@ prepare_react_native_project!
 
 target 'Marlin' do
   use_expo_modules!
+  use_modular_headers!
 
   if ENV['EXPO_USE_COMMUNITY_AUTOLINKING'] == '1'
     config_command = ['node', '-e', "process.argv=['', '', 'config'];require('@react-native-community/cli').run()"];
@@ -53,15 +54,114 @@ target 'Marlin' do
       :ccache_enabled => podfile_properties['apple.ccacheEnabled'] == 'true',
     )
 
-    # This is necessary for Xcode 14, because it signs resource bundles by default
-    # when building for devices.
-    installer.target_installation_results.pod_target_installation_results
-      .each do |pod_name, target_installation_result|
-      target_installation_result.resource_bundle_targets.each do |resource_bundle_target|
-        resource_bundle_target.build_configurations.each do |config|
-          config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
-        end
-      end
-    end
+  pods_root = installer.sandbox.root
+
+  #
+  # 1) React-jsitooling.modulemap – delete duplicate public modulemap
+  #
+  jsitooling_public = File.join(
+    pods_root,
+    "Headers/Public/react_runtime/React-jsitooling.modulemap"
+  )
+  File.delete(jsitooling_public) if File.exist?(jsitooling_public)
+
+  #
+  # 2) Remove -fmodule-map-file references to that deleted file
+  #
+  Dir.glob(File.join(pods_root, "Target Support Files", "**", "*.xcconfig")).each do |xcconfig_path|
+    next unless File.exist?(xcconfig_path)
+
+    content = File.read(xcconfig_path)
+    cleaned = content.gsub(
+      /\s*-fmodule-map-file="\$\{PODS_ROOT\}\/Headers\/Public\/react_runtime\/React-jsitooling\.modulemap"/,
+      ""
+    )
+
+    File.write(xcconfig_path, cleaned) if cleaned != content
   end
+
+  #
+  # 3) Tidy React-RuntimeCore.modulemap (avoid module name clashes)
+  #
+  runtime_core_modulemap = File.join(
+    pods_root,
+    "Target Support Files",
+    "React-RuntimeCore",
+    "React-RuntimeCore.modulemap"
+  )
+
+  if File.exist?(runtime_core_modulemap)
+    content = File.read(runtime_core_modulemap)
+    # give it a unique name instead of reusing `react_runtime`
+    content = content.sub("module react_runtime", "module React_RuntimeCore")
+    # remove wildcard submodule that causes conflicts
+    content = content.gsub(/module \* \{ export \* \}/, "")
+    File.write(runtime_core_modulemap, content)
+  end
+
+  #
+  # 4) Tidy React-RuntimeHermes.modulemap (same wildcard issue)
+  #
+  runtime_hermes_modulemap = File.join(
+    pods_root,
+    "Target Support Files",
+    "React-RuntimeHermes",
+    "React-RuntimeHermes.modulemap"
+  )
+
+  if File.exist?(runtime_hermes_modulemap)
+    content = File.read(runtime_hermes_modulemap)
+    content = content.gsub(/module \* \{ export \* \}/, "")
+    File.write(runtime_hermes_modulemap, content)
+  end
+
+  #
+  # 5) React-jsitooling.modulemap in Target Support Files – rename module
+  #
+  jsitooling_modulemap = File.join(
+    pods_root,
+    "Target Support Files",
+    "React-jsitooling",
+    "React-jsitooling.modulemap"
+  )
+
+  if File.exist?(jsitooling_modulemap)
+    content = File.read(jsitooling_modulemap)
+    content = content.sub("module react_runtime", "module React_jsitooling")
+    content = content.gsub(/module \* \{ export \* \}/, "")
+    File.write(jsitooling_modulemap, content)
+  end
+
+  #
+  # 6) React-RuntimeApple.modulemap – same duplicate-module issue under ReactCommon
+  #
+  runtime_apple_public = File.join(
+    pods_root,
+    "Headers/Public/ReactCommon/React-RuntimeApple.modulemap"
+  )
+  File.delete(runtime_apple_public) if File.exist?(runtime_apple_public)
+
+  Dir.glob(File.join(pods_root, "Target Support Files", "**", "*.xcconfig")).each do |xcconfig_path|
+    next unless File.exist?(xcconfig_path)
+
+    content = File.read(xcconfig_path)
+    cleaned = content.gsub(
+      /\s*-fmodule-map-file="\$\{PODS_ROOT\}\/Headers\/Public\/ReactCommon\/React-RuntimeApple\.modulemap"/,
+      ""
+    )
+
+    File.write(xcconfig_path, cleaned) if cleaned != content
+  end
+
+  #
+  # 7) Normalise duplicated "-Xcc -Xcc" flags that Xcode 16+ hates
+  #
+  Dir.glob(File.join(pods_root, "Target Support Files", "**", "*.xcconfig")).each do |xcconfig_path|
+    next unless File.exist?(xcconfig_path)
+
+    content = File.read(xcconfig_path)
+    cleaned = content.gsub("-Xcc -Xcc ", "-Xcc ")
+    File.write(xcconfig_path, cleaned) if cleaned != content
+  end
+end
 end
