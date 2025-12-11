@@ -13,6 +13,9 @@ import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
 import {createLogger} from '@/utils/logger';
 import {AuthorityRole} from '@/api/models/profile';
+import {useIsMobile} from '@/hooks/useIsMobileWeb';
+import { useUserDeviceStore } from '@/api/stores/userDevice';
+import messaging from '@react-native-firebase/messaging';
 import messagingModule from '@react-native-firebase/messaging';
 import {useUserDeviceStore} from '@/api/stores/userDevice';
 import {UI_CONSTANTS} from '@/config/constants';
@@ -43,30 +46,21 @@ export default function LoginScreen() {
     }, [session, router]);
 
     const handleRegisterUserDevice = async (userId: number) => {
-        // Skip device registration on web platform
-        if (Platform.OS === 'web') {
-            return;
-        }
+        if (Platform.OS === 'web') {return;}
 
-        try {
-            // Request notification permissions on Android
-            if (Platform.OS === 'android') {
-                const result = await PermissionsAndroid.request(
-                    PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-                );
+        const authStatus = await messaging().requestPermission();
+        const enabled =
+            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-                if (result !== PermissionsAndroid.RESULTS.GRANTED) {
-                    logger.debug('Notification permission not granted');
-                    return;
-                }
+        if (enabled) {
+            try {
+                let token = await messaging().getToken();
+                console.log('FCM Token:', token);
+                userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+            } catch (error) {
+                console.log('Error getting FCM token:', error);
             }
-
-            // Get FCM token and register device
-            const token = await messagingModule().getToken();
-            await userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
-            logger.debug('User device registered successfully');
-        } catch (error) {
-            logger.error('Error registering user device:', error);
         }
     }
 
