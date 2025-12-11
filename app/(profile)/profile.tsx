@@ -56,7 +56,7 @@ export default function ProfileScreen() {
         };
 
         loadHarborInfo();
-    }, [isHarborMaster]);
+    }, [isHarborMaster, harborLocation, locationStore]);
 
     useEffect(() => {
         const loadProfile = async () => {

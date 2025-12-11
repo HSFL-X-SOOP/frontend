@@ -26,7 +26,7 @@ export function HarborMasterBroadcastNotificationPopover({
             createdBy: userID || -1,
         }
         await notificationLocations.create(notificationLocation);
-    }, [marinaID, notificationTitle, notificationMessage, userID]);
+    }, [marinaID, notificationTitle, notificationMessage, userID, notificationLocations]);
 
     return (
     <Popover size="$5" allowFlip stayInFrame offset={15} resize {...props}>

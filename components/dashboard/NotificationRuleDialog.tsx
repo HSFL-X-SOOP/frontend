@@ -74,7 +74,7 @@ export function NotificationRuleDialog({
         };
 
         void fetchNotificationMeasurementRule();
-    }, [marinaID, userID, MeasurementType]);
+    }, [marinaID, userID, MeasurementType, notificationMeasurementRules]);
 
     const handleSave = useCallback(async (value: number) => {
         if (!marinaID) return;

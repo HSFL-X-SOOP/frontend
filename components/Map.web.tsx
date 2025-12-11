@@ -83,7 +83,7 @@ export default function WebMap(props: MapProps) {
             bounds.getEast(),
             bounds.getNorth(),
         ];
-    }, [viewState]);
+    }, []);
 
     const filteredContent = useMemo(() => {
         if (!content) return [];
@@ -99,7 +99,7 @@ export default function WebMap(props: MapProps) {
             if (module1Visible && hasWaterBoxes) return true;
             return module2Visible && hasAirBoxes;
         });
-    }, [content, module1Visible, module2Visible, module3Visible]);
+    }, [content, module1Visible, module2Visible]);
 
     const {clusters, getClusterExpansionZoom} = useSupercluster(
         filteredContent,
@@ -179,7 +179,7 @@ export default function WebMap(props: MapProps) {
                 />
             );
         });
-    }, [clusters, getClusterExpansionZoom, highlightedSensorId]);
+    }, [clusters, getClusterExpansionZoom]);
 
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
 

@@ -1,7 +1,7 @@
 import {LocationWithBoxes} from '@/api/models/sensor';
 import {useTranslation} from '@/hooks/ui';
 import {AlertCircle, ArrowUpDown, Filter, Search} from '@tamagui/lucide-icons';
-import {useMemo, useState} from 'react';
+import {useMemo, useState, useCallback} from 'react';
 import {Button, H4, Input, ScrollView, Separator, Text, XStack, YStack} from 'tamagui';
 import SensorListItem from './SensorListItem';
 import {SelectWithSheet} from '@/components/ui/SelectWithSheet';
@@ -55,8 +55,8 @@ export default function SensorList({
         {value: 'recent', label: t('sensor.sortByRecent')},
     ];
 
-    const getDistance = (sensor: LocationWithBoxes) =>
-        calculateDistance(mapCenter, sensor);
+    const getDistance = useCallback((sensor: LocationWithBoxes) =>
+        calculateDistance(mapCenter, sensor), [mapCenter]);
 
     const processedSensors = useMemo(() => {
         let filtered = sensorsToDisplay;
@@ -86,7 +86,7 @@ export default function SensorList({
             }
             return 0;
         });
-    }, [sensorsToDisplay, searchQuery, filterType, sortBy, mapCenter]);
+    }, [sensorsToDisplay, searchQuery, filterType, sortBy, getDistance]);
 
     if (loading) {
         return (

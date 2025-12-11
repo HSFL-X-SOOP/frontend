@@ -89,7 +89,7 @@ export default function MagicLinkScreen() {
                 });
             }
         })();
-    }, [token]);
+    }, [token, magicLinkLogin, logUserIn, router, t, toast]);
 
     if (token && magicLinkLoginStatus.loading) {
         return (

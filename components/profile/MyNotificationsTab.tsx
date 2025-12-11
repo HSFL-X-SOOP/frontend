@@ -44,16 +44,16 @@ export function MyNotificationsTab() {
             }
         };
         fetchData();
-    }, [userID]);
+    }, [userID, userLocations]);
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = useCallback(async () => {
         const notificationsData = await notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(userID, selectedUserLocationId || -1);
         setMyNotifications(notificationsData);
-    };
+    }, [notifications, userID, selectedUserLocationId]);
 
     useEffect(() => {
         fetchNotifications();
-    }, [userID, selectedUserLocationId]);
+    }, [fetchNotifications]);
 
     const handleValueChange = (value: string) => {
         setSelectedUserLocationId(Number(value))
@@ -79,7 +79,7 @@ export function MyNotificationsTab() {
             sentHarborNotifications: !selectedUserLocation.sentHarborNotifications,
         });
         setSelectedUserLocation(updatedUserocation);
-    }, [selectedUserLocation, userLocations, selectedUserLocationId, userID]);
+    }, [selectedUserLocation, userLocations, userID]);
     
     return (
         <YStack gap="$4">
@@ -184,5 +184,5 @@ export function MyNotificationsTab() {
             </Card>
         </YStack>
     );
-};
+}
 

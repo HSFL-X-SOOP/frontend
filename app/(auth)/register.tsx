@@ -3,7 +3,7 @@ import {useAuth,useGoogleSignIn} from '@/hooks/auth';
 import {AuthorityRole} from '@/api/models/profile';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
-import {PermissionsAndroid, Platform, SafeAreaView} from 'react-native';
+import {Platform, SafeAreaView} from 'react-native';
 import {Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {User} from '@tamagui/lucide-icons';
 import {useTranslation,useToast,usePasswordValidation, useEmailValidation} from '@/hooks/ui';
@@ -19,8 +19,6 @@ import {PasswordStrengthIndicator} from '@/components/auth/PasswordStrengthIndic
 import {createLogger} from '@/utils/logger';
 import { useUserDeviceStore } from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
-import {useUserDeviceStore} from '@/api/stores/userDevice';
-import messagingModule from '@react-native-firebase/messaging';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
