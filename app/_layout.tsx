@@ -29,7 +29,7 @@ import {NavbarWeb} from '@/components/navigation/web/navbar'
 import {Footer} from '@/components/navigation/web/Footer'
 import {AuthProvider} from '@/context/SessionContext'
 import {ThemeProvider, useThemeContext} from '@/context/ThemeSwitch.tsx'
-import {usePathname, Slot} from 'expo-router'
+import {Slot} from 'expo-router'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 import type {ToastType} from '@/hooks/ui'
 
@@ -128,9 +128,9 @@ function SafeToastViewport() {
 
 function RootContent() {
     const {currentTheme} = useThemeContext()
-    const pathname = usePathname()
+    const insets = useSafeAreaInsets()
 
-    const shouldShowFooter = Platform.OS === 'web' && pathname !== '/map'
+    const shouldShowFooter = Platform.OS === 'web'
 
     useEffect(() => {
         if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -151,7 +151,7 @@ function RootContent() {
             <ToastProvider>
                 <AuthProvider>
                     <CurrentToast/>
-                    <View style={{flex: 1}}>
+                    <View style={{flex: 1, paddingBottom: Platform.OS !== 'web' ? insets.bottom : 0}}>
                         {Platform.OS === 'web' ? <NavbarWeb/> : <TabBarNative/>}
                         <View style={{flex: 1}}>
                             <Slot/>

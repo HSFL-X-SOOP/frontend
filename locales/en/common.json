@@ -181,7 +181,8 @@
     "module2": "Module 2: Air Properties",
     "module3": "Module 3: Air Quality",
     "temperatureOverlay": "Temperature Overlay",
-    "windDirectionOverlay": "Wind Direction Overlay"
+    "windDirectionOverlay": "Wind Direction Overlay",
+    "closeFilterPanel": "Close Filters"
   },
   "common": {
     "save": "Save",
