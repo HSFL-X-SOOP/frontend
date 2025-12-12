@@ -3,7 +3,7 @@ import {AnimatePresence, Button, ScrollView, View, XStack, YStack, Text, useThem
 import {ReactNode} from 'react';
 import {LocationWithBoxes} from '@/api/models/sensor';
 import {SmallBadgeIcon} from "@/components/ui/Icons.tsx";
-import {useIsMobileWeb,useViewportHeight} from '@/hooks/ui';
+import {useIsMobileWeb} from '@/hooks/ui';
 
 import {useThemeContext} from "@/context/ThemeSwitch.tsx";
 import {IconButton} from '@/types/button';

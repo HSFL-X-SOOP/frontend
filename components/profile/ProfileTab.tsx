@@ -13,7 +13,6 @@ import {
 } from 'tamagui';
 import {Globe, Activity, Ruler, Check} from '@tamagui/lucide-icons';
 import {useTranslation,useToast} from '@/hooks/ui';
-import { createLogger } from '@/utils/logger';
 
 import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/data';
@@ -21,12 +20,10 @@ import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
-const logger = createLogger('Components:ProfileTab');
-
 export const ProfileTab: React.FC = () => {
     const {t, changeLanguage} = useTranslation();
     const {session, updateProfile: updateSessionProfile} = useSession();
-    const {updateProfile, loading: isLoadingProfile} = useUser();
+    const {updateProfile} = useUser();
     const toast = useToast();
 
     const [isEditing, setIsEditing] = useState(false);

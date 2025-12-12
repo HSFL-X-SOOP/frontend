@@ -10,9 +10,8 @@ import {
     YStack,
     PopoverProps
 } from 'tamagui';
-import {useNotificationMeasurementRules} from '@/hooks/ui';
+import {useNotificationMeasurementRules, useToast} from '@/hooks/ui';
 import {NotificationMeasurementRule} from '@/api/models/notificationMeasurementRule';
-import { createLogger } from '@/utils/logger';
 import {
     formatMeasurementValue,
     getIDFromMeasurementType,
@@ -21,8 +20,6 @@ import {
     getTextFromMeasurementType
 } from '@/utils/measurements';
 import {PrimaryButton, PrimaryButtonText} from '@/types/button';
-
-const logger = createLogger('Dashboard:NotificationRuleDialog');
 
 interface NotificationRuleDialogProps extends PopoverProps {
     Icon?: any;
@@ -40,16 +37,17 @@ const TEMPERATURE_MIN_VALUE = -10;
 const TEMPERATURE_MAX_VALUE = 50;
 
 export function NotificationRuleDialog({
-    Icon,
-    userID,
-    marinaID,
-    Value,
-    MeasurementType,
-    measurement,
-    t,
-    ...props
-}: NotificationRuleDialogProps) {
+                                           Icon,
+                                           userID,
+                                           marinaID,
+                                           Value,
+                                           MeasurementType,
+                                           measurement,
+                                           t,
+                                           ...props
+                                       }: NotificationRuleDialogProps) {
     const notificationMeasurementRules = useNotificationMeasurementRules();
+    const toast = useToast();
     const [measurementValue, setMeasurementValue] = useState<number>(Value || 0);
     const [operator, setOperator] = useState<string>('>');
     const [isActive, setIsActive] = useState<boolean>(true);
@@ -59,27 +57,23 @@ export function NotificationRuleDialog({
     useEffect(() => {
         if (!marinaID || !userID) return;
 
-        const fetchNotificationMeasurementRule = async () => {
-            try {
-                const fetchedRule = await notificationMeasurementRules.getNotificationMeasurementRule(
-                    userID,
-                    marinaID,
-                    getIDFromMeasurementType(MeasurementType)
-                );
+        void notificationMeasurementRules.getNotificationMeasurementRule(
+            userID,
+            marinaID,
+            getIDFromMeasurementType(MeasurementType),
+            (fetchedRule) => {
                 setExistingRule(fetchedRule);
                 setMeasurementValue(fetchedRule?.measurementValue || 0);
                 setOperator(fetchedRule?.operator || '>');
                 setIsActive(fetchedRule?.isActive ?? true);
-            } catch (e) {
-                logger.error('Failed to fetch notification measurement rule', e);
+            },
+            () => {
                 setExistingRule(null);
             }
-        };
-
-        void fetchNotificationMeasurementRule();
+        );
     }, [marinaID, userID, MeasurementType, notificationMeasurementRules]);
 
-    const handleSave = useCallback(async (value: number) => {
+    const handleSave = useCallback((value: number) => {
         if (!marinaID) return;
 
         const notificationMeasurementRule = {
@@ -92,11 +86,38 @@ export function NotificationRuleDialog({
         };
 
         if (existingRule) {
-            await notificationMeasurementRules.update(existingRule.id, notificationMeasurementRule);
+            void notificationMeasurementRules.update(
+                existingRule.id,
+                notificationMeasurementRule,
+                () => {
+                    toast.success(t('dashboard.measurements.save'), {
+                        message: t('dashboard.measurements.notificationRuleSaved')
+                    });
+                    setOpen(false);
+                },
+                (error) => {
+                    toast.error(t('common.error'), {
+                        message: t(error.onGetMessage())
+                    });
+                }
+            );
         } else {
-            await notificationMeasurementRules.create(notificationMeasurementRule);
+            void notificationMeasurementRules.create(
+                notificationMeasurementRule,
+                () => {
+                    toast.success(t('dashboard.measurements.save'), {
+                        message: t('dashboard.measurements.notificationRuleSaved')
+                    });
+                    setOpen(false);
+                },
+                (error) => {
+                    toast.error(t('common.error'), {
+                        message: t(error.onGetMessage())
+                    });
+                }
+            );
         }
-    }, [marinaID, operator, isActive, userID, MeasurementType, existingRule, notificationMeasurementRules]);
+    }, [marinaID, operator, isActive, userID, MeasurementType, existingRule, notificationMeasurementRules, toast, t]);
 
     const handleValueChange = (text: string) => {
         if (/^-?\d*\.?\d*$/.test(text)) {
@@ -117,7 +138,7 @@ export function NotificationRuleDialog({
             onOpenChange={setOpen}
         >
             <Dialog.Trigger asChild>
-                <Button icon={Icon} onPress={() => setOpen(true)} />
+                <Button icon={Icon} onPress={() => setOpen(true)}/>
             </Dialog.Trigger>
 
             <Dialog.Portal>
@@ -135,9 +156,9 @@ export function NotificationRuleDialog({
                     maxWidth="90%"
                     width="100%"
                     borderRadius="$6"
-                    animation={['quick', { opacity: { overshootClamping: true } }]}
-                    enterStyle={{ opacity: 0, scale: 0.95 }}
-                    exitStyle={{ opacity: 0, scale: 0.95 }}
+                    animation={['quick', {opacity: {overshootClamping: true}}]}
+                    enterStyle={{opacity: 0, scale: 0.95}}
+                    exitStyle={{opacity: 0, scale: 0.95}}
                 >
                     <YStack gap="$4">
                         <Text fontSize="$6" fontWeight="700" textAlign="center">

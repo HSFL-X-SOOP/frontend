@@ -20,7 +20,7 @@ import {useTranslation} from '@/hooks/ui';
 import {ProfileTab} from '@/components/profile/ProfileTab';
 import {BoatsTab} from '@/components/profile/BoatsTab';
 import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
-import {useLocationStore} from '@/api/stores/location.service';
+import {useLocationStore} from '@/api/stores/location';
 import type {DetailedLocationDTO} from '@/api/models/location';
 import { MyNotificationsTab } from '@/components/profile/MyNotificationsTab';
 import { createLogger } from '@/utils/logger';

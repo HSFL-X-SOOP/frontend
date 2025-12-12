@@ -57,11 +57,8 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
     const {
         locationData,
         isLoading,
-        error,
-        isHarborMaster,
+        fetchLocationInfo,
         updateLocation,
-        refetch,
-        clearError,
         getImageUrl
     } = useLocationInfo(initialLocationData);
 
@@ -158,22 +155,18 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                 });
 
                 // Refresh data to get updated info
-                if (refetch) {
-                    void refetch(
-                        () => {
-                            // Increment imageKey to force image reload from server
-                            setImageKey(prev => prev + 1);
+                void fetchLocationInfo(
+                    () => {
+                        // Increment imageKey to force image reload from server
+                        setImageKey(prev => prev + 1);
 
-                            // Set isEditing to false - useEffect will handle updating currentImageUrl
-                            setIsEditing(false);
-                        },
-                        (error) => {
-                            // Refetch error is non-critical
-                        }
-                    );
-                } else {
-                    setIsEditing(false);
-                }
+                        // Set isEditing to false - useEffect will handle updating currentImageUrl
+                        setIsEditing(false);
+                    },
+                    (error) => {
+                        // Refetch error is non-critical
+                    }
+                );
             },
             (error) => {
                 toast.error(t('harbor.saveError'), {
@@ -272,11 +265,15 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
         }
     };
 
-    const handleRefresh = async () => {
-        if (refetch) {
-            clearError();
-            await refetch();
-        }
+    const handleRefresh = () => {
+        void fetchLocationInfo(
+            () => {
+                // Success - data will be updated via locationData state
+            },
+            (error) => {
+                // Error handling is done in the callback
+            }
+        );
     };
 
     // Show loading state (either initial loading from profile or refetch)

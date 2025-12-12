@@ -12,10 +12,9 @@ import {
 import {useThemeContext} from '@/context/ThemeSwitch';
 import {useSensorDataNew, useSensorDataTimeRange,useUserLocations} from '@/hooks/data';
 import {useTranslation, useToast} from '@/hooks/ui';
-import {handleErrorWithToast} from '@/utils/handleErrorWithToast';
 import {createLogger} from '@/utils/logger';
 import {ChartDataPoint} from '@/types/chart';
-import {useLocationStore} from '@/api/stores/location.service';
+import {useLocationStore} from '@/api/stores/location';
 import {
     createMeasurementDictionary,
     getLatestMeasurements,

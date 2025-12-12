@@ -3,7 +3,6 @@ import {useState, useEffect, useCallback} from 'react';
 import {useNotificationMeasurementRules} from '@/hooks/ui/useNotificationMeasurementRules';
 import {useToast} from '@/hooks/ui';
 import {NotificationMeasurementRule} from '@/api/models/notificationMeasurementRule';
-import {createLogger} from '@/utils/logger';
 
 import {
     getMeasurementTypeSymbol,
@@ -12,8 +11,6 @@ import {
     formatMeasurementValue,
     getIDFromMeasurementType
 } from '@/utils/measurements';
-
-const logger = createLogger('Components:SetNotificationMeasurementRulePopover');
 
 
 export function SetNotificationMeasurementRulePopover({

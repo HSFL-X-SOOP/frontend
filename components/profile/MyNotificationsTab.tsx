@@ -31,14 +31,15 @@ export function MyNotificationsTab() {
     const toast = useToast();
     const notifications = useNotificationMeasurementRules();
     const userLocations = useUserLocations();
+    const {fetchData: fetchLocationData} = useLocations();
     const [myNotifications, setMyNotifications] = useState<NotificationMeasurementRule[] | undefined>([]);
     const [myLocations, setMyLocations] = useState<UserLocation[] | undefined>([]);
+    const [allLocations, setAllLocations] = useState<any[]>([]);
     const [selectedUserLocationId, setSelectedUserLocationId] = useState<number | undefined>(undefined);
     const [selectedUserLocation, setSelectedUserLocation] = useState<UserLocation | undefined>(undefined);
     const isDark = false;
     const session = useSession();
     const userID = session?.session?.profile?.id ?? -1;
-    const location = useLocations();
 
     useEffect(() => {
         void userLocations.getAllUserLocationByUserId(
@@ -58,6 +59,19 @@ export function MyNotificationsTab() {
             }
         );
     }, [userID, userLocations, toast, t]);
+
+    useEffect(() => {
+        void fetchLocationData(
+            (locations) => {
+                setAllLocations(locations);
+            },
+            (error) => {
+                toast.error(t('common.error'), {
+                    message: t(error.onGetMessage())
+                });
+            }
+        );
+    }, [fetchLocationData, toast, t]);
 
     const fetchNotifications = useCallback(() => {
         void notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(
@@ -91,9 +105,9 @@ export function MyNotificationsTab() {
             .map(data => ({
                 id: data!.id,
                 locationId: data!.locationId,
-                name: location.data.filter((loc) => loc.id === data!.locationId)[0]?.name || ''
+                name: allLocations.filter((loc) => loc.id === data!.locationId)[0]?.name || ''
             }));
-    }, [myLocations, location.data]);
+    }, [myLocations, allLocations]);
 
     const updateUserLocationSentHarborNotifications = useCallback(() => {
         if (!selectedUserLocation) return;
@@ -104,8 +118,8 @@ export function MyNotificationsTab() {
                 locationId: selectedUserLocation.locationId,
                 sentHarborNotifications: !selectedUserLocation.sentHarborNotifications,
             },
-            (updatedUserocation) => {
-                setSelectedUserLocation(updatedUserocation);
+            (updatedUserlocation) => {
+                setSelectedUserLocation(updatedUserlocation);
                 toast.success(t('harbor.notificationPreferenceUpdated'), {
                     message: t('harbor.harborNotificationPreference')
                 });
