@@ -10,11 +10,9 @@ import {
     TimeRangeDropdown
 } from '@/components/dashboard';
 import {useThemeContext} from '@/context/ThemeSwitch';
-import {useSensorDataNew, useSensorDataTimeRange,useUserLocations} from '@/hooks/data';
+import {useSensorDataNew, useSensorDataTimeRange, useUserLocations, useLocations, useLocationInfo} from '@/hooks/data';
 import {useTranslation, useToast} from '@/hooks/ui';
-import {createLogger} from '@/utils/logger';
 import {ChartDataPoint} from '@/types/chart';
-import {useLocationStore} from '@/api/stores/location';
 import {
     createMeasurementDictionary,
     getLatestMeasurements,
@@ -42,7 +40,7 @@ import {
 } from '@tamagui/lucide-icons';
 import {LinearGradient} from 'expo-linear-gradient';
 import {useLocalSearchParams, useRouter} from 'expo-router';
-import {useEffect, useMemo, useCallback, useRef, useState } from 'react';
+import {useEffect, useMemo, useCallback, useRef, useState} from 'react';
 import type {ComponentProps} from 'react';
 import {Animated, LayoutChangeEvent, SafeAreaView, ScrollView, View} from 'react-native';
 import {
@@ -62,7 +60,6 @@ import {
 
 import {UserLocation} from '@/api/models/userLocation';
 import {useSession} from '@/context/SessionContext';
-import {ENV} from '@/config/environment';
 import {IconButton} from '@/types/button';
 
 // ============================================================================
@@ -120,16 +117,19 @@ export default function DashboardScreen() {
     const toast = useToast();
     const {isDark} = useThemeContext();
     const {session} = useSession();
-    const userLocations = useUserLocations();
-    const locationStore = useLocationStore();
+    const {getUserLocationByUserIdAndLocationId, deleteUserLocation, update, create} = useUserLocations();
+    const {fetchLocationById} = useLocations();
+    const {fetchData: fetchSensors} = useSensorDataNew();
+    const [allSensorData, setAllSensorData] = useState<LocationWithBoxes[]>([]);
+    const {getImageUrl} = useLocationInfo();
 
     // Route params
     let {name} = useLocalSearchParams();
     if (!name) name = DEFAULT_MARINA_NAME;
 
     // User info
-    const userID = session?.profile?.id ?? -1;
-    const isLoggedIn = userID > -1;
+    const userID = session?.profile?.id ?? null;
+    const isLoggedIn = userID != null;
 
     // State
     const [marinaID, setMarinaID] = useState<number | null>(null);
@@ -143,14 +143,15 @@ export default function DashboardScreen() {
     }>({waterTemperature: [], tide: [], waveHeight: []});
     const [userLocation, setUserLocation] = useState<UserLocation | undefined>(undefined);
     const [detailedLocation, setDetailedLocation] = useState<DetailedLocationDTO | null>(null);
+    const [timeRangeData, setTimeRangeData] = useState<LocationWithBoxes | null>(null);
+    const defaultImageURL = "https://fastly.picsum.photos/id/17/2500/1667.jpg?hmac=HD-JrnNUZjFiP2UZQvWcKrgLoC_pc_ouUSWv8kHsJJY"
 
     // Refs
     const infoHeight = useRef(new Animated.Value(0)).current;
 
     // API Data
-    const {data: allSensorData} = useSensorDataNew();
     const apiTimeRange = useMemo(() => mapTimeRangeToApi(timeRange), [timeRange]);
-    const {data: timeRangeData} = useSensorDataTimeRange(marinaID, apiTimeRange);
+    const {fetchData: fetchTimeRangeData} = useSensorDataTimeRange(marinaID, apiTimeRange);
 
     // Computed Values
     const sensorLocations = useMemo(() => {
@@ -164,10 +165,7 @@ export default function DashboardScreen() {
 
     const harbourName = detailedLocation?.name || "";
 
-    const locationImageUrl = useMemo(() => {
-        if (!marinaID) return "https://fastly.picsum.photos/id/17/2500/1667.jpg?hmac=HD-JrnNUZjFiP2UZQvWcKrgLoC_pc_ouUSWv8kHsJJY";
-        return `${ENV.apiUrl}/location/${marinaID}/image`;
-    }, [marinaID]);
+    const [locationImageUrl, setLocationImageUrl] = useState<string>(defaultImageURL);
 
     const filteredMeasurements = useMemo(() => {
         if (!timeRangeData?.boxes) return [];
@@ -198,37 +196,81 @@ export default function DashboardScreen() {
 
     // Effects
     useEffect(() => {
+        void fetchSensors(
+            (data) => setAllSensorData(data),
+            (error) => {
+                toast.error(t("common.error"), {message: t(error.onGetMessage())});
+                setAllSensorData([]);
+            }
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // fetchSensors is a hook function and changes on every render
+
+    useEffect(() => {
         const id = getMarinaIdByName(name as string, allSensorData);
         setMarinaID(id);
     }, [name, allSensorData]);
 
     useEffect(() => {
         if (!marinaID) return;
-        const fetchLocation = async () => {
-            try {
-                const result = await locationStore.getLocationById(marinaID);
-                setDetailedLocation(result);
-            } catch (error) {
-                const logger = createLogger('Marina:fetchLocation');
-                logger.error('Failed to load location details', error);
+        void fetchLocationById(
+            marinaID,
+            (data) => setDetailedLocation(data),
+            (error) => {
                 setDetailedLocation(null);
+                toast.error(t("common.error"), {message: t(error.onGetMessage())});
             }
-        };
-        void fetchLocation();
-    }, [marinaID, locationStore]);
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [marinaID]); // fetchLocationById is a hook function and changes on every render
 
     useEffect(() => {
-        if (!marinaID || userID <= 0) return;
-        const fetchUserLocation = async () => {
-            try {
-                const location = await userLocations.getUserLocationByUserIdAndLocationId(userID, marinaID);
-                setUserLocation(location);
-            } catch {
-                setUserLocation(undefined);
+        if (!marinaID) {
+            setLocationImageUrl(defaultImageURL);
+            return;
+        }
+        void getImageUrl(
+            marinaID,
+            (url) => setLocationImageUrl(url),
+            (error) => {
+                setLocationImageUrl(defaultImageURL);
             }
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [marinaID]); // getImageUrl is a hook function
+
+    useEffect(() => {
+        if (!marinaID) {
+            setTimeRangeData(null);
+            return;
+        }
+        void fetchTimeRangeData(
+            (data) => setTimeRangeData(data),
+            (error) => {
+                toast.error(t("common.error"), {message: t(error.onGetMessage())});
+                setTimeRangeData(null);
+            }
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [marinaID]); // fetchTimeRangeData is a hook function, toast and t are utilities not hooks
+
+    useEffect(() => {
+        if (!marinaID || !isLoggedIn) return;
+        const fetchUserLocation = async () => {
+            await getUserLocationByUserIdAndLocationId(
+                userID,
+                marinaID,
+                (location) => {
+                    setUserLocation(location);
+                },
+                () => {
+                    setUserLocation(undefined);
+                }
+            );
         };
         void fetchUserLocation();
-    }, [marinaID, userID, userLocations]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [marinaID]); // getUserLocationByUserIdAndLocationId is a hook function
 
     useEffect(() => {
         if (!timeRangeData) return;
@@ -265,54 +307,56 @@ export default function DashboardScreen() {
     }, [infoContentHeight, infoHeight, showInfo]);
 
     const handleFavoriteToggle = useCallback(async () => {
-        const logger = createLogger('Marina:handleFavoriteToggle');
-        if (!marinaID) return;
-        try {
-            if (userLocation?.id) {
-                await userLocations.deleteUserLocation(userLocation.id);
-                setUserLocation(undefined);
-                toast.success('Removed from favorites');
-            } else {
-                const created = await userLocations.create({
+        if (!marinaID || !isLoggedIn) return;
+        if (userLocation?.id) {
+            await deleteUserLocation(
+                userLocation.id,
+                () => {
+                    setUserLocation(undefined);
+                    toast.success('Removed from favorites');
+                },
+                (error) => {
+                    toast.error(t("common.error"), {message: t(error.onGetMessage())});
+                }
+            );
+        } else {
+            await create(
+                {
                     userId: userID,
                     locationId: marinaID,
                     sentHarborNotifications: false,
-                });
-                setUserLocation(created);
-                toast.success('Added to favorites');
-            }
-        } catch (error) {
-            handleErrorWithToast(error, {
-                toastError: toast.error,
-                context: 'Marina:handleFavoriteToggle',
-                errorTitle: 'Favorite Error',
-                userMessage: 'Failed to update favorite status'
-            });
-            logger.error('Failed to toggle favorite', error);
+                },
+                (created) => {
+                    setUserLocation(created);
+                    toast.success('Added to favorites');
+                },
+                (error) => {
+                    toast.error(t("common.error"), {message: t(error.onGetMessage())});
+                }
+            );
         }
-    }, [userLocation, userLocations, marinaID, userID, toast]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userLocation, marinaID, userID]); // create, deleteUserLocation are hook functions
 
     const handleNotificationToggle = useCallback(async () => {
-        const logger = createLogger('Marina:handleNotificationToggle');
-        if (!marinaID || !userLocation) return;
-        try {
-            const updated = await userLocations.update(userLocation.id, {
+        if (!marinaID || !userLocation?.id || !isLoggedIn) return;
+        await update(
+            userLocation.id,
+            {
                 userId: userID,
                 locationId: marinaID,
                 sentHarborNotifications: !userLocation.sentHarborNotifications,
-            });
-            setUserLocation(updated);
-            toast.success(updated.sentHarborNotifications ? 'Notifications enabled' : 'Notifications disabled');
-        } catch (error) {
-            handleErrorWithToast(error, {
-                toastError: toast.error,
-                context: 'Marina:handleNotificationToggle',
-                errorTitle: 'Notification Error',
-                userMessage: 'Failed to update notification settings'
-            });
-            logger.error('Failed to toggle notifications', error);
-        }
-    }, [userLocation, userLocations, marinaID, userID, toast]);
+            },
+            (updated) => {
+                setUserLocation(updated);
+                toast.success(updated.sentHarborNotifications ? 'Notifications enabled' : 'Notifications disabled');
+            },
+            (error) => {
+                toast.error(t("common.error"), {message: t(error.onGetMessage())});
+            }
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userLocation, marinaID, userID]); // update is a hook function
 
     const renderHarborInfoContent = useCallback((extraProps?: Partial<ComponentProps<typeof Card.Footer>>) => (
         <Card.Footer
@@ -360,7 +404,8 @@ export default function DashboardScreen() {
                                 {t('dashboard.title')}
                             </Text>
                             <H1 color="white" fontSize={media.lg ? "$10" : "$8"} fontWeight="700"
-                                textShadowColor="rgba(0,0,0,0.2)" textShadowOffset={{width: 0, height: 1}} textShadowRadius={2}>
+                                textShadowColor="rgba(0,0,0,0.2)" textShadowOffset={{width: 0, height: 1}}
+                                textShadowRadius={2}>
                                 {harbourName || t('dashboard.loading')}
                             </H1>
                             <View style={{width: 300}}>
@@ -373,7 +418,8 @@ export default function DashboardScreen() {
                                     />
                                     {isLoggedIn && (
                                         <XStack>
-                                            <Button size="$5" variant="outlined" icon={userLocation ? HeartMinus : HeartPlus}
+                                            <Button size="$5" variant="outlined"
+                                                    icon={userLocation ? HeartMinus : HeartPlus}
                                                     onPress={handleFavoriteToggle} circular visibility='hidden'/>
                                             {userLocation && (
                                                 <Button size="$5" variant="outlined"
@@ -417,10 +463,18 @@ export default function DashboardScreen() {
                                         </YStack>
                                     </XStack>
                                     <IconButton size="$3" icon={showInfo ? ChevronUp : ChevronDown}
-                                            onPress={toggleInfo}/>
+                                                onPress={toggleInfo}/>
                                 </XStack>
                             </Card.Header>
-                            <View style={{position: 'absolute', opacity: 0, pointerEvents: 'none', width: '100%', top: 0, left: 0, right: 0}}
+                            <View style={{
+                                position: 'absolute',
+                                opacity: 0,
+                                pointerEvents: 'none',
+                                width: '100%',
+                                top: 0,
+                                left: 0,
+                                right: 0
+                            }}
                                   onLayout={handleInfoLayout}>
                                 {renderHarborInfoContent()}
                             </View>
@@ -470,7 +524,8 @@ export default function DashboardScreen() {
                                                     {getMeasurementIcon(measurement.measurementType, 32)}
                                                 </Stack>
                                                 <YStack alignItems="center" gap="$2">
-                                                    <Text color="$gray11" fontSize="$4" fontWeight="600" textAlign="center">
+                                                    <Text color="$gray11" fontSize="$4" fontWeight="600"
+                                                          textAlign="center">
                                                         {getTextFromMeasurementType(measurement.measurementType, t)}
                                                     </Text>
                                                     <XStack alignItems="baseline" gap="$2">
@@ -478,7 +533,8 @@ export default function DashboardScreen() {
                                                             color={getMeasurementColor(measurement.measurementType)}>
                                                             {formatMeasurementValue(measurement.value ?? 0)}
                                                         </H2>
-                                                        <Text fontSize="$6" color={getMeasurementColor(measurement.measurementType)}
+                                                        <Text fontSize="$6"
+                                                              color={getMeasurementColor(measurement.measurementType)}
                                                               fontWeight="600">
                                                             {getMeasurementTypeSymbol(measurement.measurementType, t)}
                                                         </Text>
@@ -513,7 +569,8 @@ export default function DashboardScreen() {
                                     <H3 fontSize="$5" fontWeight="600">{t('dashboard.historicalData')}</H3>
                                     <Text fontSize="$2" color="$gray11">{getTimeRangeLabel(timeRange, t)}</Text>
                                 </YStack>
-                                <TimeRangeDropdown selectedTimeRange={timeRange} setTimeRange={setTimeRange} isDark={isDark}/>
+                                <TimeRangeDropdown selectedTimeRange={timeRange} setTimeRange={setTimeRange}
+                                                   isDark={isDark}/>
                             </XStack>
                             <YStack gap="$3" width="100%">
                                 <LineChartCard
@@ -545,6 +602,3 @@ export default function DashboardScreen() {
         </SafeAreaView>
     );
 }
-
-
-

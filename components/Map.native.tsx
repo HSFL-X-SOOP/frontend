@@ -1,9 +1,16 @@
 import {useSensorDataNew} from "@/hooks/data";
-import {useSupercluster, useMapFilters, useMapCamera, useMapState, useMapStyle,useMapSpeedDialActions} from "@/hooks/map";
+import {
+    useSupercluster,
+    useMapFilters,
+    useMapCamera,
+    useMapState,
+    useMapStyle,
+    useMapSpeedDialActions
+} from "@/hooks/map";
 import {MapView, Camera, type CameraRef, type MapViewRef} from "@maplibre/maplibre-react-native";
-import {useMemo, useRef} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {View} from "react-native";
-import { createLogger } from "@/utils/logger";
+import type {LocationWithBoxes} from "@/api/models/sensor";
 import SensorMarker from "./map/markers/NativeSensorMarker";
 import ClusterMarker from "./map/markers/NativeClusterMarker";
 import MapSensorBottomSheet, {MapSensorBottomSheetRef} from "./map/controls/MapSensorBottomSheet";
@@ -12,8 +19,6 @@ import {SpeedDial} from "@/components/speeddial";
 import {Plus} from "@tamagui/lucide-icons";
 import MapFilterButton, {MapFilterState} from "./map/controls/MapFilterButton";
 import {MAP_CONSTANTS} from '@/config/constants';
-
-const logger = createLogger('Components:NativeMap');
 
 interface MapProps {
     module1Visible?: boolean;
@@ -32,7 +37,18 @@ export default function NativeMap(props: MapProps) {
     const hasSnappedForGestureRef = useRef(false);
 
     // DATA
-    const {data: content, loading} = useSensorDataNew();
+    const {loading, fetchData} = useSensorDataNew();
+    const [content, setContent] = useState<LocationWithBoxes[]>([]);
+
+    useEffect(() => {
+        void fetchData(
+            (data) => setContent(data),
+            () => {
+                setContent([]);
+            }
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // fetchData is a hook function and changes on every render, causing infinite loop if included
 
     // CONSOLIDATED HOOKS - Extract shared logic
     const {
@@ -68,7 +84,7 @@ export default function NativeMap(props: MapProps) {
         highlightedSensorId, setHighlightedSensorId
     } = useMapState();
 
-    const { mapStyle } = useMapStyle(isDark);
+    const {mapStyle} = useMapStyle(isDark);
 
     const visibleSensors = useMemo(() => {
         return filteredContent.filter(sensor => {
@@ -168,52 +184,50 @@ export default function NativeMap(props: MapProps) {
     const handleRegionDidChange = async () => {
         hasSnappedForGestureRef.current = false;
 
-        try {
-            const map = mapRef.current;
-            if (!map) return;
 
-            const [visibleBounds, currentZoom] = await Promise.all([
-                map.getVisibleBounds?.(),
-                map.getZoom?.()
-            ]);
+        const map = mapRef.current;
+        if (!map) return;
 
-            if (!visibleBounds || visibleBounds.length !== 2) return;
+        const [visibleBounds, currentZoom] = await Promise.all([
+            map.getVisibleBounds?.(),
+            map.getZoom?.()
+        ]);
 
-            const [a, b] = visibleBounds as [number[], number[]];
+        if (!visibleBounds || visibleBounds.length !== 2) return;
 
-            const west = Math.min(a[0], b[0]);
-            const south = Math.min(a[1], b[1]);
-            const east = Math.max(a[0], b[0]);
-            const north = Math.max(a[1], b[1]);
+        const [a, b] = visibleBounds as [number[], number[]];
 
-            const [prevWest, prevSouth, prevEast, prevNorth] = viewportBounds;
-            const threshold = 0.0001;
+        const west = Math.min(a[0], b[0]);
+        const south = Math.min(a[1], b[1]);
+        const east = Math.max(a[0], b[0]);
+        const north = Math.max(a[1], b[1]);
 
-            const boundsChanged =
-                Math.abs(west - prevWest) > threshold ||
-                Math.abs(south - prevSouth) > threshold ||
-                Math.abs(east - prevEast) > threshold ||
-                Math.abs(north - prevNorth) > threshold;
+        const [prevWest, prevSouth, prevEast, prevNorth] = viewportBounds;
+        const threshold = 0.0001;
 
-            if (boundsChanged) {
-                setViewportBounds([west, south, east, north]);
-            }
+        const boundsChanged =
+            Math.abs(west - prevWest) > threshold ||
+            Math.abs(south - prevSouth) > threshold ||
+            Math.abs(east - prevEast) > threshold ||
+            Math.abs(north - prevNorth) > threshold;
 
-            if (typeof currentZoom === 'number' && Math.abs(currentZoom - zoomLevel) > 0.01) {
-                setZoomLevel(currentZoom);
-            }
-
-            const newLon = (west + east) / 2;
-            const newLat = (south + north) / 2;
-            if (
-                Math.abs(newLon - center[0]) > threshold ||
-                Math.abs(newLat - center[1]) > threshold
-            ) {
-                setCenter([newLon, newLat]);
-            }
-        } catch (error) {
-            logger.error('Error getting map state', error);
+        if (boundsChanged) {
+            setViewportBounds([west, south, east, north]);
         }
+
+        if (typeof currentZoom === 'number' && Math.abs(currentZoom - zoomLevel) > 0.01) {
+            setZoomLevel(currentZoom);
+        }
+
+        const newLon = (west + east) / 2;
+        const newLat = (south + north) / 2;
+        if (
+            Math.abs(newLon - center[0]) > threshold ||
+            Math.abs(newLat - center[1]) > threshold
+        ) {
+            setCenter([newLon, newLat]);
+        }
+
     };
 
     // ========== SPEED DIAL ==========

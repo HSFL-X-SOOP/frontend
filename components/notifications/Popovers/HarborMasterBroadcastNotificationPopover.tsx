@@ -1,6 +1,7 @@
 import { PopoverProps , YStack, Popover, Button, TextArea, Text, XStack, Label, Sheet, Adapt, Input } from "tamagui";
 import { useState, useCallback } from 'react';
 import { useNotificationLocations } from '@/hooks/ui/useNotificationLocations';
+import { useToast } from "@/hooks/ui";
 
 
 export function HarborMasterBroadcastNotificationPopover({
@@ -15,6 +16,7 @@ export function HarborMasterBroadcastNotificationPopover({
     const [notificationTitle, setNotificationTitle] = useState<string>('');
     const [notificationMessage, setNotificationMessage] = useState<string>('');
     const notificationLocations = useNotificationLocations();
+    const toast = useToast();
 
     const createNotificationLocation = useCallback(async () => {
         if (!marinaID) return;
@@ -25,8 +27,20 @@ export function HarborMasterBroadcastNotificationPopover({
             notificationText: notificationMessage,
             createdBy: userID || -1,
         }
-        await notificationLocations.create(notificationLocation);
-    }, [marinaID, notificationTitle, notificationMessage, userID, notificationLocations]);
+        await notificationLocations.create(
+            notificationLocation,
+            () => {
+                toast.success(t('harbor.notificationSent'), {
+                    message: notificationTitle
+                });
+            },
+            (error) => {
+                toast.error(t('errors.unexpected'), {
+                    message: t(error.onGetMessage())
+                });
+            }
+        );
+    }, [marinaID, notificationTitle, notificationMessage, userID, notificationLocations, toast, t]);
 
     return (
     <Popover size="$5" allowFlip stayInFrame offset={15} resize {...props}>

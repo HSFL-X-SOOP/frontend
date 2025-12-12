@@ -211,8 +211,10 @@
   "errors": {
     "notFound": "Die angeforderte Ressource wurde nicht gefunden",
     "unauthorized": "Sie haben keine Berechtigung, diese Aktion auszuführen",
+    "noPermission": "Sie haben keine Berechtigung für diese Aktion",
     "serverError": "Serverfehler. Bitte versuchen Sie es später erneut",
-    "unexpected": "Ein unerwarteter Fehler ist aufgetreten"
+    "unexpected": "Ein unerwarteter Fehler ist aufgetreten",
+    "notFoundSensor": "Der angeforderte Sensor wurde nicht gefunden"
   },
   "Heute": "Heute",
   "Gestern": "Gestern",

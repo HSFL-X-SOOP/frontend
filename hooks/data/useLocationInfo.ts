@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback} from 'react';
 import {useLocationStore} from '@/api/stores/location.ts';
 import {useSession} from '@/context/SessionContext';
 import {AuthorityRole} from '@/api/models/profile';
@@ -6,17 +6,14 @@ import {DetailedLocationDTO, UpdateLocationRequest} from '@/api/models/location'
 import {AppError, UIError} from '@/utils/errors';
 
 /**
- * Hook for fetching and managing harbor master's location info
- * Can accept initial data to avoid duplicate API calls
+ * Hook for performing harbor master's location operations
+ * Component must manage its own locationData state and pass it as needed
  *
  * Note: Errors are passed to onError callback
  */
-export function useLocationInfo(initialData?: DetailedLocationDTO | null) {
+export function useLocationInfo() {
     const session = useSession();
     const locationStore = useLocationStore();
-
-    const [locationData, setLocationData] = useState<DetailedLocationDTO | null>(initialData || null);
-    const [isLoading, setIsLoading] = useState(false);
 
     const isHarborMaster = session?.session?.role === AuthorityRole.HARBOURMASTER;
 
@@ -25,76 +22,72 @@ export function useLocationInfo(initialData?: DetailedLocationDTO | null) {
         onError: (error: AppError) => void
     ) => {
         if (!isHarborMaster) {
-            onError(new UIError('error.noPermission'));
+            onError(new UIError('errors.unauthorized'));
             return;
         }
-
-        setIsLoading(true);
 
         const result = await locationStore.getHarborMasterLocation();
 
         if (result.ok) {
-            setLocationData(result.value);
             onSuccess(result.value);
         } else {
             onError(result.error);
         }
-
-        setIsLoading(false);
     }, [isHarborMaster, locationStore]);
 
     const updateLocationInfo = useCallback(async (
+        locationId: number,
         data: UpdateLocationRequest,
         onSuccess: (updatedData: DetailedLocationDTO) => void,
         onError: (error: AppError) => void
     ) => {
-        if (!isHarborMaster || !locationData?.id) {
-            onError(new UIError('error.noPermission'));
+        if (!isHarborMaster) {
+            onError(new UIError('errors.unauthorized'));
             return;
         }
 
-        const result = await locationStore.updateLocationInfo(locationData.id, data);
+        const result = await locationStore.updateLocationInfo(locationId, data);
 
         if (result.ok) {
-            setLocationData(result.value);
             onSuccess(result.value);
         } else {
             onError(result.error);
         }
-    }, [isHarborMaster, locationData?.id, locationStore]);
+    }, [isHarborMaster, locationStore]);
 
     const deleteImage = useCallback(async (
+        locationId: number,
         onSuccess: () => void,
         onError: (error: AppError) => void
     ) => {
-        if (!isHarborMaster || !locationData?.id) {
-            onError(new UIError('error.noPermission'));
+        if (!isHarborMaster) {
+            onError(new UIError('errors.unauthorized'));
             return;
         }
 
-        const result = await locationStore.deleteLocationImage(locationData.id);
+        const result = await locationStore.deleteLocationImage(locationId);
 
         if (result.ok) {
             onSuccess();
         } else {
             onError(result.error);
         }
-    }, [isHarborMaster, locationData?.id, locationStore]);
+    }, [isHarborMaster, locationStore]);
 
     const getImageUrl = useCallback((
+        locationId: number,
         onSuccess: (url: string) => void,
         onError: (error: AppError) => void
     ) => {
-        if (!locationData?.id) {
-            onError(new UIError('error.notFound'));
+        if (!locationId) {
+            onError(new UIError('errors.notFound'));
             return;
         }
-        onSuccess(locationStore.getLocationImageUrl(locationData.id));
-    }, [locationData?.id, locationStore]);
+        onSuccess(locationStore.getLocationImageUrl(locationId));
+    }, [locationStore]);
 
     return {
-        locationData,
-        isLoading,
+        isHarborMaster,
         fetchLocationInfo,
         updateLocation: updateLocationInfo,
         deleteImage,

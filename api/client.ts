@@ -40,7 +40,6 @@ export function useHttpClient() {
                 login(newSession)
                 return newSession.accessToken
             } finally {
-                // Clear the promise after completion (success or failure)
                 refreshPromise = null;
             }
         })();

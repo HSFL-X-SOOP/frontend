@@ -128,12 +128,12 @@ export default function WebMap(props: MapProps) {
             },
             (error) => {
                 toast.error(
-                    t("errors.tryAgain"),
+                    t("common.error"),
                     {message: t(error.onGetMessage())}
                 );
             }
         );
-    }, [fetchData, toast, t]);
+    }, []);
 
     const handleSensorSelect = (sensor: LocationWithBoxes) => {
         if (!sensor.location?.coordinates) return;

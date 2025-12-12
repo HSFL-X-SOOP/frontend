@@ -20,7 +20,7 @@ export function useLocations() {
         onError: (error: AppError) => void
     ) => {
         if (!session?.accessToken) {
-            onError(new UIError('error.unauthorized'));
+            onError(new UIError('errors.unauthorized'));
             return;
         }
 
@@ -36,5 +36,27 @@ export function useLocations() {
         setLoading(false);
     }, [session?.accessToken, locationStore]);
 
-    return {loading, fetchData};
+    const fetchLocationById = useCallback(async (
+        id: number,
+        onSuccess: (data: DetailedLocationDTO) => void,
+        onError: (error: AppError) => void
+    ) => {
+        if (!session?.accessToken) {
+            onError(new UIError('errors.unauthorized'));
+            return;
+        }
+
+        setLoading(true);
+        const result = await locationStore.getLocationById(id);
+
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+
+        setLoading(false);
+    }, [session?.accessToken, locationStore]);
+
+    return {loading, fetchData, fetchLocationById};
 }

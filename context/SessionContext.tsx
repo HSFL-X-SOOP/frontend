@@ -1,6 +1,6 @@
 import React, {createContext, ReactNode, useContext} from 'react';
 
-import {useLocalStorage} from '@/hooks/ui';
+import {useLocalStorage} from '@/hooks/ui/useLocalStorage';
 import {useRouter} from 'expo-router';
 import {AuthorityRole, UserProfile} from '@/api/models/profile';
 

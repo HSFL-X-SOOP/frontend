@@ -22,9 +22,7 @@ export function useSensorDataNew() {
         } else {
             onError(result.error);
         }
-
         setLoading(false);
-
     }, []);
 
 
@@ -44,7 +42,7 @@ export function useSensorDataTimeRange(id: number | null, timeRange: string = '2
     const fetchData = useCallback(async (onSuccess: (data: LocationWithBoxes) => void, onError: (error: AppError) => void) => {
         setLoading(true)
         if (id == null) {
-            onError(new UIError('error.notFoundSensor'));
+            onError(new UIError('errors.notFoundSensor'));
             return;
         }
 

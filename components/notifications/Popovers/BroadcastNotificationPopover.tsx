@@ -13,6 +13,7 @@ import {
 } from 'tamagui';
 import {useNotificationLocations} from '@/hooks/ui';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton} from '@/types/button.ts';
+import {useToast} from '@/hooks/ui/useToast';
 
 interface BroadcastNotificationPopoverProps extends PopoverProps {
     Icon?: any;
@@ -35,6 +36,7 @@ export function BroadcastNotificationPopover({
     const [notificationTitle, setNotificationTitle] = useState<string>('');
     const [notificationMessage, setNotificationMessage] = useState<string>('');
     const notificationLocations = useNotificationLocations();
+    const toast = useToast();
 
     const handleSend = useCallback(async () => {
         if (!marinaID) return;
@@ -45,8 +47,20 @@ export function BroadcastNotificationPopover({
             notificationText: notificationMessage,
             createdBy: userID || -1,
         };
-        await notificationLocations.create(notificationLocation);
-    }, [marinaID, notificationTitle, notificationMessage, userID, notificationLocations]);
+        await notificationLocations.create(
+            notificationLocation,
+            () => {
+                toast.success(t('harbor.notificationSent'), {
+                    message: notificationTitle
+                });
+            },
+            (error) => {
+                toast.error(t('errors.unexpected'), {
+                    message: t(error.onGetMessage())
+                });
+            }
+        );
+    }, [marinaID, notificationTitle, notificationMessage, userID, notificationLocations, toast, t]);
 
     return (
         <Popover size="$5" allowFlip stayInFrame offset={15} resize {...props}>

@@ -58,7 +58,8 @@ export function MyNotificationsTab() {
                 setMyLocations([]);
             }
         );
-    }, [userID, userLocations, toast, t]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userID]); // userLocations is a hook object and changes on every render
 
     useEffect(() => {
         void fetchLocationData(
@@ -71,7 +72,8 @@ export function MyNotificationsTab() {
                 });
             }
         );
-    }, [fetchLocationData, toast, t]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // fetchLocationData is a hook function and changes on every render
 
     const fetchNotifications = useCallback(() => {
         void notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(
@@ -87,11 +89,13 @@ export function MyNotificationsTab() {
                 setMyNotifications([]);
             }
         );
-    }, [notifications, userID, selectedUserLocationId, toast, t]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userID, selectedUserLocationId]); // notifications is a hook object and changes on every render
 
     useEffect(() => {
         fetchNotifications();
-    }, [fetchNotifications]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedUserLocationId]); // fetchNotifications includes hook functions in its dependencies
 
     const handleValueChange = (value: string) => {
         setSelectedUserLocationId(Number(value))
@@ -130,7 +134,8 @@ export function MyNotificationsTab() {
                 });
             }
         );
-    }, [selectedUserLocation, userLocations, userID, toast, t]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedUserLocation, userID]); // userLocations is a hook object and changes on every render
 
     return (
         <YStack gap="$4">

@@ -40,6 +40,7 @@ export default function MapSensorDrawer({
             left={0}
             top={0}
             zIndex={1000}
+            height="100vh"
             width={drawerWidth}
             animation="quick"
             backgroundColor="$background"

@@ -19,6 +19,7 @@ export function useAuthStore() {
         },
 
         login: (body: LoginRequest): Promise<Result<LoginResponse>> => {
+
             return api.requestSafe(
                 httpClient.post<LoginResponse>("/login", body),
                 'AuthStore:login',

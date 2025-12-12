@@ -14,52 +14,24 @@ import {
 } from "tamagui";
 import {User, Anchor, Home} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
-import {useUser} from '@/hooks/data';
-import {AuthorityRole} from '@/api/models/profile';
-import {useTranslation} from '@/hooks/ui';
+import {useTranslation, useToast} from '@/hooks/ui';
 import {ProfileTab} from '@/components/profile/ProfileTab';
 import {BoatsTab} from '@/components/profile/BoatsTab';
 import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
-import {useLocationStore} from '@/api/stores/location';
-import type {DetailedLocationDTO} from '@/api/models/location';
-import { MyNotificationsTab } from '@/components/profile/MyNotificationsTab';
-import { createLogger } from '@/utils/logger';
-
-const logger = createLogger('Profile:Screen');
+import {MyNotificationsTab} from '@/components/profile/MyNotificationsTab';
+import {useLocationInfo, useUser} from '@/hooks/data';
 
 export default function ProfileScreen() {
     const router = useRouter();
     const {t} = useTranslation();
+    const toast = useToast();
     const {session, updateProfile: updateSessionProfile} = useSession();
     const {getProfile, loading: isLoadingProfile} = useUser();
-    const locationStore = useLocationStore();
+    const {
+        isHarborMaster
+    } = useLocationInfo();
 
     const [activeTab, setActiveTab] = useState("profile");
-    const [harborLocation, setHarborLocation] = useState<DetailedLocationDTO | null>(null);
-    const [isLoadingHarbor, setIsLoadingHarbor] = useState(false);
-
-    const isHarborMaster = session?.role === AuthorityRole.HARBOURMASTER;
-
- 
-    useEffect(() => {
-        const loadHarborInfo = async () => {
-            if (isHarborMaster && !harborLocation) {
-                setIsLoadingHarbor(true);
-                try {
-                    const locationData = await locationStore.getHarborMasterLocation();
-                    if (locationData) {
-                        setHarborLocation(locationData);
-                    }
-                } catch (error) {
-                    logger.error('Failed to load harbor info', error);
-                } finally {
-                    setIsLoadingHarbor(false);
-                }
-            }
-        };
-
-        loadHarborInfo();
-    }, [isHarborMaster, harborLocation, locationStore]);
 
     useEffect(() => {
         if (!session?.profile) {
@@ -68,12 +40,14 @@ export default function ProfileScreen() {
                     updateSessionProfile(profile);
                 },
                 (error) => {
-                    logger.error('Failed to load profile', error);
+                    toast.error(t('harbor.errorLoading'), {
+                        message: t(error.onGetMessage())
+                    });
                 }
             );
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [session?.profile]); // getProfile is a hook function and changes on every render
 
     if (!session?.profile && isLoadingProfile) {
         return (
@@ -268,7 +242,7 @@ export default function ProfileScreen() {
                                                 color={"$accent7"}
                                                 letterSpacing={activeTab === "harbor" ? 0.5 : 0}
                                             >
-                                                {isLoadingHarbor ? '...' : (harborLocation?.name || t('harbor.title'))}
+                                                {t('harbor.title')}
                                             </Text>
                                         </XStack>
                                     </Tabs.Tab>
@@ -286,15 +260,12 @@ export default function ProfileScreen() {
                             </Tabs.Content>
 
                             <Tabs.Content value="myNotifications" padding="$0" marginTop="$4">
-                                <MyNotificationsTab />
+                                <MyNotificationsTab/>
                             </Tabs.Content>
 
                             {isHarborMaster && (
                                 <Tabs.Content value="harbor" padding="$0" marginTop="$4">
-                                    <HarborMasterTab
-                                        initialLocationData={harborLocation}
-                                        isLoadingInitial={isLoadingHarbor}
-                                    />
+                                    <HarborMasterTab/>
                                 </Tabs.Content>
                             )}
                         </Tabs>
