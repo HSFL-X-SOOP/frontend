@@ -1,73 +1,40 @@
-import {useState, useEffect} from 'react';
+import {useCallback, useState, useEffect} from 'react';
 import {DetailedLocationDTO} from '@/api/models/location';
-import {useToast} from '@/hooks/ui';
 import {useSession} from '@/context/SessionContext';
-import {useLocationStore} from '@/api/stores/location.service';
-import {UI_CONSTANTS} from '@/config/constants';
+import {useLocationStore} from '@/api/stores/location';
+import {AppError, UIError} from '@/utils/errors';
 
 /**
  * Hook to fetch all locations from the /locations endpoint
  * Locations are only fetched once when the component mounts
+ *
+ * Note: Errors are passed to onError callback
  */
 export function useLocations() {
-    const [data, setData] = useState<DetailedLocationDTO[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const toast = useToast();
     const {session} = useSession();
     const locationStore = useLocationStore();
 
-    useEffect(() => {
-        // Only fetch if user is authenticated
+    const fetchData = useCallback(async (
+        onSuccess: (data: DetailedLocationDTO[]) => void,
+        onError: (error: AppError) => void
+    ) => {
         if (!session?.accessToken) {
-            setLoading(false);
+            onError(new UIError('error.unauthorized'));
             return;
         }
 
-        const fetchLocations = async () => {
-            try {
-                setLoading(true);
-                const result = await locationStore.getLocations();
-                console.log("Fetched locations:", result);
-                setData(result);
-                setError(null);
-            } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : 'Failed to fetch locations';
-                setError(errorMessage);
-                setData([]);
-                toast.error('Locations Error', {
-                    message: errorMessage,
-                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
-                });
-            } finally {
-                setLoading(false);
-            }
-        };
+        setLoading(true);
+        const result = await locationStore.getLocations();
 
-        void fetchLocations();
-        // Empty array = only run once when component mounts
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const refetch = async () => {
-        if (!session?.accessToken) return;
-
-        try {
-            setLoading(true);
-            const result = await locationStore.getLocations();
-            setData(result);
-            setError(null);
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to fetch locations';
-            setError(errorMessage);
-            toast.error('Locations Error', {
-                message: errorMessage,
-                duration: UI_CONSTANTS.TOAST_DURATION.LONG
-            });
-        } finally {
-            setLoading(false);
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
         }
-    };
 
-    return {data, loading, error, refetch};
+        setLoading(false);
+    }, [session?.accessToken, locationStore]);
+
+    return {loading, fetchData};
 }

@@ -1,6 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Dispatch, SetStateAction, useEffect, useState} from 'react';
 import {Platform} from 'react-native';
+import { createLogger } from '@/utils/logger';
+
+const logger = createLogger('Hooks:LocalStorage');
 
 export function useLocalStorage<T>(key: string, initialValue?: T): [T | undefined, Dispatch<SetStateAction<T | undefined>>] {
     const [value, setValue] = useState<T | undefined>(initialValue);
@@ -20,7 +23,7 @@ export function useLocalStorage<T>(key: string, initialValue?: T): [T | undefine
                     setValue(JSON.parse(storedValue));
                 }
             } catch (error) {
-                console.warn(`Error loading key "${key}" from storage`, error);
+                logger.error(`Error loading key "${key}" from storage`, error);
             }
         };
 
@@ -36,7 +39,7 @@ export function useLocalStorage<T>(key: string, initialValue?: T): [T | undefine
                     await Storage.setItem(key, JSON.stringify(value));
                 }
             } catch (error) {
-                console.warn(`Error saving key "${key}" to storage`, error);
+                logger.error(`Error saving key "${key}" to storage`, error);
             }
         };
 

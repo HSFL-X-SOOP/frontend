@@ -5,33 +5,60 @@ import {
     NotificationMeasurementRule,
 } from "@/api/models/notificationMeasurementRule";
 import { useHttpClient } from "@/api/client.ts";
-import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import { Result } from "@/utils/errors";
+import { api } from "@/utils/api";
 
 export function useNotificationMeasurementRuleStore() {
     const httpClient = useHttpClient();
 
     return {
-        getNotificationMeasurementRuleById: (id: number) =>
-            httpClient.get<NotificationMeasurementRule>(`/notification-measurement-rules/${id}`).then(r => r.data),
+        getNotificationMeasurementRuleById: (id: number): Promise<Result<NotificationMeasurementRule>> => {
+            return api.requestSafe(
+                httpClient.get<NotificationMeasurementRule>(`/notification-measurement-rules/${id}`),
+                'NotificationMeasurementRuleStore:getNotificationMeasurementRuleById'
+            );
+        },
 
-        getAllNotificationMeasurementRulesByUserId: (userId: number) =>
-            httpClient.get<NotificationMeasurementRule[]>(`/notification-measurement-rules/user/${userId}`).then(r => r.data),
+        getAllNotificationMeasurementRulesByUserId: (userId: number): Promise<Result<NotificationMeasurementRule[]>> => {
+            return api.requestSafe(
+                httpClient.get<NotificationMeasurementRule[]>(`/notification-measurement-rules/user/${userId}`),
+                'NotificationMeasurementRuleStore:getAllNotificationMeasurementRulesByUserId'
+            );
+        },
 
+        getAllNotificationMeasurementRulesByUserIdAndLocationId: (userId: number, locationId: number): Promise<Result<NotificationMeasurementRule[]>> => {
+            return api.requestSafe(
+                httpClient.get<NotificationMeasurementRule[]>(`/notification-measurement-rules/user/${userId}/location/${locationId}`),
+                'NotificationMeasurementRuleStore:getAllNotificationMeasurementRulesByUserIdAndLocationId'
+            );
+        },
 
-        getAllNotificationMeasurementRulesByUserIdAndLocationId: (userId: number, locationId: number) =>
-            httpClient.get<NotificationMeasurementRule[]>(`/notification-measurement-rules/user/${userId}/location/${locationId}`).then(r => r.data),
-        
+        getNotificationMeasurementRule: (userId: number, locationId: number, measurementTypeId: number): Promise<Result<NotificationMeasurementRule | null>> => {
+            return api.requestSafe(
+                httpClient.get<NotificationMeasurementRule | null>(`/notification-measurement-rules/user/${userId}/location/${locationId}/measurementTypeId/${measurementTypeId}`),
+                'NotificationMeasurementRuleStore:getNotificationMeasurementRule'
+            );
+        },
 
-        getNotificationMeasurementRule: (userId: number, locationId: number, measurementTypeId: number) =>
-            httpClient.get<NotificationMeasurementRule | null>(`/notification-measurement-rules/user/${userId}/location/${locationId}/measurementTypeId/${measurementTypeId}`).then(r => r.data),
+        createNotificationMeasurementRule: (body: CreateOrUpdateNotificationMeasurementRuleRequest): Promise<Result<CreateOrUpdateNotificationMeasurementRuleResponse>> => {
+            return api.requestSafe(
+                httpClient.post<CreateOrUpdateNotificationMeasurementRuleResponse>("/notification-measurement-rules", body),
+                'NotificationMeasurementRuleStore:createNotificationMeasurementRule'
+            );
+        },
 
-        createNotificationMeasurementRule: (body: CreateOrUpdateNotificationMeasurementRuleRequest) =>
-            httpClient.post<CreateOrUpdateNotificationMeasurementRuleResponse>("/notification-measurement-rules", body).then(r => r.data),
+        updateNotificationMeasurementRule: (id: number, body: CreateOrUpdateNotificationMeasurementRuleRequest): Promise<Result<CreateOrUpdateNotificationMeasurementRuleResponse>> => {
+            return api.requestSafe(
+                httpClient.put<CreateOrUpdateNotificationMeasurementRuleResponse>(`/notification-measurement-rules/${id}`, body),
+                'NotificationMeasurementRuleStore:updateNotificationMeasurementRule'
+            );
+        },
 
-        updateNotificationMeasurementRule: (id: number, body: CreateOrUpdateNotificationMeasurementRuleRequest) =>
-            httpClient.put<CreateOrUpdateNotificationMeasurementRuleResponse>(`/notification-measurement-rules/${id}`, body).then(r => r.data),
-
-        deleteNotificationMeasurementRule: (id: number) =>
-            httpClient.delete<DeleteNotificationMeasurementRuleResponse>(`/notification-measurement-rules/${id}`).then(r => r.data),
+        deleteNotificationMeasurementRule: (id: number): Promise<Result<DeleteNotificationMeasurementRuleResponse>> => {
+            return api.requestSafe(
+                httpClient.delete<DeleteNotificationMeasurementRuleResponse>(`/notification-measurement-rules/${id}`),
+                'NotificationMeasurementRuleStore:deleteNotificationMeasurementRule'
+            );
+        },
     };
 }

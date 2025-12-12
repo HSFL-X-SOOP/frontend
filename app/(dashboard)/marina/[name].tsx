@@ -11,7 +11,9 @@ import {
 } from '@/components/dashboard';
 import {useThemeContext} from '@/context/ThemeSwitch';
 import {useSensorDataNew, useSensorDataTimeRange,useUserLocations} from '@/hooks/data';
-import {useTranslation} from '@/hooks/ui';
+import {useTranslation, useToast} from '@/hooks/ui';
+import {handleErrorWithToast} from '@/utils/handleErrorWithToast';
+import {createLogger} from '@/utils/logger';
 import {ChartDataPoint} from '@/types/chart';
 import {useLocationStore} from '@/api/stores/location.service';
 import {
@@ -116,6 +118,7 @@ export default function DashboardScreen() {
     const media = useMedia();
     const router = useRouter();
     const {t} = useTranslation();
+    const toast = useToast();
     const {isDark} = useThemeContext();
     const {session} = useSession();
     const userLocations = useUserLocations();
@@ -203,8 +206,14 @@ export default function DashboardScreen() {
     useEffect(() => {
         if (!marinaID) return;
         const fetchLocation = async () => {
-            const result = await locationStore.getLocationById(marinaID);
-            setDetailedLocation(result);
+            try {
+                const result = await locationStore.getLocationById(marinaID);
+                setDetailedLocation(result);
+            } catch (error) {
+                const logger = createLogger('Marina:fetchLocation');
+                logger.error('Failed to load location details', error);
+                setDetailedLocation(null);
+            }
         };
         void fetchLocation();
     }, [marinaID, locationStore]);
@@ -257,29 +266,54 @@ export default function DashboardScreen() {
     }, [infoContentHeight, infoHeight, showInfo]);
 
     const handleFavoriteToggle = useCallback(async () => {
+        const logger = createLogger('Marina:handleFavoriteToggle');
         if (!marinaID) return;
-        if (userLocation?.id) {
-            await userLocations.deleteUserLocation(userLocation.id);
-            setUserLocation(undefined);
-        } else {
-            const created = await userLocations.create({
-                userId: userID,
-                locationId: marinaID,
-                sentHarborNotifications: false,
+        try {
+            if (userLocation?.id) {
+                await userLocations.deleteUserLocation(userLocation.id);
+                setUserLocation(undefined);
+                toast.success('Removed from favorites');
+            } else {
+                const created = await userLocations.create({
+                    userId: userID,
+                    locationId: marinaID,
+                    sentHarborNotifications: false,
+                });
+                setUserLocation(created);
+                toast.success('Added to favorites');
+            }
+        } catch (error) {
+            handleErrorWithToast(error, {
+                toastError: toast.error,
+                context: 'Marina:handleFavoriteToggle',
+                errorTitle: 'Favorite Error',
+                userMessage: 'Failed to update favorite status'
             });
-            setUserLocation(created);
+            logger.error('Failed to toggle favorite', error);
         }
-    }, [userLocation, userLocations, marinaID, userID]);
+    }, [userLocation, userLocations, marinaID, userID, toast]);
 
     const handleNotificationToggle = useCallback(async () => {
+        const logger = createLogger('Marina:handleNotificationToggle');
         if (!marinaID || !userLocation) return;
-        const updated = await userLocations.update(userLocation.id, {
-            userId: userID,
-            locationId: marinaID,
-            sentHarborNotifications: !userLocation.sentHarborNotifications,
-        });
-        setUserLocation(updated);
-    }, [userLocation, userLocations, marinaID, userID]);
+        try {
+            const updated = await userLocations.update(userLocation.id, {
+                userId: userID,
+                locationId: marinaID,
+                sentHarborNotifications: !userLocation.sentHarborNotifications,
+            });
+            setUserLocation(updated);
+            toast.success(updated.sentHarborNotifications ? 'Notifications enabled' : 'Notifications disabled');
+        } catch (error) {
+            handleErrorWithToast(error, {
+                toastError: toast.error,
+                context: 'Marina:handleNotificationToggle',
+                errorTitle: 'Notification Error',
+                userMessage: 'Failed to update notification settings'
+            });
+            logger.error('Failed to toggle notifications', error);
+        }
+    }, [userLocation, userLocations, marinaID, userID, toast]);
 
     const renderHarborInfoContent = useCallback((extraProps?: Partial<ComponentProps<typeof Card.Footer>>) => (
         <Card.Footer

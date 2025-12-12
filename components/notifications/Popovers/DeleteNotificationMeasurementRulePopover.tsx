@@ -1,6 +1,7 @@
 import { H4, PopoverProps , YStack, Dialog, Button } from "tamagui";
 import { useState } from "react";
 import { useNotificationMeasurementRules } from "@/hooks/ui/useNotificationMeasurementRules";
+import { useToast } from "@/hooks/ui";
 import { NotificationMeasurementRule } from "@/api/models/notificationMeasurementRule";
 
 
@@ -15,6 +16,7 @@ export function DeleteNotificationMeasurementRulePopover({
 }: PopoverProps & { Icon?: any; Name?: string; shouldAdapt?: boolean; notification: NotificationMeasurementRule, t: any, fetchNotifications: () => void }) {
     const [open, setOpen] = useState(false)
     const notifications = useNotificationMeasurementRules();
+    const toast = useToast();
     return (
         <Dialog
         allowFlip
@@ -61,10 +63,20 @@ export function DeleteNotificationMeasurementRulePopover({
                             backgroundColor="$accent7"
                             color="white"
                             onPress={() => {
-                            notifications.deleteNotificationMeasurementRule(notification.id)
-                                .then(async () => {
-                                    await fetchNotifications();
-                                });
+                                void notifications.deleteNotificationMeasurementRule(
+                                    notification.id,
+                                    () => {
+                                        void fetchNotifications();
+                                        toast.success(t('dashboard.measurements.delete'), {
+                                            message: t('dashboard.measurements.notificationRuleDeleted')
+                                        });
+                                    },
+                                    (error) => {
+                                        toast.error(t('common.error'), {
+                                            message: t(error.onGetMessage())
+                                        });
+                                    }
+                                );
                             }}
                         >
                             {t('dashboard.measurements.delete')}

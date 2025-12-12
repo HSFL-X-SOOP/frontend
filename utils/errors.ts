@@ -1,5 +1,9 @@
-import { AxiosError } from 'axios';
-import { createLogger } from './logger';
+import {AxiosError} from 'axios';
+import {createLogger} from './logger';
+
+export interface AppError {
+    onGetMessage: () => string;
+}
 
 /**
  * Error codes for standardized error handling
@@ -17,7 +21,7 @@ export enum ErrorCode {
 /**
  * Unified error class for the application
  */
-export class AppError extends Error {
+export class APIError extends Error implements AppError {
     public readonly code: ErrorCode;
     public readonly statusCode?: number;
     public readonly originalError?: unknown;
@@ -35,7 +39,7 @@ export class AppError extends Error {
         this.originalError = originalError;
 
         // Maintain proper prototype chain for instanceof checks
-        Object.setPrototypeOf(this, AppError.prototype);
+        Object.setPrototypeOf(this, APIError.prototype);
     }
 
     /**
@@ -50,8 +54,8 @@ export class AppError extends Error {
      */
     isAuthError(): boolean {
         return this.code === ErrorCode.AUTH ||
-               this.statusCode === 401 ||
-               this.statusCode === 403;
+            this.statusCode === 401 ||
+            this.statusCode === 403;
     }
 
     /**
@@ -59,7 +63,7 @@ export class AppError extends Error {
      */
     isServerError(): boolean {
         return this.code === ErrorCode.SERVER ||
-               (this.statusCode ? this.statusCode >= 500 : false);
+            (this.statusCode ? this.statusCode >= 500 : false);
     }
 
     /**
@@ -67,6 +71,21 @@ export class AppError extends Error {
      */
     isNetworkError(): boolean {
         return this.code === ErrorCode.NETWORK;
+    }
+
+    onGetMessage(): string {
+        return getErrorMessage(this);
+    }
+}
+
+export class UIError implements AppError {
+    private readonly message: string;
+    constructor(message: string = 'UIError') {
+        this.message = message;
+    }
+
+    onGetMessage(): string {
+        return this.message;
     }
 }
 
@@ -120,7 +139,7 @@ function extractErrorMessage(error: unknown): string {
  * @param context - Context string for logging (e.g., component or function name)
  * @returns AppError instance
  */
-export function handleApiError(error: unknown, context: string): AppError {
+export function handleApiError(error: unknown, context: string): APIError {
     const logger = createLogger(context);
 
     // Handle Axios errors
@@ -136,43 +155,44 @@ export function handleApiError(error: unknown, context: string): AppError {
             method: error.config?.method
         });
 
-        return new AppError(message, errorCode, statusCode, error);
+        return new APIError(message, errorCode, statusCode, error);
     }
 
     // Handle regular errors
     if (error instanceof Error) {
         logger.error('Error', error.message);
-        return new AppError(error.message, ErrorCode.UNKNOWN, undefined, error);
+        return new APIError(error.message, ErrorCode.UNKNOWN, undefined, error);
     }
 
     // Handle string errors
     if (typeof error === 'string') {
         logger.error('Error', error);
-        return new AppError(error, ErrorCode.UNKNOWN, undefined, error);
+        return new APIError(error, ErrorCode.UNKNOWN, undefined, error);
     }
 
     // Handle unknown errors
     const unknownError = `Unknown error: ${JSON.stringify(error)}`;
     logger.error('Unknown Error', unknownError);
-    return new AppError('An unknown error occurred', ErrorCode.UNKNOWN, undefined, error);
+    return new APIError('An unknown error occurred', ErrorCode.UNKNOWN, undefined, error);
 }
 
 /**
  * Get user-friendly error message for UI display
+ * Returns translation keys that should be passed through t() for localization
  */
 export function getErrorMessage(error: AppError | unknown): string {
-    if (error instanceof AppError) {
+    if (error instanceof APIError) {
         // For 404 errors, use a generic message
         if (error.isNotFound()) {
-            return 'The requested resource was not found';
+            return 'errors.notFound';
         }
         // For auth errors, don't expose details
         if (error.isAuthError()) {
-            return 'You do not have permission to perform this action';
+            return 'errors.unauthorized';
         }
         // For server errors
         if (error.isServerError()) {
-            return 'Server error. Please try again later';
+            return 'errors.serverError';
         }
         // Return the original message for other errors
         return error.message;
@@ -182,13 +202,13 @@ export function getErrorMessage(error: AppError | unknown): string {
         return error.message;
     }
 
-    return 'An unexpected error occurred';
+    return 'errors.unexpected';
 }
 
 /**
  * Utility type for Result pattern (success or error)
  */
-export type Result<T, E = AppError> =
+export type Result<T, E = APIError> =
     | { ok: true; value: T }
     | { ok: false; error: E };
 
@@ -196,12 +216,12 @@ export type Result<T, E = AppError> =
  * Create a successful result
  */
 export function Ok<T>(value: T): Result<T> {
-    return { ok: true, value };
+    return {ok: true, value};
 }
 
 /**
  * Create a failed result
  */
 export function Err<E>(error: E): Result<any, E> {
-    return { ok: false, error };
+    return {ok: false, error};
 }

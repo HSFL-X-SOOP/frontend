@@ -29,7 +29,6 @@ export default function MapSensorDrawer({
     const isMobileWeb = useIsMobileWeb();
     const t = useTheme();
     const {isDark} = useThemeContext()
-    const {viewportHeight, safeBottomOffset} = useViewportHeight();
 
     const drawerWidth = isOpen
         ? DRAWER_WIDTH
@@ -40,7 +39,6 @@ export default function MapSensorDrawer({
             position="absolute"
             left={0}
             top={0}
-            bottom={isMobileWeb && safeBottomOffset > 0 ? safeBottomOffset : 0}
             zIndex={1000}
             width={drawerWidth}
             animation="quick"
@@ -52,9 +50,6 @@ export default function MapSensorDrawer({
             shadowOpacity={0.1}
             shadowRadius={8}
             overflow="hidden"
-            height={isMobileWeb && viewportHeight > 0
-                ? viewportHeight - safeBottomOffset
-                : undefined}
         >
             {/* Drawer Content */}
             <YStack flex={1}>

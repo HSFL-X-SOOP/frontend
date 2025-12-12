@@ -162,7 +162,15 @@
       "saving": "Speichern..."
     },
     "validation": {
-      "selectAtLeastOneActivity": "Bitte wählen Sie mindestens eine Aktivität aus"
+      "selectAtLeastOneActivity": "Bitte wählen Sie mindestens eine Aktivität aus",
+      "nameRequired": "Bitte geben Sie Ihren Vor- und Nachnamen ein"
+    },
+    "errors": {
+      "noDataReturned": "Profil konnte nicht erstellt werden",
+      "tryAgain": "Keine Daten vom Server erhalten. Bitte versuchen Sie es erneut.",
+      "creationFailed": "Fehler beim Erstellen des Profils",
+      "unknownError": "Ein unbekannter Fehler ist aufgetreten",
+      "notFoundSensor": "Der angeforderte Sensor wurde nicht gefunden"
     },
     "saveSuccess": "Profil gespeichert",
     "saveError": "Profil konnte nicht gespeichert werden",
@@ -199,6 +207,12 @@
     "finish": "Fertig",
     "enable": "Aktivieren",
     "disable": "Deaktivieren"
+  },
+  "errors": {
+    "notFound": "Die angeforderte Ressource wurde nicht gefunden",
+    "unauthorized": "Sie haben keine Berechtigung, diese Aktion auszuführen",
+    "serverError": "Serverfehler. Bitte versuchen Sie es später erneut",
+    "unexpected": "Ein unerwarteter Fehler ist aufgetreten"
   },
   "Heute": "Heute",
   "Gestern": "Gestern",
@@ -280,7 +294,9 @@
     "harborMasterNotification": "Hafenmeister Benachrichtigung",
     "sendToAllSubscribers": "An alle Abonnenten senden",
     "title": "Titel",
-    "message": "Nachricht"
+    "message": "Nachricht",
+    "notificationPreferenceUpdated": "Benachrichtigungseinstellung aktualisiert",
+    "harborNotificationPreference": "Hafenmeister-Benachrichtigungseinstellung aktualisiert"
   },
   "dashboard": {
     "dashboard": "Dashboard",
@@ -334,7 +350,9 @@
       "condition": "Bedingung",
       "lastNotifiedAt": "Zuletzt benachrichtigt am",
       "delete": "Löschen",
-      "deleteConfirmText": "Sind Sie sicher, dass Sie diese Benachrichtigungsregel löschen möchten?"
+      "deleteConfirmText": "Sind Sie sicher, dass Sie diese Benachrichtigungsregel löschen möchten?",
+      "notificationRuleSaved": "Benachrichtigungsregel erfolgreich gespeichert",
+      "notificationRuleDeleted": "Benachrichtigungsregel erfolgreich gelöscht"
     },
     "units": {
       "celsius": "°C",

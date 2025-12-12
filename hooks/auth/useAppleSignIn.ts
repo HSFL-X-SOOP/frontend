@@ -1,28 +1,36 @@
+import {useCallback, useState} from 'react';
 import {Platform} from 'react-native';
 import {useRouter} from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import {useAuth} from '@/hooks/auth';
 import {useSession} from '@/context/SessionContext';
 import {AuthorityRole} from '@/api/models/profile';
-import {createLogger} from '@/utils/logger';
+import {AppError, UIError} from '@/utils/errors';
 
-const logger = createLogger('Auth:AppleSignIn');
-
+/**
+ * Hook for Apple Sign-In authentication
+ *
+ * Note: Errors are passed to onError callback
+ */
 export const useAppleSignIn = () => {
     const router = useRouter();
-    const {appleLogin, appleLoginStatus} = useAuth();
+    const {appleLogin} = useAuth();
     const {login: logUserIn} = useSession();
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleAppleSignIn = async (redirectPath: '/map' | '/' = '/map') => {
+    const handleAppleSignIn = useCallback(async (
+        redirectPath: '/map' | '/' = '/map',
+        onSuccess: (userId: number | undefined) => void,
+        onError: (error: AppError) => void
+    ) => {
         try {
-            logger.info('Starting Apple Sign-In flow', {platform: Platform.OS});
-
             if (Platform.OS !== 'ios') {
-                logger.error('Apple Sign-In is only available on iOS');
-                return {success: false, error: 'Apple Sign-In is only available on iOS'};
+                onError(new UIError('error.platformNotSupported'));
+                return;
             }
 
-            logger.debug('Initiating Apple Sign-In');
+            setIsLoading(true);
+
             const credential = await AppleAuthentication.signInAsync({
                 requestedScopes: [
                     AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
@@ -32,55 +40,49 @@ export const useAppleSignIn = () => {
 
             const identityToken = credential.identityToken;
             if (!identityToken) {
-                logger.error('No identity token received from Apple Sign-In');
-                throw new Error('No identity token received');
+                onError(new UIError('error.noTokenReceived'));
+                setIsLoading(false);
+                return;
             }
 
-            logger.debug('Authenticating with backend');
-            const res = await appleLogin({
-                identityToken,
-                user: credential.user,
-                email: credential.email ?? undefined,
-                givenName: credential.fullName?.givenName ?? undefined,
-                familyName: credential.fullName?.familyName ?? undefined,
-            });
+            await appleLogin(
+                {
+                    identityToken,
+                    user: credential.user,
+                    email: credential.email ?? undefined,
+                    givenName: credential.fullName?.givenName ?? undefined,
+                    familyName: credential.fullName?.familyName ?? undefined,
+                },
+                (res) => {
+                    logUserIn({
+                        accessToken: res.accessToken,
+                        refreshToken: res.refreshToken,
+                        loggedInSince: new Date(),
+                        lastTokenRefresh: null,
+                        role: res.profile?.authorityRole ?? AuthorityRole.USER,
+                        profile: res.profile,
+                    });
 
-            if (res) {
-                logger.info('Apple Sign-In successful', {hasProfile: !!res.profile});
-                logUserIn({
-                    accessToken: res.accessToken,
-                    refreshToken: res.refreshToken,
-                    loggedInSince: new Date(),
-                    lastTokenRefresh: null,
-                    role: res.profile?.authorityRole ?? AuthorityRole.USER,
-                    profile: res.profile,
-                });
-
-                // Check if user has a profile, if not redirect to create-profile
-                if (!res.profile || !res.profile.profileCreatedAt) {
-                    logger.info('No profile found or not created, redirecting to create-profile');
-                    router.push('/(profile)/create-profile');
-                } else {
-                    router.push(redirectPath);
+                    if (!res.profile || !res.profile.profileCreatedAt) {
+                        router.push('/(profile)/create-profile');
+                    } else {
+                        router.push(redirectPath);
+                    }
+                    onSuccess(res.profile?.id);
+                },
+                (error) => {
+                    onError(error);
                 }
-                return {success: true, userId: res.profile?.id};
-            } else {
-                logger.error('Backend authentication failed');
-                return {success: false, error: 'Backend authentication failed'};
-            }
-        } catch (error: any) {
-            if (error.code === 'ERR_REQUEST_CANCELED') {
-                logger.info('Apple Sign-In canceled by user');
-                return {success: false, error: 'Sign-In canceled'};
-            }
-            logger.error('Apple Sign-In failed', error);
-            return {success: false, error: error instanceof Error ? error.message : 'Unknown error'};
+            );
+        } catch {
+            onError(new UIError('error.signInFailed'));
+        } finally {
+            setIsLoading(false);
         }
-    };
+    }, [appleLogin, logUserIn, router]);
 
     return {
-        handleAppleSignIn,
-        isLoading: appleLoginStatus?.loading,
-        error: appleLoginStatus?.error,
+        isLoading,
+        handleAppleSignIn
     };
 };

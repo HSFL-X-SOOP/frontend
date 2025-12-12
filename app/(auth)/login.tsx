@@ -13,7 +13,7 @@ import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
 import {createLogger} from '@/utils/logger';
 import {AuthorityRole} from '@/api/models/profile';
-import { useUserDeviceStore } from '@/api/stores/userDevice';
+import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
@@ -26,10 +26,11 @@ export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const toast = useToast();
     const isMobile = useIsMobile();
 
-    const {login, loginStatus} = useAuth();
+    const {login} = useAuth();
     const {login: logUserIn, session} = useSession();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
     const {handleAppleSignIn, isLoading: appleLoading} = useAppleSignIn();
@@ -45,27 +46,40 @@ export default function LoginScreen() {
     const handleRegisterUserDevice = async (userId: number) => {
         if (Platform.OS === 'web') {return;}
 
-        const authStatus = await messaging().requestPermission();
-        const enabled =
-            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        try {
+            const authStatus = await messaging().requestPermission();
+            const enabled =
+                authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+                authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-        if (enabled) {
-            try {
-                let token = await messaging().getToken();
-                console.log('FCM Token:', token);
-                userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
-            } catch (error) {
-                console.log('Error getting FCM token:', error);
+            if (enabled) {
+                try {
+                    let token = await messaging().getToken();
+                    logger.debug('FCM Token obtained');
+                    const result = await userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+                    if (result.ok) {
+                        logger.info('User device registered with FCM token');
+                    } else {
+                        logger.warn('Failed to register user device (non-critical)', {message: result.error.message});
+                    }
+                } catch (error) {
+                    logger.error('Failed to get FCM token', error);
+                    // Device registration failure is non-critical - app continues
+                }
             }
+        } catch (error) {
+            logger.error('Failed to request messaging permission', error);
+            // Permission denial is non-critical - app continues
         }
     }
 
     const handleSubmit = async () => {
         logger.info('Login attempt', {email, rememberMe});
-        try {
-            const res = await login({email, password, rememberMe});
-            if (res) {
+        setIsLoading(true);
+
+        await login(
+            {email, password, rememberMe},
+            (res) => {
                 logUserIn({
                     accessToken: res.accessToken,
                     refreshToken: res.refreshToken,
@@ -75,8 +89,7 @@ export default function LoginScreen() {
                     profile: res.profile
                 });
                 toast.success(t('auth.loginSuccess'), {
-                    message: t('auth.welcomeBack'),
-                    duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
+                    message: t('auth.welcomeBack')
                 });
                 handleRegisterUserDevice(res.profile?.id || 0);
 
@@ -87,15 +100,15 @@ export default function LoginScreen() {
                 } else {
                     router.push("/map");
                 }
+            },
+            (error) => {
+                toast.error(
+                    t('auth.loginError'),
+                    {message: t(error.onGetMessage())}
+                );
             }
-        } catch (err: any) {
-            logger.error('Login failed', err);
-            const errorMessage = err?.response?.data?.message || err?.message || t('auth.loginErrorGeneric');
-            toast.error(t('auth.loginError'), {
-                message: errorMessage,
-                duration: UI_CONSTANTS.TOAST_DURATION.LONG
-            });
-        }
+        );
+        setIsLoading(false);
     };
 
     return (
@@ -197,10 +210,10 @@ export default function LoginScreen() {
 
                         <PrimaryButton
                             onPress={handleSubmit}
-                            disabled={loginStatus.loading}
-                            opacity={loginStatus.loading ? 0.6 : 1}
+                            disabled={isLoading}
+                            opacity={isLoading ? 0.6 : 1}
                         >
-                            {loginStatus.loading ? (
+                            {isLoading ? (
                                 <XStack gap="$2" alignItems="center">
                                     <Spinner size="small" color="white"/>
                                     <PrimaryButtonText>
@@ -224,18 +237,21 @@ export default function LoginScreen() {
                     <YStack gap="$3" width="100%">
                         <SecondaryButton
                             onPress={async () => {
-                                const result = await handleGoogleSignIn('/map');
-                                if (result?.success) {
-                                    toast.success(t('auth.googleSignInSuccess'), {
-                                        message: t('auth.welcomeBack'),
-                                        duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
-                                    });
-                                } else if (result && !result.success) {
-                                    toast.error(t('auth.googleSignInError'), {
-                                        message: result.error || t('auth.googleSignInErrorGeneric'),
-                                        duration: UI_CONSTANTS.TOAST_DURATION.LONG
-                                    });
-                                }
+                                await handleGoogleSignIn(
+                                    '/map',
+                                    () => {
+                                        toast.success(t('auth.googleSignInSuccess'), {
+                                            message: t('auth.welcomeBack'),
+                                            duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
+                                        });
+                                    },
+                                    (error) => {
+                                        toast.error(
+                                            t('auth.googleSignInError'),
+                                            {message: t(error.onGetMessage())}
+                                        );
+                                    }
+                                );
                             }}
                             disabled={googleLoading}
                             opacity={googleLoading ? 0.6 : 1}
@@ -260,18 +276,22 @@ export default function LoginScreen() {
                         {Platform.OS === 'ios' && (
                             <SecondaryButton
                                 onPress={async () => {
-                                    const result = await handleAppleSignIn('/map');
-                                    if (result?.success) {
-                                        toast.success(t('auth.appleSignInSuccess'), {
-                                            message: t('auth.welcomeBack'),
-                                            duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
-                                        });
-                                    } else if (result && !result.success) {
-                                        toast.error(t('auth.appleSignInError'), {
-                                            message: result.error || t('auth.appleSignInErrorGeneric'),
-                                            duration: UI_CONSTANTS.TOAST_DURATION.LONG
-                                        });
-                                    }
+                                    await handleAppleSignIn(
+                                        '/map',
+                                        (userId) => {
+                                            toast.success(t('auth.appleSignInSuccess'), {
+                                                message: t('auth.welcomeBack'),
+                                                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
+                                            });
+                                            handleRegisterUserDevice(userId || 0);
+                                        },
+                                        (error) => {
+                                            toast.error(
+                                                t('auth.appleSignInError'),
+                                                {message: t(error.onGetMessage())}
+                                            );
+                                        }
+                                    );
                                 }}
                                 disabled={appleLoading}
                                 opacity={appleLoading ? 0.6 : 1}

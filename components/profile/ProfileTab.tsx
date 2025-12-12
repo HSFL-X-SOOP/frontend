@@ -13,6 +13,7 @@ import {
 } from 'tamagui';
 import {Globe, Activity, Ruler, Check} from '@tamagui/lucide-icons';
 import {useTranslation,useToast} from '@/hooks/ui';
+import { createLogger } from '@/utils/logger';
 
 import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/data';
@@ -20,13 +21,16 @@ import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
+const logger = createLogger('Components:ProfileTab');
+
 export const ProfileTab: React.FC = () => {
     const {t, changeLanguage} = useTranslation();
     const {session, updateProfile: updateSessionProfile} = useSession();
-    const {updateProfile, updateProfileStatus} = useUser();
+    const {updateProfile, loading: isLoadingProfile} = useUser();
     const toast = useToast();
 
     const [isEditing, setIsEditing] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState<Language>(Language.DE);
     const [selectedRoles, setSelectedRoles] = useState<ActivityRole[]>([]);
     const [selectedMeasurement, setSelectedMeasurement] = useState<MeasurementSystem>(MeasurementSystem.METRIC);
@@ -48,31 +52,34 @@ export const ProfileTab: React.FC = () => {
     };
 
     const handleSave = async () => {
-        try {
-            const updatedProfile = await updateProfile({
+        setIsLoading(true);
+
+        await updateProfile(
+            {
                 language: selectedLanguage,
                 roles: selectedRoles,
                 measurementSystem: selectedMeasurement
-            });
+            },
+            (updatedProfile) => {
+                updateSessionProfile(updatedProfile);
 
-            updateSessionProfile(updatedProfile);
+                const langCode = selectedLanguage === Language.DE ? 'de' : 'en';
+                changeLanguage(langCode);
 
-            const langCode = selectedLanguage === Language.DE ? 'de' : 'en';
-            changeLanguage(langCode);
+                toast.success(t('profile.saveSuccess'), {
+                    message: t('profile.settingsUpdated')
+                });
 
-            toast.success(t('profile.saveSuccess'), {
-                message: t('profile.settingsUpdated'),
-                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
-            });
-
-            setIsEditing(false);
-        } catch (error) {
-            console.error('Failed to update profile:', error);
-            toast.error(t('profile.saveError'), {
-                message: error instanceof Error ? error.message : t('profile.saveErrorGeneric'),
-                duration: UI_CONSTANTS.TOAST_DURATION.LONG
-            });
-        }
+                setIsEditing(false);
+            },
+            (error) => {
+                toast.error(t('profile.saveError'), {
+                    message: t(error.onGetMessage()),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                });
+            }
+        );
+        setIsLoading(false);
     };
 
     const handleCancel = () => {
@@ -297,7 +304,7 @@ export const ProfileTab: React.FC = () => {
                             flex={1}
                             size="$4"
                             onPress={handleCancel}
-                            disabled={updateProfileStatus.loading}
+                            disabled={isLoading}
                         >
                             <SecondaryButtonText>
                                 {t('profile.actions.cancel')}
@@ -306,13 +313,13 @@ export const ProfileTab: React.FC = () => {
                         <PrimaryButton
                             flex={1}
                             size="$4"
-                            disabled={updateProfileStatus.loading || selectedRoles.length === 0}
+                            disabled={isLoading || selectedRoles.length === 0}
                             onPress={handleSave}
-                            icon={updateProfileStatus.loading ?
+                            icon={isLoading ?
                                 <Spinner color="white"/> : undefined}
                         >
                             <PrimaryButtonText>
-                                {updateProfileStatus.loading ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
+                                {isLoading ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
                             </PrimaryButtonText>
                         </PrimaryButton>
                     </XStack>

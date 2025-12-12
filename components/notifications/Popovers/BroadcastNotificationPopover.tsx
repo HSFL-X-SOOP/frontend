@@ -12,7 +12,7 @@ import {
     YStack
 } from 'tamagui';
 import {useNotificationLocations} from '@/hooks/ui';
-import {PrimaryButton, PrimaryButtonText, SecondaryButton} from '@/types/button';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton} from '@/types/button.ts';
 
 interface BroadcastNotificationPopoverProps extends PopoverProps {
     Icon?: any;

@@ -6,14 +6,18 @@ import {Globe, Activity, Ruler, Check, User} from '@tamagui/lucide-icons';
 import {useUser} from '@/hooks/data';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {useSession} from '@/context/SessionContext';
-import {useTranslation} from '@/hooks/ui';
+import {useTranslation, useToast} from '@/hooks/ui';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PrimaryButton, PrimaryButtonText} from '@/types/button';
+import { createLogger } from '@/utils/logger';
+
+const logger = createLogger('Profile:CreateProfile');
 
 export default function CreateProfileScreen() {
     const router = useRouter();
     const {t, changeLanguage} = useTranslation();
-    const {createProfile, createProfileStatus} = useUser();
+    const toast = useToast();
+    const {createProfile} = useUser();
     const {updateProfile: updateSessionProfile} = useSession();
 
     const [firstName, setFirstName] = useState('');
@@ -21,20 +25,21 @@ export default function CreateProfileScreen() {
     const [selectedLanguage, setSelectedLanguage] = useState<Language>(Language.DE);
     const [selectedRoles, setSelectedRoles] = useState<ActivityRole[]>([]);
     const [selectedMeasurement, setSelectedMeasurement] = useState<MeasurementSystem>(MeasurementSystem.METRIC);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleRoleToggle = (role: ActivityRole) => {
-        console.log('[CreateProfile] Toggling role:', role);
+        logger.debug('Toggling role:', { role });
         setSelectedRoles(prev => {
             const newRoles = prev.includes(role)
                 ? prev.filter(r => r !== role)
                 : [...prev, role];
-            console.log('[CreateProfile] Selected roles after toggle:', newRoles);
+            logger.debug('Selected roles after toggle:', { roles: newRoles });
             return newRoles;
         });
     };
 
     const handleSubmit = async () => {
-        console.log('[CreateProfile] Starting profile creation with:', {
+        logger.debug('Starting profile creation with:', {
             firstName,
             lastName,
             language: selectedLanguage,
@@ -46,48 +51,49 @@ export default function CreateProfileScreen() {
 
         // Validierung
         if (!firstName.trim() || !lastName.trim()) {
-            alert('Bitte gib deinen Vor- und Nachnamen ein!');
+            toast.error(t('profile.validation.nameRequired'));
             return;
         }
 
         if (selectedRoles.length === 0) {
-            alert('Bitte wähle mindestens eine Aktivität aus!');
+            toast.error(t('profile.validation.selectAtLeastOneActivity'));
             return;
         }
 
-        try {
-            const requestData = {
-                firstName: firstName.trim(),
-                lastName: lastName.trim(),
-                language: selectedLanguage,
-                roles: selectedRoles,
-                measurementSystem: selectedMeasurement
-            };
-            console.log('[CreateProfile] Sending request:', JSON.stringify(requestData, null, 2));
+        const requestData = {
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            language: selectedLanguage,
+            roles: selectedRoles,
+            measurementSystem: selectedMeasurement
+        };
+        logger.debug('Sending request:', requestData);
 
-            const profile = await createProfile(requestData);
-
-            console.log('[CreateProfile] Profile created successfully:', profile);
-
-            if (profile) {
+        setIsLoading(true);
+        await createProfile(
+            requestData,
+            (profile) => {
+                logger.info('Profile created successfully', { profile });
                 updateSessionProfile(profile);
-                console.log('[CreateProfile] Profile saved to session');
+                logger.debug('Profile saved to session');
 
                 const langCode = selectedLanguage === Language.DE ? 'de' : 'en';
                 changeLanguage(langCode);
 
-                router.replace('/map');
-            } else {
-                console.error('[CreateProfile] No profile returned from API');
-                alert('Fehler: Profil konnte nicht erstellt werden (keine Daten erhalten)');
-            }
-        } catch (error) {
-            console.error('[CreateProfile] Failed to create profile:', error);
-            alert(`Fehler beim Erstellen des Profils: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
-        }
-    };
+                toast.success(t('profile.createProfile'), {
+                    message: t('profile.profileCreated')
+                });
 
-    const isLoading = createProfileStatus.loading;
+                router.replace('/map');
+            },
+            (error) => {
+                toast.error(t('profile.errors.creationFailed'), {
+                    message: t(error.onGetMessage())
+                });
+            }
+        );
+        setIsLoading(false);
+    };
 
     return (
         <SafeAreaView style={{flex: 1}}>

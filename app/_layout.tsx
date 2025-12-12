@@ -14,9 +14,10 @@ import {
 } from '@expo-google-fonts/inter'
 import {StatusBar} from 'expo-status-bar'
 import {Platform, View, LogBox} from 'react-native'
-import {useEffect} from 'react'
+import {useEffect, useMemo} from 'react'
 import 'react-native-reanimated'
 import '../global.css'
+import {createLogger} from '@/utils/logger'
 
 import tamaguiConfig from '@/tamagui.config'
 import {PortalProvider} from '@tamagui/portal'
@@ -129,6 +130,7 @@ function SafeToastViewport() {
 function RootContent() {
     const {currentTheme} = useThemeContext()
     const insets = useSafeAreaInsets()
+    const logger = useMemo(() => createLogger('RootContent'), [])
 
     const shouldShowFooter = Platform.OS === 'web'
 
@@ -144,7 +146,43 @@ function RootContent() {
                 'MapLibre info',
             ])
         }
-    }, [])
+
+        // Global unhandled promise rejection handler
+        const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+            logger.error('Unhandled Promise Rejection', event.reason as Error | string);
+            // Prevent app crash
+            event.preventDefault?.();
+        };
+
+        // Global error handler
+        const handleError = (event: ErrorEvent) => {
+            logger.error('Uncaught Error', event.error as Error);
+            // Prevent app crash
+            event.preventDefault?.();
+        };
+
+        // Register handlers
+        if (Platform.OS === 'web') {
+            window.addEventListener('unhandledrejection', handleUnhandledRejection);
+            window.addEventListener('error', handleError);
+
+            // Cleanup
+            return () => {
+                window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+                window.removeEventListener('error', handleError);
+            };
+        } else {
+            // For React Native, handle unhandled errors at app level
+            const originalErrorHandler = ErrorUtils?.getGlobalHandler?.();
+            if (ErrorUtils?.setGlobalHandler) {
+                ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
+                    logger.error('Uncaught Error (React Native)', error);
+                    // Still call original handler if needed
+                    originalErrorHandler?.(error, isFatal);
+                });
+            }
+        }
+    }, [logger])
 
     return (
         <Theme name={currentTheme}>

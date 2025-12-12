@@ -21,7 +21,10 @@ export default function MagicLinkScreen() {
     const {token} = useLocalSearchParams<{ token?: string }>();
     const [email, setEmail] = useState("");
     const [sent, setSent] = useState(false);
-    const {requestMagicLink, requestMagicLinkStatus, magicLinkLogin, magicLinkLoginStatus} = useAuth();
+    const [isLoading, setIsLoading] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [verificationError, setVerificationError] = useState<string | null>(null);
+    const {requestMagicLink, magicLinkLogin} = useAuth();
     const {login: logUserIn} = useSession();
     const {t} = useTranslation();
     const toast = useToast();
@@ -33,24 +36,26 @@ export default function MagicLinkScreen() {
 
     const handleSendMagicLink = async () => {
         logger.info('Requesting magic link', {email});
-        try {
-            const result = await requestMagicLink({email});
-            if (result !== undefined) {
+        setIsLoading(true);
+
+        await requestMagicLink(
+            {email},
+            () => {
                 logger.info('Magic link sent successfully');
                 toast.success(t('auth.magicLink.linkSentSuccess'), {
                     message: t('auth.magicLink.checkYourEmail'),
-                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG  // Keep LONG for this one
                 });
                 setSent(true);
+            },
+            (error) => {
+                toast.error(t('auth.magicLink.linkSentError'), {
+                    message: t(error.onGetMessage()),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                });
             }
-        } catch (err: any) {
-            logger.error('Magic link request failed', err);
-            const errorMessage = err?.response?.data?.message || err?.message || t('auth.magicLink.linkSentErrorGeneric');
-            toast.error(t('auth.magicLink.linkSentError'), {
-                message: errorMessage,
-                duration: UI_CONSTANTS.TOAST_DURATION.LONG
-            });
-        }
+        );
+        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -61,37 +66,35 @@ export default function MagicLinkScreen() {
         loginAttemptedRef.current = true;
         logger.info('Processing magic link token');
 
-        (async () => {
-            try {
-                const result = await magicLinkLogin({token});
-                if (result) {
-                    logger.info('Magic link login successful');
-                    logUserIn({
-                        accessToken: result.accessToken,
-                        refreshToken: result.refreshToken,
-                        loggedInSince: new Date(),
-                        lastTokenRefresh: null,
-                        role: result.profile?.authorityRole ?? AuthorityRole.USER,
-                        profile: result.profile
-                    });
-                    toast.success(t('auth.magicLink.loginSuccess'), {
-                        message: t('auth.welcomeBack'),
-                        duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
-                    });
-                    router.replace("/map");
-                }
-            } catch (err: any) {
-                logger.error('Magic link login failed', err);
-                const errorMessage = err?.response?.data?.message || err?.message || t('auth.magicLink.invalidOrExpired');
-                toast.error(t('auth.magicLink.loginError'), {
-                    message: errorMessage,
-                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
+        setIsVerifying(true);
+        setVerificationError(null);
+
+        void magicLinkLogin(
+            {token},
+            (result) => {
+                logger.info('Magic link login successful');
+                logUserIn({
+                    accessToken: result.accessToken,
+                    refreshToken: result.refreshToken,
+                    loggedInSince: new Date(),
+                    lastTokenRefresh: null,
+                    role: result.profile?.authorityRole ?? AuthorityRole.USER,
+                    profile: result.profile
                 });
+                toast.success(t('auth.magicLink.loginSuccess'), {
+                    message: t('auth.welcomeBack')
+                });
+                router.replace("/map");
+            },
+            (error) => {
+                logger.error('Magic link login failed', error);
+                setVerificationError(error.onGetMessage());
+                setIsVerifying(false);
             }
-        })();
+        );
     }, [token, magicLinkLogin, logUserIn, router, t, toast]);
 
-    if (token && magicLinkLoginStatus.loading) {
+    if (token && isVerifying) {
         return (
             <SafeAreaView style={{flex: 1}}>
                 <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
@@ -105,11 +108,11 @@ export default function MagicLinkScreen() {
         );
     }
 
-    if (token && magicLinkLoginStatus.error) {
+    if (token && verificationError) {
         return (
             <SafeAreaView style={{flex: 1}}>
                 <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
-                    <AuthCard title={t('auth.magicLink.invalidOrExpired')} subtitle={magicLinkLoginStatus.error.message}
+                    <AuthCard title={t('auth.magicLink.invalidOrExpired')} subtitle={verificationError}
                               icon={AlertCircle}>
                         <Link href={"/(auth)/magic-link" as Href}>
                             <Text color="$accent7" textDecorationLine="underline" fontWeight="600">
@@ -158,17 +161,14 @@ export default function MagicLinkScreen() {
                                 hasError={hasErrors()}
                                 errorMessage={t('auth.invalidEmail')}
                             />
-                            {requestMagicLinkStatus.error && (
-                                <Text color="$red10" fontSize={14}>{requestMagicLinkStatus.error.message}</Text>
-                            )}
                         </YStack>
 
                         <PrimaryButton
                             size="$4"
                             onPress={handleSendMagicLink}
-                            disabled={!email || hasErrors() || requestMagicLinkStatus.loading}
+                            disabled={!email || hasErrors() || isLoading}
                         >
-                            {requestMagicLinkStatus.loading ? (
+                            {isLoading ? (
                                 <XStack alignItems="center" gap="$2">
                                     <Spinner size="small" color="white"/>
                                     <PrimaryButtonText>

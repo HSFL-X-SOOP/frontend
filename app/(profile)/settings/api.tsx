@@ -16,8 +16,8 @@ export default function ProfileSettingsApiScreen() {
           onChangeText={setApiKey}
           width="95%"
         />
-        <Button variant="outlined" onPress={() => console.log("")}>
-          <Text>Speichern</Text>
+        <Button variant="outlined" disabled>
+          <Text>Speichern (Coming Soon)</Text>
         </Button>
       </YStack>
     </View>

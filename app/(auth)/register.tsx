@@ -1,12 +1,12 @@
 import {useSession} from '@/context/SessionContext';
-import {useAuth,useGoogleSignIn} from '@/hooks/auth';
+import {useAuth, useGoogleSignIn} from '@/hooks/auth';
 import {AuthorityRole} from '@/api/models/profile';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
 import {Platform, SafeAreaView} from 'react-native';
 import {Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {User} from '@tamagui/lucide-icons';
-import {useTranslation,useToast,usePasswordValidation, useEmailValidation} from '@/hooks/ui';
+import {useTranslation, useToast, usePasswordValidation, useEmailValidation} from '@/hooks/ui';
 
 import {GoogleIcon, AppleIcon} from '@/components/ui/Icons';
 
@@ -17,7 +17,7 @@ import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
 import {PasswordStrengthIndicator} from '@/components/auth/PasswordStrengthIndicator';
 import {createLogger} from '@/utils/logger';
-import { useUserDeviceStore } from '@/api/stores/userDevice';
+import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
@@ -29,9 +29,10 @@ export default function RegisterScreen() {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [agreeTermsOfService, setAgreeTermsOfService] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const router = useRouter();
-    const {register, registerStatus} = useAuth();
+    const {register} = useAuth();
     const {login, session} = useSession();
     const {t} = useTranslation();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
@@ -88,9 +89,11 @@ export default function RegisterScreen() {
         }
 
         logger.info('Registration attempt', {email});
-        try {
-            const res = await register({email, password, rememberMe: false});
-            if (res) {
+        setIsLoading(true);
+
+        await register(
+            {email, password, rememberMe: false},
+            (res) => {
                 logger.info('Registration successful');
                 login({
                     accessToken: res.accessToken,
@@ -101,38 +104,46 @@ export default function RegisterScreen() {
                     profile: res.profile
                 });
                 toast.success(t('auth.registerSuccess'), {
-                    message: t('auth.accountCreated'),
-                    duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
+                    message: t('auth.accountCreated')
                 });
                 handleRegisterUserDevice(res.profile?.id || 0);
                 router.push("/");
+            },
+            (error) => {
+                toast.error(
+                    t('auth.registerError'),
+                    {message: t(error.onGetMessage())}
+                );
             }
-        } catch (err: any) {
-            logger.error('Registration failed', err);
-            const errorMessage = err?.response?.data?.message || err?.message || t('auth.registerErrorGeneric');
-            toast.error(t('auth.registerError'), {
-                message: errorMessage,
-                duration: UI_CONSTANTS.TOAST_DURATION.LONG
-            });
-        }
+        );
+        setIsLoading(false);
     };
 
     const handleRegisterUserDevice = async (userId: number) => {
         if (Platform.OS === 'web') {return;}
 
-        const authStatus = await messaging().requestPermission();
-        const enabled =
-            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        try {
+            const authStatus = await messaging().requestPermission();
+            const enabled =
+                authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+                authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-        if (enabled) {
-            try {
-                let token = await messaging().getToken();
-                console.log('FCM Token:', token);
-                userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
-            } catch (error) {
-                console.log('Error getting FCM token:', error);
+            if (enabled) {
+                try {
+                    let token = await messaging().getToken();
+                    logger.debug('FCM Token obtained');
+                    const result = await userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+                    if (result.ok) {
+                        logger.info('User device registered with FCM token');
+                    } else {
+                        logger.warn('Failed to register user device (non-critical)', {message: result.error.message});
+                    }
+                } catch (error) {
+                    logger.error('Failed to get FCM token', error);
+                }
             }
+        } catch (error) {
+            logger.error('Failed to request messaging permission', error);
         }
     }
 
@@ -191,11 +202,6 @@ export default function RegisterScreen() {
                             />
                         </YStack>
 
-                        {registerStatus.error && (
-                            <Text color="$red10" fontSize={14} textAlign="center">
-                                {registerStatus.error.message}
-                            </Text>
-                        )}
 
                         <XStack gap="$2" alignItems="center" width="100%" pressStyle={{opacity: 0.7}}
                                 onPress={() => setAgreeTermsOfService(!agreeTermsOfService)}>
@@ -226,9 +232,9 @@ export default function RegisterScreen() {
                         <PrimaryButton
                             size="$4"
                             onPress={handleSubmit}
-                            disabled={!isFormValid || registerStatus.loading}
+                            disabled={!isFormValid || isLoading}
                         >
-                            {registerStatus.loading ? (
+                            {isLoading ? (
                                 <XStack gap="$2" alignItems="center">
                                     <Spinner size="small" color="white"/>
                                     <PrimaryButtonText>
@@ -253,18 +259,21 @@ export default function RegisterScreen() {
                         <SecondaryButton
                             size="$4"
                             onPress={async () => {
-                                const result = await handleGoogleSignIn('/');
-                                if (result?.success) {
-                                    toast.success(t('auth.googleSignInSuccess'), {
-                                        message: t('auth.accountCreated'),
-                                        duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
-                                    });
-                                } else if (result && !result.success) {
-                                    toast.error(t('auth.googleSignInError'), {
-                                        message: result.error || t('auth.googleSignInErrorGeneric'),
-                                        duration: UI_CONSTANTS.TOAST_DURATION.LONG
-                                    });
-                                }
+                                await handleGoogleSignIn(
+                                    '/',
+                                    () => {
+                                        toast.success(t('auth.googleSignInSuccess'), {
+                                            message: t('auth.accountCreated'),
+                                            duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
+                                        });
+                                    },
+                                    (error) => {
+                                        toast.error(
+                                            t('auth.googleSignInError'),
+                                            {message: t(error.onGetMessage())}
+                                        );
+                                    }
+                                );
                             }}
                             disabled={googleLoading}
                             width="100%"
@@ -290,19 +299,22 @@ export default function RegisterScreen() {
                             <SecondaryButton
                                 size="$4"
                                 onPress={async () => {
-                                    const result = await handleAppleSignIn('/');
-                                    if (result?.success) {
-                                        toast.success(t('auth.appleSignInSuccess'), {
-                                            message: t('auth.accountCreated'),
-                                            duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
-                                        });
-                                        handleRegisterUserDevice(result.userId || 0);
-                                    } else if (result && !result.success) {
-                                        toast.error(t('auth.appleSignInError'), {
-                                            message: result.error || t('auth.appleSignInErrorGeneric'),
-                                            duration: UI_CONSTANTS.TOAST_DURATION.LONG
-                                        });
-                                    }
+                                    await handleAppleSignIn(
+                                        '/',
+                                        (userId) => {
+                                            toast.success(t('auth.appleSignInSuccess'), {
+                                                message: t('auth.accountCreated'),
+                                                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
+                                            });
+                                            handleRegisterUserDevice(userId || 0);
+                                        },
+                                        (error) => {
+                                            toast.error(
+                                                t('auth.appleSignInError'),
+                                                {message: t(error.onGetMessage())}
+                                            );
+                                        }
+                                    );
                                 }}
                                 disabled={appleLoading}
                                 width="100%"

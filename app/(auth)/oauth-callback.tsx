@@ -63,31 +63,30 @@ export default function OAuthCallbackHandler() {
                 });
 
                 // Try to fetch user profile
-                try {
-                    logger.debug('Fetching user profile');
-                    const profile = await getProfile();
-
-                    if (profile) {
+                logger.debug('Fetching user profile');
+                void getProfile(
+                    (profile) => {
                         logger.info('Profile found, updating session');
                         updateSessionProfile(profile);
-                    }
 
-                    // Redirect based on profile existence and creation status
-                    const hasProfile = profile && profile.profileCreatedAt;
-                    const redirectPath = hasProfile ? '/map' : '/(profile)/create-profile';
-                    logger.info('Redirecting to', { path: redirectPath, hasProfile, profileCreatedAt: profile?.profileCreatedAt });
+                        // Redirect based on profile existence and creation status
+                        const hasProfile = profile && profile.profileCreatedAt;
+                        const redirectPath = hasProfile ? '/map' : '/(profile)/create-profile';
+                        logger.info('Redirecting to', { path: redirectPath, hasProfile, profileCreatedAt: profile?.profileCreatedAt });
 
-                    if (Platform.OS === 'web' && typeof window !== 'undefined') {
-                        logger.debug('Cleaning up URL after OAuth callback');
-                        window.history.replaceState({}, document.title, redirectPath);
-                        router.replace(redirectPath as any);
-                    } else {
-                        router.replace(redirectPath as any);
+                        if (Platform.OS === 'web' && typeof window !== 'undefined') {
+                            logger.debug('Cleaning up URL after OAuth callback');
+                            window.history.replaceState({}, document.title, redirectPath);
+                            router.replace(redirectPath as any);
+                        } else {
+                            router.replace(redirectPath as any);
+                        }
+                    },
+                    (error) => {
+                        logger.error('Failed to fetch profile, redirecting to create-profile', error);
+                        router.replace('/(profile)/create-profile');
                     }
-                } catch (error) {
-                    logger.error('Failed to fetch profile, redirecting to create-profile', error);
-                    router.replace('/(profile)/create-profile');
-                }
+                );
             } else {
                 logger.error('No tokens found in OAuth callback URL');
                 router.replace('/(auth)/login');

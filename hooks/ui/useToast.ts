@@ -1,6 +1,6 @@
 import {useToastController} from '@tamagui/toast';
 import {useCallback} from 'react';
-
+import {UI_CONSTANTS} from '@/config/constants';
 interface ToastOptions {
     message?: string;
     duration?: number;
@@ -14,7 +14,7 @@ export function useToast() {
     const show = useCallback((title: string, options?: ToastOptions & { type?: ToastType }) => {
         toast.show(title, {
             message: options?.message,
-            duration: options?.duration || 3000,
+            duration: options?.duration || UI_CONSTANTS.TOAST_DURATION.MEDIUM,
             customData: {
                 type: options?.type || 'info'
             }

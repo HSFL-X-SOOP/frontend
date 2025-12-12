@@ -1,33 +1,86 @@
+import {useCallback, useState} from "react";
 import { CreateOrUpdateNotificationLocationRequest, CreateOrUpdateNotificationLocationResponse, DeleteNotificationLocationResponse, NotificationLocation } from "@/api/models/notificationLocation";
 import { useNotificationLocationStore } from "@/api/stores/notificationLocation";
-import * as AsyncHandler from "@/hooks/core/asyncHandler";
+import {AppError} from "@/utils/errors";
 
+/**
+ * Hook for managing notification locations with Result pattern
+ *
+ * Note: Errors are passed to onError callback
+ */
 export const useNotificationLocations = () => {
     const notificationLocationStore = useNotificationLocationStore();
+    const [loading, setLoading] = useState(false);
 
-    const [getNotificationLocationByLocationId, getNotificationLocationByLocationIdStatus] =
-        AsyncHandler.useAsync<[number], NotificationLocation>(notificationLocationStore.getNotificationLocationByLocationId);
+    const getNotificationLocationByLocationId = useCallback(async (
+        locationId: number,
+        onSuccess: (data: NotificationLocation) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await notificationLocationStore.getNotificationLocationByLocationId(locationId);
 
-    const [getAllNotificationLocationsByLocationId, getAllNotificationLocationsByLocationIdStatus] =
-        AsyncHandler.useAsync<[number], NotificationLocation[]>(notificationLocationStore.getAllNotificationLocationsByLocationId);
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [notificationLocationStore]);
 
-    const [create, createStatus] =
-        AsyncHandler.useAsync<[CreateOrUpdateNotificationLocationRequest], CreateOrUpdateNotificationLocationResponse>(notificationLocationStore.createNotificationLocation);
+    const getAllNotificationLocationsByLocationId = useCallback(async (
+        locationId: number,
+        onSuccess: (data: NotificationLocation[]) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await notificationLocationStore.getAllNotificationLocationsByLocationId(locationId);
 
-    const [deleteNotificationLocation, deleteNotificationLocationStatus] =
-        AsyncHandler.useAsync<[number], DeleteNotificationLocationResponse>(notificationLocationStore.deleteNotificationLocation);
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [notificationLocationStore]);
+
+    const create = useCallback(async (
+        body: CreateOrUpdateNotificationLocationRequest,
+        onSuccess: (data: CreateOrUpdateNotificationLocationResponse) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await notificationLocationStore.createNotificationLocation(body);
+
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [notificationLocationStore]);
+
+    const deleteNotificationLocation = useCallback(async (
+        id: number,
+        onSuccess: (data: DeleteNotificationLocationResponse) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await notificationLocationStore.deleteNotificationLocation(id);
+
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [notificationLocationStore]);
 
     return {
+        loading,
         getNotificationLocationByLocationId,
-        getNotificationLocationByLocationIdStatus,
-
         getAllNotificationLocationsByLocationId,
-        getAllNotificationLocationsByLocationIdStatus,
-
         create,
-        createStatus,
-
-        deleteNotificationLocation, 
-        deleteNotificationLocationStatus,
+        deleteNotificationLocation
     };
 };

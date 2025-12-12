@@ -12,6 +12,7 @@ import {
 } from 'tamagui';
 import {useNotificationMeasurementRules} from '@/hooks/ui';
 import {NotificationMeasurementRule} from '@/api/models/notificationMeasurementRule';
+import { createLogger } from '@/utils/logger';
 import {
     formatMeasurementValue,
     getIDFromMeasurementType,
@@ -20,6 +21,8 @@ import {
     getTextFromMeasurementType
 } from '@/utils/measurements';
 import {PrimaryButton, PrimaryButtonText} from '@/types/button';
+
+const logger = createLogger('Dashboard:NotificationRuleDialog');
 
 interface NotificationRuleDialogProps extends PopoverProps {
     Icon?: any;
@@ -68,7 +71,7 @@ export function NotificationRuleDialog({
                 setOperator(fetchedRule?.operator || '>');
                 setIsActive(fetchedRule?.isActive ?? true);
             } catch (e) {
-                console.warn('fetchNotificationMeasurementRule failed', e);
+                logger.error('Failed to fetch notification measurement rule', e);
                 setExistingRule(null);
             }
         };

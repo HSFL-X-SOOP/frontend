@@ -2,6 +2,9 @@ import {LoginResponse} from "@/api/models/auth";
 import {useSession} from "@/context/SessionContext";
 import axios, {AxiosError, InternalAxiosRequestConfig} from "axios";
 import {ENV} from "@/config/environment";
+import { createLogger } from "@/utils/logger";
+
+const logger = createLogger('HTTP:Client');
 
 export function useHttpClient() {
     const {session, login, logout} = useSession()
@@ -11,11 +14,9 @@ export function useHttpClient() {
         timeout: 30_000,
     })
 
-    // Mutex pattern: Prevent multiple simultaneous token refresh calls
     let refreshPromise: Promise<string> | null = null;
 
     const refreshAccessToken = async (refreshToken: string): Promise<string> => {
-        // If a refresh is already in progress, return the existing promise
         if (refreshPromise) {
             return refreshPromise;
         }
@@ -64,7 +65,7 @@ export function useHttpClient() {
                     const accessToken = await refreshAccessToken(session.refreshToken!)
                     config.headers.Authorization = `Bearer ${accessToken}`
                 } catch (err) {
-                    console.error('Token refresh failed in request interceptor:', err);
+                    logger.error('Token refresh failed in request interceptor', err);
                     return config
                 }
             } else {
@@ -89,12 +90,12 @@ export function useHttpClient() {
                         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
                         return httpClient(originalRequest);
                     } catch (refreshError) {
-                        console.error('Token refresh failed:', refreshError);
+                        logger.error('Token refresh failed', refreshError);
                         logout();
                         return Promise.reject(refreshError);
                     }
                 } else {
-                    console.log('No refresh token available, logging out');
+                    logger.warn('No refresh token available, logging out');
                     logout();
                 }
             }

@@ -1,55 +1,145 @@
-import { CreateOrUpdateNotificationMeasurementRuleRequest, 
-    CreateOrUpdateNotificationMeasurementRuleResponse, 
-    DeleteNotificationMeasurementRuleResponse, 
-    NotificationMeasurementRule 
+import {useCallback, useState} from "react";
+import { CreateOrUpdateNotificationMeasurementRuleRequest,
+    CreateOrUpdateNotificationMeasurementRuleResponse,
+    DeleteNotificationMeasurementRuleResponse,
+    NotificationMeasurementRule
 } from "@/api/models/notificationMeasurementRule";
 import { useNotificationMeasurementRuleStore } from "@/api/stores/notificationMeasurementRule";
-import * as AsyncHandler from "@/hooks/core/asyncHandler";
+import {AppError} from "@/utils/errors";
 
+/**
+ * Hook for managing notification measurement rules with Result pattern
+ *
+ * Note: Errors are passed to onError callback
+ */
 export const useNotificationMeasurementRules = () => {
     const notificationMeasurementRuleStore = useNotificationMeasurementRuleStore();
+    const [loading, setLoading] = useState(false);
 
-    const [getNotificationMeasurementRuleById, getNotificationMeasurementRuleByIdStatus] =
-        AsyncHandler.useAsync<[number], NotificationMeasurementRule>(notificationMeasurementRuleStore.getNotificationMeasurementRuleById);
-    
-    const [getAllNotificationMeasurementRulesByUserId, getAllNotificationMeasurementRulesByUserIdStatus] =
-        AsyncHandler.useAsync<[number], NotificationMeasurementRule[]>(notificationMeasurementRuleStore.getAllNotificationMeasurementRulesByUserId);
+    const getNotificationMeasurementRuleById = useCallback(async (
+        id: number,
+        onSuccess: (data: NotificationMeasurementRule) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await notificationMeasurementRuleStore.getNotificationMeasurementRuleById(id);
 
-    const [getAllNotificationMeasurementRulesByUserIdAndLocationId, getAllNotificationMeasurementRulesByUserIdAndLocationIdStatus] =
-        AsyncHandler.useAsync<[number, number], NotificationMeasurementRule[]>(notificationMeasurementRuleStore.getAllNotificationMeasurementRulesByUserIdAndLocationId);
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [notificationMeasurementRuleStore]);
 
-    const [getNotificationMeasurementRule, getNotificationMeasurementRuleStatus] =
-        AsyncHandler.useAsync<[number, number, number], NotificationMeasurementRule | null>(notificationMeasurementRuleStore.getNotificationMeasurementRule);
+    const getAllNotificationMeasurementRulesByUserId = useCallback(async (
+        userId: number,
+        onSuccess: (data: NotificationMeasurementRule[]) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await notificationMeasurementRuleStore.getAllNotificationMeasurementRulesByUserId(userId);
 
-    const [create, createStatus] =
-        AsyncHandler.useAsync<[CreateOrUpdateNotificationMeasurementRuleRequest], CreateOrUpdateNotificationMeasurementRuleResponse>(notificationMeasurementRuleStore.createNotificationMeasurementRule);
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [notificationMeasurementRuleStore]);
 
-    const [update, updateStatus] =
-        AsyncHandler.useAsync<[number, CreateOrUpdateNotificationMeasurementRuleRequest], CreateOrUpdateNotificationMeasurementRuleResponse>(notificationMeasurementRuleStore.updateNotificationMeasurementRule);
+    const getAllNotificationMeasurementRulesByUserIdAndLocationId = useCallback(async (
+        userId: number,
+        locationId: number,
+        onSuccess: (data: NotificationMeasurementRule[]) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await notificationMeasurementRuleStore.getAllNotificationMeasurementRulesByUserIdAndLocationId(userId, locationId);
 
-    const [deleteNotificationMeasurementRule, deleteNotificationMeasurementRuleStatus] =
-        AsyncHandler.useAsync<[number], DeleteNotificationMeasurementRuleResponse>(notificationMeasurementRuleStore.deleteNotificationMeasurementRule);
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [notificationMeasurementRuleStore]);
+
+    const getNotificationMeasurementRule = useCallback(async (
+        userId: number,
+        locationId: number,
+        measurementTypeId: number,
+        onSuccess: (data: NotificationMeasurementRule | null) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await notificationMeasurementRuleStore.getNotificationMeasurementRule(userId, locationId, measurementTypeId);
+
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [notificationMeasurementRuleStore]);
+
+    const create = useCallback(async (
+        body: CreateOrUpdateNotificationMeasurementRuleRequest,
+        onSuccess: (data: CreateOrUpdateNotificationMeasurementRuleResponse) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await notificationMeasurementRuleStore.createNotificationMeasurementRule(body);
+
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [notificationMeasurementRuleStore]);
+
+    const update = useCallback(async (
+        id: number,
+        body: CreateOrUpdateNotificationMeasurementRuleRequest,
+        onSuccess: (data: CreateOrUpdateNotificationMeasurementRuleResponse) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await notificationMeasurementRuleStore.updateNotificationMeasurementRule(id, body);
+
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [notificationMeasurementRuleStore]);
+
+    const deleteNotificationMeasurementRule = useCallback(async (
+        id: number,
+        onSuccess: (data: DeleteNotificationMeasurementRuleResponse) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await notificationMeasurementRuleStore.deleteNotificationMeasurementRule(id);
+
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [notificationMeasurementRuleStore]);
 
     return {
+        loading,
         getNotificationMeasurementRuleById,
-        getNotificationMeasurementRuleByIdStatus,
-
         getAllNotificationMeasurementRulesByUserId,
-        getAllNotificationMeasurementRulesByUserIdStatus,
-
         getAllNotificationMeasurementRulesByUserIdAndLocationId,
-        getAllNotificationMeasurementRulesByUserIdAndLocationIdStatus,
-
         getNotificationMeasurementRule,
-        getNotificationMeasurementRuleStatus,
-
         create,
-        createStatus,
-
         update,
-        updateStatus,
-
-        deleteNotificationMeasurementRule, 
-        deleteNotificationMeasurementRuleStatus,
+        deleteNotificationMeasurementRule
     };
 };

@@ -147,31 +147,42 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
         }
 
         setIsSaving(true);
-        try {
-            toast.success(t('harbor.saveSuccess'), {
-                message: t('harbor.infoUpdated'),
-                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
-            });
 
-            // Refresh data to get updated info
-            if (refetch) {
-                await refetch();
+        // Actually call updateLocation to save changes
+        await updateLocation(
+            editedInfo,
+            () => {
+                // Show success only AFTER successful save
+                toast.success(t('harbor.saveSuccess'), {
+                    message: t('harbor.infoUpdated')
+                });
+
+                // Refresh data to get updated info
+                if (refetch) {
+                    void refetch(
+                        () => {
+                            // Increment imageKey to force image reload from server
+                            setImageKey(prev => prev + 1);
+
+                            // Set isEditing to false - useEffect will handle updating currentImageUrl
+                            setIsEditing(false);
+                        },
+                        (error) => {
+                            // Refetch error is non-critical
+                        }
+                    );
+                } else {
+                    setIsEditing(false);
+                }
+            },
+            (error) => {
+                toast.error(t('harbor.saveError'), {
+                    message: t(error.onGetMessage()),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                });
             }
-
-            // Increment imageKey to force image reload from server
-            setImageKey(prev => prev + 1);
-
-            // Set isEditing to false - useEffect will handle updating currentImageUrl
-            setIsEditing(false);
-        } catch (error) {
-            console.error('Failed to save harbor info:', error);
-            toast.error(t('harbor.saveError'), {
-                message: t('harbor.saveErrorMessage'),
-                duration: UI_CONSTANTS.TOAST_DURATION.LONG
-            });
-        } finally {
-            setIsSaving(false);
-        }
+        );
+        setIsSaving(false);
     };
 
     const processFile = (file: File) => {

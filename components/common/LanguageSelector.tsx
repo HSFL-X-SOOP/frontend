@@ -1,6 +1,6 @@
 import React from 'react';
 import {YStack, XStack, Text} from 'tamagui';
-import {useTranslation} from '@/hooks/ui';
+import {useTranslation, useToast} from '@/hooks/ui';
 import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/data';
 import {Language} from '@/api/models/profile';
@@ -12,7 +12,8 @@ const languages = [
 ];
 
 export const LanguageSelector: React.FC = () => {
-    const {currentLanguage, changeLanguage} = useTranslation();
+    const {currentLanguage, changeLanguage, t} = useTranslation();
+    const toast = useToast();
     const {session, updateProfile: updateSessionProfile} = useSession();
     const {updateProfile} = useUser();
 
@@ -20,14 +21,19 @@ export const LanguageSelector: React.FC = () => {
         changeLanguage(code);
 
         if (session?.profile) {
-            try {
-                const updatedProfile = await updateProfile({
+            await updateProfile(
+                {
                     language: profileLang,
-                });
-                updateSessionProfile(updatedProfile);
-            } catch (error) {
-                console.error('Failed to update language in backend:', error);
-            }
+                },
+                (updatedProfile) => {
+                    updateSessionProfile(updatedProfile);
+                },
+                (error) => {
+                    toast.error(t('settings.language'), {
+                        message: t(error.onGetMessage())
+                    });
+                }
+            );
         }
     };
 

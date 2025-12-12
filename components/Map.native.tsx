@@ -3,6 +3,7 @@ import {useSupercluster, useMapFilters, useMapCamera, useMapState, useMapStyle,u
 import {MapView, Camera, type CameraRef, type MapViewRef} from "@maplibre/maplibre-react-native";
 import {useMemo, useRef} from "react";
 import {View} from "react-native";
+import { createLogger } from "@/utils/logger";
 import SensorMarker from "./map/markers/NativeSensorMarker";
 import ClusterMarker from "./map/markers/NativeClusterMarker";
 import MapSensorBottomSheet, {MapSensorBottomSheetRef} from "./map/controls/MapSensorBottomSheet";
@@ -11,6 +12,8 @@ import {SpeedDial} from "@/components/speeddial";
 import {Plus} from "@tamagui/lucide-icons";
 import MapFilterButton, {MapFilterState} from "./map/controls/MapFilterButton";
 import {MAP_CONSTANTS} from '@/config/constants';
+
+const logger = createLogger('Components:NativeMap');
 
 interface MapProps {
     module1Visible?: boolean;
@@ -209,7 +212,7 @@ export default function NativeMap(props: MapProps) {
                 setCenter([newLon, newLat]);
             }
         } catch (error) {
-            console.debug('Error getting map state:', error);
+            logger.error('Error getting map state', error);
         }
     };
 

@@ -8,7 +8,7 @@ import {
     XStack
 } from 'tamagui';
 import {ChevronDown, Edit3, Trash, Check, X, Bell, BellOff} from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/ui/useTranslation';
+import {useTranslation, useToast} from '@/hooks/ui';
 import {useNotificationMeasurementRules} from '@/hooks/ui/useNotificationMeasurementRules';
 import {useUserLocations} from '@/hooks/data/useUserLocations';
 import {UserLocation} from '@/api/models/userLocation';
@@ -25,8 +25,10 @@ import {
     DeleteNotificationMeasurementRulePopover
 } from '@/components/notifications/Popovers/DeleteNotificationMeasurementRulePopover';
 
+
 export function MyNotificationsTab() {
     const {t} = useTranslation();
+    const toast = useToast();
     const notifications = useNotificationMeasurementRules();
     const userLocations = useUserLocations();
     const [myNotifications, setMyNotifications] = useState<NotificationMeasurementRule[] | undefined>([]);
@@ -39,21 +41,39 @@ export function MyNotificationsTab() {
     const location = useLocations();
 
     useEffect(() => {
-        const fetchData = async () => {
-            const userLocationsData = await userLocations.getAllUserLocationByUserId(userID);
-            setMyLocations(userLocationsData);
-            if (userLocationsData && userLocationsData.length > 0) {
-                setSelectedUserLocation(userLocationsData[0]);
-                setSelectedUserLocationId(userLocationsData[0]?.locationId);
+        void userLocations.getAllUserLocationByUserId(
+            userID,
+            (userLocationsData) => {
+                setMyLocations(userLocationsData);
+                if (userLocationsData && userLocationsData.length > 0) {
+                    setSelectedUserLocation(userLocationsData[0]);
+                    setSelectedUserLocationId(userLocationsData[0]?.locationId);
+                }
+            },
+            (error) => {
+                toast.error(t('common.error'), {
+                    message: t(error.onGetMessage())
+                });
+                setMyLocations([]);
             }
-        };
-        fetchData();
-    }, [userID, userLocations]);
+        );
+    }, [userID, userLocations, toast, t]);
 
-    const fetchNotifications = useCallback(async () => {
-        const notificationsData = await notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(userID, selectedUserLocationId || -1);
-        setMyNotifications(notificationsData);
-    }, [notifications, userID, selectedUserLocationId]);
+    const fetchNotifications = useCallback(() => {
+        void notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(
+            userID,
+            selectedUserLocationId || -1,
+            (notificationsData) => {
+                setMyNotifications(notificationsData);
+            },
+            (error) => {
+                toast.error(t('common.error'), {
+                    message: t(error.onGetMessage())
+                });
+                setMyNotifications([]);
+            }
+        );
+    }, [notifications, userID, selectedUserLocationId, toast, t]);
 
     useEffect(() => {
         fetchNotifications();
@@ -75,15 +95,28 @@ export function MyNotificationsTab() {
             }));
     }, [myLocations, location.data]);
 
-    const updateUserLocationSentHarborNotifications = useCallback(async () => {
+    const updateUserLocationSentHarborNotifications = useCallback(() => {
         if (!selectedUserLocation) return;
-        const updatedUserocation = await userLocations.update(selectedUserLocation.id, {
-            userId: userID,
-            locationId: selectedUserLocation.locationId,
-            sentHarborNotifications: !selectedUserLocation.sentHarborNotifications,
-        });
-        setSelectedUserLocation(updatedUserocation);
-    }, [selectedUserLocation, userLocations, userID]);
+        void userLocations.update(
+            selectedUserLocation.id,
+            {
+                userId: userID,
+                locationId: selectedUserLocation.locationId,
+                sentHarborNotifications: !selectedUserLocation.sentHarborNotifications,
+            },
+            (updatedUserocation) => {
+                setSelectedUserLocation(updatedUserocation);
+                toast.success(t('harbor.notificationPreferenceUpdated'), {
+                    message: t('harbor.harborNotificationPreference')
+                });
+            },
+            (error) => {
+                toast.error(t('common.error'), {
+                    message: t(error.onGetMessage())
+                });
+            }
+        );
+    }, [selectedUserLocation, userLocations, userID, toast, t]);
 
     return (
         <YStack gap="$4">
@@ -155,7 +188,8 @@ export function MyNotificationsTab() {
                                       opacity={0.7}>{t("dashboard.measurements.lastNotifiedAt")}: {formatTimeToLocal(notification.lastNotifiedAt + "Z")}</Text>
                                 <XStack gap="$2">
                                     <Button onPress={() => {
-                                        notifications.update(notification.id,
+                                        void notifications.update(
+                                            notification.id,
                                             {
                                                 userId: notification.userId,
                                                 locationId: notification.locationId,
@@ -163,11 +197,27 @@ export function MyNotificationsTab() {
                                                 measurementValue: notification.measurementValue,
                                                 operator: notification.operator,
                                                 isActive: !notification.isActive
+                                            },
+                                            () => {
+                                                void notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(
+                                                    userID,
+                                                    selectedUserLocationId || -1,
+                                                    (notificationsData) => {
+                                                        setMyNotifications(notificationsData);
+                                                    },
+                                                    (error) => {
+                                                        toast.error(t('common.error'), {
+                                                            message: t(error.onGetMessage())
+                                                        });
+                                                    }
+                                                );
+                                            },
+                                            (error) => {
+                                                toast.error(t('common.error'), {
+                                                    message: t(error.onGetMessage())
+                                                });
                                             }
-                                        ).then(async () => {
-                                            const notificationsData = await notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(1, selectedUserLocationId || -1);
-                                            setMyNotifications(notificationsData);
-                                        })
+                                        );
                                     }}>
                                         {notification.isActive ? t('common.disable') : t('common.enable')}
                                     </Button>

@@ -1,7 +1,9 @@
 import {PopoverProps, YStack, Dialog, Button, Text, XStack, Input, Checkbox, H2} from "tamagui";
 import {useState, useEffect, useCallback} from 'react';
 import {useNotificationMeasurementRules} from '@/hooks/ui/useNotificationMeasurementRules';
+import {useToast} from '@/hooks/ui';
 import {NotificationMeasurementRule} from '@/api/models/notificationMeasurementRule';
+import {createLogger} from '@/utils/logger';
 
 import {
     getMeasurementTypeSymbol,
@@ -10,6 +12,8 @@ import {
     formatMeasurementValue,
     getIDFromMeasurementType
 } from '@/utils/measurements';
+
+const logger = createLogger('Components:SetNotificationMeasurementRulePopover');
 
 
 export function SetNotificationMeasurementRulePopover({
@@ -37,6 +41,7 @@ export function SetNotificationMeasurementRulePopover({
     fetchNotifications?: () => void
 }) {
     const notificationMeasurementRules = useNotificationMeasurementRules();
+    const toast = useToast();
     const [measurementValue, setMeasurementValue] = useState<number>(Value || 0);
     const [operator, setOperator] = useState<string>('>');
     const [isActive, setIsActive] = useState<boolean>(true);
@@ -45,24 +50,27 @@ export function SetNotificationMeasurementRulePopover({
 
     useEffect(() => {
         if (!marinaID || !userID) return;
-        const fetchNotificationMeasurementRule = async () => {
-            try {
-                const fetchedRule = await notificationMeasurementRules.getNotificationMeasurementRule(userID, marinaID, getIDFromMeasurementType(MeasurementType));
+        void notificationMeasurementRules.getNotificationMeasurementRule(
+            userID,
+            marinaID,
+            getIDFromMeasurementType(MeasurementType),
+            (fetchedRule) => {
                 setExistingRule(fetchedRule);
                 setMeasurementValue(fetchedRule?.measurementValue || 0);
                 setOperator(fetchedRule?.operator || '>');
                 setIsActive(fetchedRule?.isActive ?? true);
-            } catch (e) {
-                console.warn('fetchUserLocation failed', e);
+            },
+            (error) => {
                 setExistingRule(null);
             }
-        };
-
-        void fetchNotificationMeasurementRule();
+        );
     }, [marinaID, userID, MeasurementType, notificationMeasurementRules]);
 
-    const createNotificationMeasurementRule = useCallback(async (value: number) => {
-        if (!marinaID) return;
+    const createNotificationMeasurementRule = useCallback((value: number, onSuccess: () => void, onError: (error: any) => void) => {
+        if (!marinaID) {
+            onError(new Error('Marina ID is required'));
+            return;
+        }
         const notificationMeasurementRule = {
             userId: userID || -1,
             locationId: marinaID,
@@ -73,9 +81,18 @@ export function SetNotificationMeasurementRulePopover({
         }
 
         if (existingRule) {
-            await notificationMeasurementRules.update(existingRule.id, notificationMeasurementRule);
+            void notificationMeasurementRules.update(
+                existingRule.id,
+                notificationMeasurementRule,
+                onSuccess,
+                onError
+            );
         } else {
-            await notificationMeasurementRules.create(notificationMeasurementRule);
+            void notificationMeasurementRules.create(
+                notificationMeasurementRule,
+                onSuccess,
+                onError
+            );
         }
 
     }, [marinaID, operator, isActive, userID, MeasurementType, existingRule, notificationMeasurementRules]);
@@ -213,12 +230,22 @@ export function SetNotificationMeasurementRulePopover({
                                 size="$4"
                                 width="100%"
                                 onPress={() => {
-                                    if (!marinaID) return;
-                                    createNotificationMeasurementRule(measurementValue).then(async () => {
-                                        if (fetchNotifications) {
-                                            await fetchNotifications();
+                                    createNotificationMeasurementRule(
+                                        measurementValue,
+                                        () => {
+                                            if (fetchNotifications) {
+                                                void fetchNotifications();
+                                            }
+                                            toast.success(t('dashboard.measurements.save'), {
+                                                message: t('dashboard.measurements.notificationRuleSaved')
+                                            });
+                                        },
+                                        (error) => {
+                                            toast.error(t('common.error'), {
+                                                message: t(error.onGetMessage())
+                                            });
                                         }
-                                    });
+                                    );
                                 }}
                             >
                                 {t('dashboard.measurements.save')}

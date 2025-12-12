@@ -1,4 +1,4 @@
-import {useEffect} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {Platform} from 'react-native';
 import {useRouter} from 'expo-router';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
@@ -6,18 +6,21 @@ import {ENV} from '@/config/environment';
 import {useAuth} from '@/hooks';
 import {useSession} from '@/context/SessionContext';
 import {AuthorityRole} from '@/api/models/profile';
-import {createLogger} from '@/utils/logger';
+import {AppError, UIError} from '@/utils/errors';
 
-const logger = createLogger('Auth:GoogleSignIn');
-
+/**
+ * Hook for Google Sign-In authentication
+ *
+ * Note: Errors are passed to onError callback
+ */
 export const useGoogleSignIn = () => {
     const router = useRouter();
-    const {googleLogin, googleLoginStatus} = useAuth();
+    const {googleLogin} = useAuth();
     const {login: logUserIn} = useSession();
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (Platform.OS !== 'web') {
-            logger.debug('Configuring Google Sign-In', {platform: Platform.OS});
             GoogleSignin.configure({
                 webClientId: ENV.googleWebClientId,
                 iosClientId: Platform.OS === 'ios' ? ENV.googleIosClientId : undefined,
@@ -26,65 +29,65 @@ export const useGoogleSignIn = () => {
         }
     }, []);
 
-    const handleGoogleSignIn = async (redirectPath: '/map' | '/' = '/map') => {
+    const handleGoogleSignIn = useCallback(async (
+        redirectPath: '/map' | '/' = '/map',
+        onSuccess: () => void,
+        onError: (error: AppError) => void
+    ) => {
         try {
-            logger.info('Starting Google Sign-In flow', {platform: Platform.OS});
-
             if (Platform.OS === 'web') {
                 const loginUrl =
                     ENV.mode === 'dev' ? `${ENV.apiUrl}/login/google` : '/api/login/google';
-                logger.debug('Redirecting to Google OAuth', {loginUrl});
                 window.location.assign(loginUrl);
                 return;
             }
 
-            logger.debug('Checking Play Services availability');
+            setIsLoading(true);
+
             await GoogleSignin.hasPlayServices();
 
-            logger.debug('Initiating Google Sign-In');
             const userInfo = await GoogleSignin.signIn();
 
             const idToken = userInfo.data?.idToken;
             if (!idToken) {
-                logger.error('No ID token received from Google Sign-In');
-                throw new Error('No ID token received');
+                onError(new UIError('error.noTokenReceived'));
+                setIsLoading(false);
+                return;
             }
 
-            logger.debug('Authenticating with backend');
-            const res = await googleLogin({idToken});
+            await googleLogin(
+                {idToken},
+                (res) => {
+                    logUserIn({
+                        accessToken: res.accessToken,
+                        refreshToken: res.refreshToken,
+                        loggedInSince: new Date(),
+                        lastTokenRefresh: null,
+                        role: res.profile?.authorityRole ?? AuthorityRole.USER,
+                        profile: res.profile,
+                    });
 
-            if (res) {
-                logger.info('Google Sign-In successful', {hasProfile: !!res.profile});
-                logUserIn({
-                    accessToken: res.accessToken,
-                    refreshToken: res.refreshToken,
-                    loggedInSince: new Date(),
-                    lastTokenRefresh: null,
-                    role: res.profile?.authorityRole ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
-                    profile: res.profile,
-                });
-
-                // Check if user has a profile, if not redirect to create-profile
-                if (!res.profile || !res.profile.profileCreatedAt) {
-                    logger.info('No profile found or not created, redirecting to create-profile');
-                    router.push('/(profile)/create-profile');
-                } else {
-                    router.push(redirectPath);
+                    // Check if user has a profile, if not redirect to create-profile
+                    if (!res.profile || !res.profile.profileCreatedAt) {
+                        router.push('/(profile)/create-profile');
+                    } else {
+                        router.push(redirectPath);
+                    }
+                    onSuccess();
+                },
+                (error) => {
+                    onError(error);
                 }
-                return {success: true};
-            } else {
-                logger.error('Backend authentication failed');
-                return {success: false, error: 'Backend authentication failed'};
-            }
-        } catch (error) {
-            logger.error('Google Sign-In failed', error);
-            return {success: false, error: error instanceof Error ? error.message : 'Unknown error'};
+            );
+        } catch {
+            onError(new UIError('error.signInFailed'));
+        } finally {
+            setIsLoading(false);
         }
-    };
+    }, [googleLogin, logUserIn, router]);
 
     return {
-        handleGoogleSignIn,
-        isLoading: googleLoginStatus?.loading,
-        error: googleLoginStatus?.error,
+        isLoading,
+        handleGoogleSignIn
     };
 };

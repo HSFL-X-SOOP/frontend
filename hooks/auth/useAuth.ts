@@ -1,3 +1,4 @@
+import {useCallback, useState} from "react";
 import {
     LoginRequest,
     LoginResponse,
@@ -9,58 +10,153 @@ import {
     AppleLoginRequest,
 } from "@/api/models/auth";
 import {useAuthStore} from "@/api/stores/auth";
-import * as AsyncHandler from "@/hooks/core/asyncHandler";
+import {AppError} from "@/utils/errors";
 
+/**
+ * Hook for authentication operations with Result pattern
+ *
+ * Note: Errors are passed to onError callback
+ */
 export const useAuth = () => {
     const authStore = useAuthStore();
+    const [loading, setLoading] = useState(false);
 
-    const [register, registerStatus] =
-        AsyncHandler.useAsync<[RegisterRequest], LoginResponse>(authStore.register);
+    const register = useCallback(async (
+        body: RegisterRequest,
+        onSuccess: (data: LoginResponse) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await authStore.register(body);
 
-    const [login, loginStatus] =
-        AsyncHandler.useAsync<[LoginRequest], LoginResponse>(authStore.login);
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [authStore]);
 
-    const [requestMagicLink, requestMagicLinkStatus] =
-        AsyncHandler.useAsync<[MagicLinkRequest], void>(authStore.requestMagicLink);
+    const login = useCallback(async (
+        body: LoginRequest,
+        onSuccess: (data: LoginResponse) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await authStore.login(body);
 
-    const [magicLinkLogin, magicLinkLoginStatus] =
-        AsyncHandler.useAsync<[MagicLinkLoginRequest], LoginResponse>(authStore.magicLinkLogin);
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [authStore]);
 
-    const [verifyEmail, verifyEmailStatus] =
-        AsyncHandler.useAsync<[VerifyEmailRequest], void>(authStore.verifyEmail);
+    const requestMagicLink = useCallback(async (
+        body: MagicLinkRequest,
+        onSuccess: () => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await authStore.requestMagicLink(body);
 
-    const [sendVerificationEmail, sendVerificationEmailStatus] =
-        AsyncHandler.useAsync<[], void>(authStore.sendVerificationEmail);
+        if (result.ok) {
+            onSuccess();
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [authStore]);
 
-    const [googleLogin, googleLoginStatus] =
-        AsyncHandler.useAsync<[GoogleLoginRequest], LoginResponse>(authStore.googleLogin);
+    const magicLinkLogin = useCallback(async (
+        body: MagicLinkLoginRequest,
+        onSuccess: (data: LoginResponse) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await authStore.magicLinkLogin(body);
 
-    const [appleLogin, appleLoginStatus] =
-        AsyncHandler.useAsync<[AppleLoginRequest], LoginResponse>(authStore.appleLogin);
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [authStore]);
+
+    const verifyEmail = useCallback(async (
+        body: VerifyEmailRequest,
+        onSuccess: () => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await authStore.verifyEmail(body);
+
+        if (result.ok) {
+            onSuccess();
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [authStore]);
+
+    const sendVerificationEmail = useCallback(async (
+        onSuccess: () => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await authStore.sendVerificationEmail();
+
+        if (result.ok) {
+            onSuccess();
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [authStore]);
+
+    const googleLogin = useCallback(async (
+        body: GoogleLoginRequest,
+        onSuccess: (data: LoginResponse) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await authStore.googleLogin(body);
+
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [authStore]);
+
+    const appleLogin = useCallback(async (
+        body: AppleLoginRequest,
+        onSuccess: (data: LoginResponse) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await authStore.appleLogin(body);
+
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [authStore]);
 
     return {
+        loading,
         register,
-        registerStatus,
-
         login,
-        loginStatus,
-
         requestMagicLink,
-        requestMagicLinkStatus,
-
         magicLinkLogin,
-        magicLinkLoginStatus,
-
         verifyEmail,
-        verifyEmailStatus,
-
         sendVerificationEmail,
-        sendVerificationEmailStatus,
-
         googleLogin,
-        googleLoginStatus,
-
         appleLogin,
-        appleLoginStatus,
     };
 };

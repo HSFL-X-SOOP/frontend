@@ -23,12 +23,15 @@ import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
 import {useLocationStore} from '@/api/stores/location.service';
 import type {DetailedLocationDTO} from '@/api/models/location';
 import { MyNotificationsTab } from '@/components/profile/MyNotificationsTab';
+import { createLogger } from '@/utils/logger';
+
+const logger = createLogger('Profile:Screen');
 
 export default function ProfileScreen() {
     const router = useRouter();
     const {t} = useTranslation();
     const {session, updateProfile: updateSessionProfile} = useSession();
-    const {getProfile, getProfileStatus} = useUser();
+    const {getProfile, loading: isLoadingProfile} = useUser();
     const locationStore = useLocationStore();
 
     const [activeTab, setActiveTab] = useState("profile");
@@ -48,7 +51,7 @@ export default function ProfileScreen() {
                         setHarborLocation(locationData);
                     }
                 } catch (error) {
-                    console.error('Failed to load harbor info:', error);
+                    logger.error('Failed to load harbor info', error);
                 } finally {
                     setIsLoadingHarbor(false);
                 }
@@ -59,22 +62,20 @@ export default function ProfileScreen() {
     }, [isHarborMaster, harborLocation, locationStore]);
 
     useEffect(() => {
-        const loadProfile = async () => {
-            if (session?.profile) {
-                return;
-            }
-
-            const profile = await getProfile();
-            if (profile) {
-                updateSessionProfile(profile);
-            }
-        };
-
-        loadProfile();
+        if (!session?.profile) {
+            void getProfile(
+                (profile) => {
+                    updateSessionProfile(profile);
+                },
+                (error) => {
+                    logger.error('Failed to load profile', error);
+                }
+            );
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    if (!session?.profile && getProfileStatus.loading) {
+    if (!session?.profile && isLoadingProfile) {
         return (
             <SafeAreaView style={{flex: 1}}>
                 <YStack flex={1} backgroundColor="$content3" alignItems="center" justifyContent="center" gap="$4">
@@ -85,7 +86,7 @@ export default function ProfileScreen() {
         );
     }
 
-    if (!session?.profile && !getProfileStatus.loading) {
+    if (!session?.profile && !isLoadingProfile) {
         return (
             <SafeAreaView style={{flex: 1}}>
                 <YStack flex={1} backgroundColor="$content3" alignItems="center" justifyContent="center" gap="$5"
