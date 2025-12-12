@@ -10,9 +10,11 @@ import {
     TimeRangeDropdown
 } from '@/components/dashboard';
 import {useThemeContext} from '@/context/ThemeSwitch';
-import {useSensorDataNew, useSensorDataTimeRange, useUserLocations, useLocations, useLocationInfo} from '@/hooks/data';
+import {useLocations, useSensorDataNew, useSensorDataTimeRange, useUserLocations} from '@/hooks/data';
 import {useTranslation, useToast} from '@/hooks/ui';
 import {ChartDataPoint} from '@/types/chart';
+import {ENV} from '@/config/environment';
+import type {AppError} from '@/utils/errors';
 import {
     createMeasurementDictionary,
     getLatestMeasurements,
@@ -69,6 +71,7 @@ import {IconButton} from '@/types/button';
 const EXCLUDED_MEASUREMENTS = ["Standard deviation", "Battery, voltage"];
 const MEASUREMENT_ORDER = ["Temperature, water", "Tide", "Wave Height"];
 const DEFAULT_MARINA_NAME = 'Stadthafen Flensburg "Im Jaich"';
+const DEFAULT_IMAGE_URL = "https://fastly.picsum.photos/id/17/2500/1667.jpg?hmac=HD-JrnNUZjFiP2UZQvWcKrgLoC_pc_ouUSWv8kHsJJY";
 
 // ============================================================================
 // Helper Functions
@@ -118,10 +121,9 @@ export default function DashboardScreen() {
     const {isDark} = useThemeContext();
     const {session} = useSession();
     const {getUserLocationByUserIdAndLocationId, deleteUserLocation, update, create} = useUserLocations();
-    const {fetchLocationById} = useLocations();
     const {fetchData: fetchSensors} = useSensorDataNew();
+    const {fetchLocationById} = useLocations()
     const [allSensorData, setAllSensorData] = useState<LocationWithBoxes[]>([]);
-    const {getImageUrl} = useLocationInfo();
 
     // Route params
     let {name} = useLocalSearchParams();
@@ -144,7 +146,6 @@ export default function DashboardScreen() {
     const [userLocation, setUserLocation] = useState<UserLocation | undefined>(undefined);
     const [detailedLocation, setDetailedLocation] = useState<DetailedLocationDTO | null>(null);
     const [timeRangeData, setTimeRangeData] = useState<LocationWithBoxes | null>(null);
-    const defaultImageURL = "https://fastly.picsum.photos/id/17/2500/1667.jpg?hmac=HD-JrnNUZjFiP2UZQvWcKrgLoC_pc_ouUSWv8kHsJJY"
 
     // Refs
     const infoHeight = useRef(new Animated.Value(0)).current;
@@ -164,8 +165,10 @@ export default function DashboardScreen() {
     }, [allSensorData]);
 
     const harbourName = detailedLocation?.name || "";
-
-    const [locationImageUrl, setLocationImageUrl] = useState<string>(defaultImageURL);
+    const [locationImageUrl, setLocationImageUrl] = useState<string>(DEFAULT_IMAGE_URL);
+    const isFavorite = Boolean(userLocation?.id);
+    const notificationsEnabled = Boolean(userLocation?.sentHarborNotifications);
+    const headerImageHeight = media.lg ? 350 : 250;
 
     const filteredMeasurements = useMemo(() => {
         if (!timeRangeData?.boxes) return [];
@@ -197,14 +200,14 @@ export default function DashboardScreen() {
     // Effects
     useEffect(() => {
         void fetchSensors(
-            (data) => setAllSensorData(data),
-            (error) => {
-                toast.error(t("common.error"), {message: t(error.onGetMessage())});
+            (data: LocationWithBoxes[]) => setAllSensorData(data),
+            (error: AppError) => {
+                toast.error(t('common.error'), {message: t(error.onGetMessage())});
                 setAllSensorData([]);
             }
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // fetchSensors is a hook function and changes on every render
+    }, []); // fetchSensors comes from a hook and is unstable; toast/t are static utilities
 
     useEffect(() => {
         const id = getMarinaIdByName(name as string, allSensorData);
@@ -215,29 +218,22 @@ export default function DashboardScreen() {
         if (!marinaID) return;
         void fetchLocationById(
             marinaID,
-            (data) => setDetailedLocation(data),
-            (error) => {
+            (data: DetailedLocationDTO) => setDetailedLocation(data),
+            (error: AppError) => {
                 setDetailedLocation(null);
-                toast.error(t("common.error"), {message: t(error.onGetMessage())});
+                toast.error(t('common.error'), {message: t(error.onGetMessage())});
             }
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [marinaID]); // fetchLocationById is a hook function and changes on every render
+    }, [marinaID]); // fetchLocationById comes from a hook and is unstable; toast/t are static utilities
 
     useEffect(() => {
         if (!marinaID) {
-            setLocationImageUrl(defaultImageURL);
+            setLocationImageUrl(DEFAULT_IMAGE_URL);
             return;
         }
-        void getImageUrl(
-            marinaID,
-            (url) => setLocationImageUrl(url),
-            (error) => {
-                setLocationImageUrl(defaultImageURL);
-            }
-        );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [marinaID]); // getImageUrl is a hook function
+        setLocationImageUrl(`${ENV.apiUrl}/location/${marinaID}/image`);
+    }, [marinaID]);
 
     useEffect(() => {
         if (!marinaID) {
@@ -245,14 +241,14 @@ export default function DashboardScreen() {
             return;
         }
         void fetchTimeRangeData(
-            (data) => setTimeRangeData(data),
-            (error) => {
-                toast.error(t("common.error"), {message: t(error.onGetMessage())});
+            (data: LocationWithBoxes) => setTimeRangeData(data),
+            (error: AppError) => {
+                toast.error(t('common.error'), {message: t(error.onGetMessage())});
                 setTimeRangeData(null);
             }
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [marinaID]); // fetchTimeRangeData is a hook function, toast and t are utilities not hooks
+    }, [marinaID]); // fetchTimeRangeData comes from a hook and is unstable; toast/t are static utilities
 
     useEffect(() => {
         if (!marinaID || !isLoggedIn) return;

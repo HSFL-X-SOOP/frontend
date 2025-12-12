@@ -1,8 +1,7 @@
-import {useCallback, useState, useEffect} from 'react';
+import {useCallback, useState} from 'react';
 import {DetailedLocationDTO} from '@/api/models/location';
-import {useSession} from '@/context/SessionContext';
 import {useLocationStore} from '@/api/stores/location';
-import {AppError, UIError} from '@/utils/errors';
+import {AppError} from '@/utils/errors';
 
 /**
  * Hook to fetch all locations from the /locations endpoint
@@ -12,18 +11,12 @@ import {AppError, UIError} from '@/utils/errors';
  */
 export function useLocations() {
     const [loading, setLoading] = useState(true);
-    const {session} = useSession();
     const locationStore = useLocationStore();
 
     const fetchData = useCallback(async (
         onSuccess: (data: DetailedLocationDTO[]) => void,
         onError: (error: AppError) => void
     ) => {
-        if (!session?.accessToken) {
-            onError(new UIError('errors.unauthorized'));
-            return;
-        }
-
         setLoading(true);
         const result = await locationStore.getLocations();
 
@@ -34,17 +27,13 @@ export function useLocations() {
         }
 
         setLoading(false);
-    }, [session?.accessToken, locationStore]);
+    }, [locationStore]);
 
     const fetchLocationById = useCallback(async (
         id: number,
         onSuccess: (data: DetailedLocationDTO) => void,
         onError: (error: AppError) => void
     ) => {
-        if (!session?.accessToken) {
-            onError(new UIError('errors.unauthorized'));
-            return;
-        }
 
         setLoading(true);
         const result = await locationStore.getLocationById(id);
@@ -56,7 +45,7 @@ export function useLocations() {
         }
 
         setLoading(false);
-    }, [session?.accessToken, locationStore]);
+    }, [locationStore]);
 
     return {loading, fetchData, fetchLocationById};
 }

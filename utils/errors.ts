@@ -194,6 +194,9 @@ export function getErrorMessage(error: AppError | unknown): string {
         if (error.isServerError()) {
             return 'errors.serverError';
         }
+        if (error.isNetworkError()) {
+            return 'errors.networkError';
+        }
         // Return the original message for other errors
         return error.message;
     }
