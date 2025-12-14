@@ -3,7 +3,7 @@ import {useAuth, useGoogleSignIn} from '@/hooks/auth';
 import {AuthorityRole} from '@/api/models/profile';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
-import {Platform, SafeAreaView} from 'react-native';
+import {Platform} from 'react-native';
 import {Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {User} from '@tamagui/lucide-icons';
 import {useTranslation, useToast, usePasswordValidation, useEmailValidation} from '@/hooks/ui';
@@ -151,7 +151,7 @@ export default function RegisterScreen() {
     const isFormValid = isEmailValid && isPasswordValid && passwordsMatch && agreeTermsOfService;
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
                 <AuthCard
                     title={t('auth.createAccount')}
@@ -347,6 +347,6 @@ export default function RegisterScreen() {
                     </Text>
                 </AuthCard>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }

@@ -1,6 +1,6 @@
 import {Link, Href} from 'expo-router';
-import {SafeAreaView, ScrollView, Linking} from 'react-native';
-import {Text, YStack, Card, H1, H2, XStack} from 'tamagui';
+import {ScrollView, Linking} from 'react-native';
+import {Text, YStack, Card, H1, H2, XStack, View} from 'tamagui';
 import {Code, Database, Key, ExternalLink} from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/ui';
 import {PrimaryButton, PrimaryButtonText} from '@/types/button';
@@ -11,7 +11,7 @@ export default function APIScreen() {
     const {t} = useTranslation('api');
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <YStack flex={1} backgroundColor="$content1">
                 <ScrollView
                     showsVerticalScrollIndicator={false}
@@ -181,6 +181,6 @@ export default function APIScreen() {
                     </YStack>
                 </ScrollView>
             </YStack>
-        </SafeAreaView>
+        </View>
     );
 }

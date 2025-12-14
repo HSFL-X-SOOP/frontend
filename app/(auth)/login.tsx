@@ -3,7 +3,7 @@ import {useAuth, useGoogleSignIn} from '@/hooks/auth';
 import {useAppleSignIn} from '@/hooks/auth/useAppleSignIn';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
-import {Platform, SafeAreaView} from 'react-native';
+import {Platform} from 'react-native';
 import {Lock} from '@tamagui/lucide-icons';
 import {Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {useTranslation, useToast, useIsMobile} from '@/hooks/ui';
@@ -112,7 +112,7 @@ export default function LoginScreen() {
     };
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{
                 flexGrow: 1,
                 justifyContent: 'center',
@@ -338,6 +338,6 @@ export default function LoginScreen() {
                     </YStack>
                 </AuthCard>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }

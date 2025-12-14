@@ -1,7 +1,6 @@
 import {Link, useRouter, useLocalSearchParams, Href} from 'expo-router';
 import {useState, useEffect, useRef} from 'react';
-import {SafeAreaView} from 'react-native';
-import {Text, YStack, XStack, Spinner, ScrollView} from 'tamagui';
+import {Text, YStack, XStack, Spinner, ScrollView, View} from 'tamagui';
 import {Sparkles, CheckCircle, AlertCircle} from '@tamagui/lucide-icons';
 import {useAuth} from '@/hooks/auth';
 import {useSession} from '@/context/SessionContext';
@@ -96,7 +95,7 @@ export default function MagicLinkScreen() {
 
     if (token && isVerifying) {
         return (
-            <SafeAreaView style={{flex: 1}}>
+            <View style={{flex: 1}}>
                 <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
                     <AuthCard title={t('auth.magicLink.verifying')} subtitle={t('auth.magicLink.verifyingMessage')} icon={Sparkles}>
                         <YStack gap="$4" alignItems="center">
@@ -104,13 +103,13 @@ export default function MagicLinkScreen() {
                         </YStack>
                     </AuthCard>
                 </ScrollView>
-            </SafeAreaView>
+            </View>
         );
     }
 
     if (token && verificationError) {
         return (
-            <SafeAreaView style={{flex: 1}}>
+            <View style={{flex: 1}}>
                 <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
                     <AuthCard title={t('auth.magicLink.invalidOrExpired')} subtitle={verificationError}
                               icon={AlertCircle}>
@@ -121,13 +120,13 @@ export default function MagicLinkScreen() {
                         </Link>
                     </AuthCard>
                 </ScrollView>
-            </SafeAreaView>
+            </View>
         );
     }
 
     if (sent) {
         return (
-            <SafeAreaView style={{flex: 1}}>
+            <View style={{flex: 1}}>
                 <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
                     <AuthCard title={t('auth.magicLink.checkYourEmail')} subtitle={t('auth.magicLink.emailSent', {email})}
                               icon={CheckCircle}>
@@ -138,12 +137,12 @@ export default function MagicLinkScreen() {
                         </Link>
                     </AuthCard>
                 </ScrollView>
-            </SafeAreaView>
+            </View>
         );
     }
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
                 <AuthCard
                     title={t('auth.magicLink.title')}
@@ -204,6 +203,6 @@ export default function MagicLinkScreen() {
                     </YStack>
                 </AuthCard>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }

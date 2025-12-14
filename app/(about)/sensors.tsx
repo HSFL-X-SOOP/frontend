@@ -1,12 +1,12 @@
 import { useTranslation } from '@/hooks/ui';
-import { SafeAreaView, ScrollView } from 'react-native';
-import { Card, H1, H2, Text, YStack } from 'tamagui';
+import { ScrollView } from 'react-native';
+import { Card, H1, H2, Text, YStack, View } from 'tamagui';
 
 export default function SensorsScreen() {
   const { t } = useTranslation('sensors');
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <View style={{ flex: 1 }}>
       <YStack flex={1} backgroundColor="$content1">
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -103,6 +103,6 @@ export default function SensorsScreen() {
           </YStack>
         </ScrollView>
       </YStack>
-    </SafeAreaView>
+    </View>
   );
 }

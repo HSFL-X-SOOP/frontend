@@ -1,6 +1,6 @@
 import {useRouter} from 'expo-router';
 import {useState} from 'react';
-import {SafeAreaView, ScrollView} from 'react-native';
+import {ScrollView} from 'react-native';
 import {Text, YStack, XStack, H2, H5, Card, RadioGroup, Label, Separator, View, Spinner} from 'tamagui';
 import {Globe, Activity, Ruler, Check, User} from '@tamagui/lucide-icons';
 import {useUser} from '@/hooks/data';
@@ -96,7 +96,7 @@ export default function CreateProfileScreen() {
     };
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <YStack flex={1} backgroundColor="$content3">
                 <ScrollView>
                     <YStack padding="$4" gap="$5" paddingBottom="$8" paddingTop="$6">
@@ -323,6 +323,6 @@ export default function CreateProfileScreen() {
                     </YStack>
                 </ScrollView>
             </YStack>
-        </SafeAreaView>
+        </View>
     );
 }

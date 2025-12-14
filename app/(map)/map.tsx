@@ -3,8 +3,6 @@ import MapFilterButton, {MapFilterState} from "@/components/map/controls/MapFilt
 import {View} from "tamagui";
 import {useState} from "react";
 import {useThemeContext} from '@/context/ThemeSwitch';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {Platform} from 'react-native';
 
 export default function MapScreen() {
     const {isDark} = useThemeContext();
@@ -26,30 +24,6 @@ export default function MapScreen() {
         if (newState.module3Visible !== module3Visible) setModule3Visible(newState.module3Visible);
     };
 
-    // On Android, we need SafeAreaView to handle the navigation bar
-    if (Platform.OS === 'android') {
-        return (
-            <SafeAreaView style={{flex: 1}} edges={['bottom']}>
-                <View pos={"relative"} flex={1}>
-                    <MapWrapper
-                        module1Visible={module1Visible}
-                        module2Visible={module2Visible}
-                        module3Visible={module3Visible}
-                        isDark={isDark}
-                        // temperatureVisible={temperatureVisible}
-                        // windDirectionVisible={windDirectionVisible}
-                    />
-
-                    <MapFilterButton
-                        filterState={filterState}
-                        onFilterChange={handleFilterChange}
-                    />
-                </View>
-            </SafeAreaView>
-        );
-    }
-
-    // iOS and Web don't need SafeAreaView for bottom edge
     return (
         <View pos={"relative"} flex={1}>
             <MapWrapper
@@ -57,8 +31,6 @@ export default function MapScreen() {
                 module2Visible={module2Visible}
                 module3Visible={module3Visible}
                 isDark={isDark}
-                // temperatureVisible={temperatureVisible}
-                // windDirectionVisible={windDirectionVisible}
             />
 
             <MapFilterButton

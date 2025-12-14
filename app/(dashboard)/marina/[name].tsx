@@ -44,7 +44,7 @@ import {LinearGradient} from 'expo-linear-gradient';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {useEffect, useMemo, useCallback, useRef, useState} from 'react';
 import type {ComponentProps} from 'react';
-import {Animated, LayoutChangeEvent, SafeAreaView, ScrollView, View} from 'react-native';
+import {Animated, LayoutChangeEvent, ScrollView} from 'react-native';
 import {
     Button,
     Card,
@@ -57,7 +57,8 @@ import {
     Text,
     XStack,
     YStack,
-    useMedia
+    useMedia,
+    View
 } from 'tamagui';
 
 import {UserLocation} from '@/api/models/userLocation';
@@ -382,7 +383,7 @@ export default function DashboardScreen() {
 
     // Render
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <YStack flex={1} backgroundColor="$content1">
                 <ScrollView style={{flex: 1}}>
                     {/* Header Image with Gradient */}
@@ -592,6 +593,6 @@ export default function DashboardScreen() {
                     </YStack>
                 </ScrollView>
             </YStack>
-        </SafeAreaView>
+        </View>
     );
 }

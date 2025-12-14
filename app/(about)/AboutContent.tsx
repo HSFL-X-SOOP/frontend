@@ -1,5 +1,5 @@
 import {Href, Link} from 'expo-router';
-import {ScrollView, SafeAreaView} from 'react-native';
+import {ScrollView} from "react-native";
 import {Card, Text, XStack, YStack, View, H1, H2, Separator} from 'tamagui';
 import {ExternalLink, Globe, Database, MapPin, TrendingUp} from '@tamagui/lucide-icons';
 import {useTranslation} from '@/hooks/ui';
@@ -173,7 +173,7 @@ function AboutScreen() {
 
     return (
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-            <SafeAreaView>
+            <View>
                 <YStack padding="$4" gap="$6">
                     {/* Header */}
                     <YStack gap="$2">
@@ -219,7 +219,7 @@ function AboutScreen() {
                         </Text>
                     </YStack>
                 </YStack>
-            </SafeAreaView>
+            </View>
         </ScrollView>
     );
 }

@@ -2,8 +2,8 @@ import {useEffect, useRef} from 'react';
 import {useRouter, useLocalSearchParams} from 'expo-router';
 import {useSession} from '@/context/SessionContext';
 import {AuthorityRole} from '@/api/models/profile';
-import {SafeAreaView, Platform} from 'react-native';
-import {YStack, Text, Spinner} from 'tamagui';
+import {Platform} from 'react-native';
+import {YStack, Text, Spinner, View} from 'tamagui';
 import {createLogger} from '@/utils/logger';
 import {useUser} from '@/hooks/data';
 
@@ -97,13 +97,13 @@ export default function OAuthCallbackHandler() {
     }, [params, login, router, getProfile, updateSessionProfile]);
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <YStack flex={1} backgroundColor="$content3" alignItems="center" justifyContent="center" gap="$4">
                 <Spinner size="large" color="$accent7" />
                 <Text fontSize={18} color="$color" opacity={0.8}>
                     Signing you in…
                 </Text>
             </YStack>
-        </SafeAreaView>
+        </View>
     );
 }

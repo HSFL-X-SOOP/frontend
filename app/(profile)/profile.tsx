@@ -1,6 +1,6 @@
 import {useRouter} from 'expo-router';
 import {useState, useEffect} from 'react';
-import {ScrollView, SafeAreaView} from "react-native";
+import {ScrollView} from "react-native";
 import {
     Button,
     Text,
@@ -51,18 +51,18 @@ export default function ProfileScreen() {
 
     if (!session?.profile && isLoadingProfile) {
         return (
-            <SafeAreaView style={{flex: 1}}>
+            <View style={{flex: 1}}>
                 <YStack flex={1} backgroundColor="$content3" alignItems="center" justifyContent="center" gap="$4">
                     <Spinner size="large" color="$accent7"/>
                     <Text color="$color" opacity={0.7}>{t('profile.loadingProfile')}</Text>
                 </YStack>
-            </SafeAreaView>
+            </View>
         );
     }
 
     if (!session?.profile && !isLoadingProfile) {
         return (
-            <SafeAreaView style={{flex: 1}}>
+            <View style={{flex: 1}}>
                 <YStack flex={1} backgroundColor="$content3" alignItems="center" justifyContent="center" gap="$5"
                         padding="$4">
                     <View
@@ -92,12 +92,12 @@ export default function ProfileScreen() {
                         {t('profile.createProfile')}
                     </Button>
                 </YStack>
-            </SafeAreaView>
+            </View>
         );
     }
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <YStack flex={1} backgroundColor="$content1">
                 <ScrollView>
                     <YStack padding="$4" gap="$4" paddingBottom="$8" paddingTop="$6">
@@ -272,6 +272,6 @@ export default function ProfileScreen() {
                     </YStack>
                 </ScrollView>
             </YStack>
-        </SafeAreaView>
+        </View>
     );
 }

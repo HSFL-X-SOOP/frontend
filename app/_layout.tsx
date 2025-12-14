@@ -31,7 +31,7 @@ import {Footer} from '@/components/navigation/web/Footer'
 import {AuthProvider} from '@/context/SessionContext'
 import {ThemeProvider, useThemeContext} from '@/context/ThemeSwitch.tsx'
 import {Slot} from 'expo-router'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context'
 import type {ToastType} from '@/hooks/ui'
 
 
@@ -129,10 +129,10 @@ function SafeToastViewport() {
 
 function RootContent() {
     const {currentTheme} = useThemeContext()
-    const insets = useSafeAreaInsets()
     const logger = useMemo(() => createLogger('RootContent'), [])
 
     const shouldShowFooter = Platform.OS === 'web'
+    const isWeb = Platform.OS === 'web'
 
     useEffect(() => {
         if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -189,14 +189,24 @@ function RootContent() {
             <ToastProvider>
                 <AuthProvider>
                     <CurrentToast/>
-                    <View style={{flex: 1, paddingBottom: Platform.OS !== 'web' ? insets.bottom : 0}}>
-                        {Platform.OS === 'web' ? <NavbarWeb/> : <TabBarNative/>}
+                    {isWeb ? (
                         <View style={{flex: 1}}>
-                            <Slot/>
+                            <NavbarWeb/>
+                            <View style={{flex: 1}}>
+                                <Slot/>
+                            </View>
+                            {shouldShowFooter && <Footer/>}
+                            <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
                         </View>
-                        {shouldShowFooter && <Footer/>}
-                        <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
-                    </View>
+                    ) : (
+                        <SafeAreaView style={{flex: 1}} edges={['bottom']}>
+                            <TabBarNative/>
+                            <View style={{flex: 1}}>
+                                <Slot/>
+                            </View>
+                            <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
+                        </SafeAreaView>
+                    )}
                 </AuthProvider>
                 <SafeToastViewport/>
             </ToastProvider>
