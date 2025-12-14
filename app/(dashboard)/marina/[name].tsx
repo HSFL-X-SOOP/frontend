@@ -166,9 +166,6 @@ export default function DashboardScreen() {
 
     const harbourName = detailedLocation?.name || "";
     const [locationImageUrl, setLocationImageUrl] = useState<string>(DEFAULT_IMAGE_URL);
-    const isFavorite = Boolean(userLocation?.id);
-    const notificationsEnabled = Boolean(userLocation?.sentHarborNotifications);
-    const headerImageHeight = media.lg ? 350 : 250;
 
     const filteredMeasurements = useMemo(() => {
         if (!timeRangeData?.boxes) return [];
