@@ -12,10 +12,10 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.marlin.live",
       "entitlements": {
-        "aps-environment": "production",
-        "UIBackgroundModes": ["remote-notification"]
+        "aps-environment": "production"
       },
       "infoPlist": {
+        "UIBackgroundModes": ["remote-notification", "fetch"],
         "NSLocationWhenInUseUsageDescription": "This app uses a mapping library that may access location services. Your location is not currently being collected or tracked.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app uses a mapping library that may access location services. Your location is not currently being collected or tracked."
       }
