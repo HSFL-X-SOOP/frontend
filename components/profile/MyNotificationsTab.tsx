@@ -32,7 +32,7 @@ export function MyNotificationsTab() {
     const [selectedUserLocation, setSelectedUserLocation] = useState<UserLocation | undefined>(undefined);
     const isDark = false;
     const session = useSession();
-    const userID = session?.session?.profile?.id ?? -1;
+    const userID = session?.session?.profile?.id ?? 0;
     const location = useLocations();
 
     useEffect(() => {
@@ -48,7 +48,7 @@ export function MyNotificationsTab() {
     }, [userID]);
 
     const fetchNotifications = async () => {
-        const notificationsData = await notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(userID, selectedUserLocationId || -1);
+        const notificationsData = await notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(userID, selectedUserLocationId || 0);
         setMyNotifications(notificationsData);
     };
 
@@ -86,7 +86,7 @@ export function MyNotificationsTab() {
     const EXCLUDED_MEASUREMENTS = ["Standard deviation", "Battery, voltage"];
     const MEASUREMENT_ORDER = ["Temperature, water", "Tide", "Wave Height"];
     
-    const {data: timeRangeData} = useSensorDataTimeRange(selectedUserLocationId || -1, "today");
+    const {data: timeRangeData} = useSensorDataTimeRange(selectedUserLocationId || 0, "today");
     const filteredMeasurements = useMemo(() => {
         if (!timeRangeData?.boxes) return [];
 
@@ -190,7 +190,7 @@ export function MyNotificationsTab() {
                                         isActive: !notification.isActive
                                     }
                                 ).then(async () => {
-                                    const notificationsData = await notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(1, selectedUserLocationId || -1);
+                                    const notificationsData = await notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(1, selectedUserLocationId || 0);
                                     setMyNotifications(notificationsData);})
                                 }}>
                                 {notification.isActive ? t('common.disable') : t('common.enable')}
