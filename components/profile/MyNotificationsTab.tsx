@@ -14,12 +14,13 @@ import { useUserLocations } from '@/hooks/data/useUserLocations';
 import { UserLocation } from '@/api/models/userLocation';
 import { NotificationMeasurementRule } from '@/api/models/notificationMeasurementRule';
 import { SelectWithSheet } from '@/components/ui/SelectWithSheet';
-import { getMeasurementTypeSymbol, getTextFromMeasurementType } from '@/utils/measurements';
+import { getLatestMeasurements, getMeasurementTypeSymbol, getTextFromMeasurementType } from '@/utils/measurements';
 import { SetNotificationMeasurementRulePopover } from '@/components/notifications/Popovers/SetNotificationMeasurementRulePopover';
 import { useSession } from '@/context/SessionContext';
 import { useLocations } from '@/hooks/data/useLocations';
 import { formatTimeToLocal } from '@/utils/time';
 import { DeleteNotificationMeasurementRulePopover } from '@/components/notifications/Popovers/DeleteNotificationMeasurementRulePopover';
+import { useSensorDataNew, useSensorDataTimeRange } from '@/hooks/data/useSensors';
 
 export function MyNotificationsTab() {
     const {t} = useTranslation();
@@ -80,28 +81,62 @@ export function MyNotificationsTab() {
         });
         setSelectedUserLocation(updatedUserocation);
     }, [selectedUserLocation, userLocations, selectedUserLocationId, userID]);
+
+
+    const EXCLUDED_MEASUREMENTS = ["Standard deviation", "Battery, voltage"];
+    const MEASUREMENT_ORDER = ["Temperature, water", "Tide", "Wave Height"];
     
+    const {data: timeRangeData} = useSensorDataTimeRange(selectedUserLocationId || -1, "today");
+    const filteredMeasurements = useMemo(() => {
+        if (!timeRangeData?.boxes) return [];
+
+        const latestMeasurements = getLatestMeasurements(timeRangeData.boxes);
+        const filtered = latestMeasurements.filter(m => !EXCLUDED_MEASUREMENTS.includes(m.measurementType));
+
+        return filtered.sort((a, b) => {
+            const indexA = MEASUREMENT_ORDER.indexOf(a.measurementType);
+            const indexB = MEASUREMENT_ORDER.indexOf(b.measurementType);
+            if (indexA === -1 && indexB === -1) return 0;
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
+    }, [timeRangeData]);
+
+    const currentValues = useMemo(() => ({
+        waterTemp: filteredMeasurements.find(m =>
+            m.measurementType === "Temperature, water" || m.measurementType === "WTemp"
+        )?.value,
+        waveHeight: filteredMeasurements.find(m => m.measurementType === "Wave Height")?.value,
+        waterLevel: filteredMeasurements.find(m => m.measurementType === "Tide")?.value
+    }), [filteredMeasurements]);
+
+    const SelectSheet = useCallback(() => {
+        return (                
+        <SelectWithSheet
+            id="user-location-select"
+            name="user-location"
+            items={myLocationsSelect?.map(location => ({
+                value: location.locationId.toString(),
+                label: location.name.toString()
+            })) || []}
+            value={(myLocationsSelect?.filter (location => location.locationId === selectedUserLocationId)[0]?.locationId.toString()) || myLocationsSelect[0]?.name}
+            onValueChange={handleValueChange}
+            placeholder={t("notificationMeasurementRule.selectUserLocation")}
+            triggerProps={{
+                width: 280,
+                iconAfter: ChevronDown,
+                backgroundColor: isDark ? '$gray8' : '$gray2',
+                borderColor: isDark ? '$gray7' : '$gray4'
+            }}
+        />)
+    }, [myLocationsSelect, selectedUserLocationId, handleValueChange, isDark, t]);
+
     return (
         <YStack gap="$4">
             <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5"
                   borderWidth={1} borderColor="$borderColor">
-                <SelectWithSheet
-                    id="user-location-select"
-                    name="user-location"
-                    items={myLocationsSelect?.map(location => ({
-                        value: location.locationId.toString(),
-                        label: location.name.toString()
-                    })) || []}
-                    value={(myLocationsSelect?.filter (location => location.locationId === selectedUserLocationId)[0]?.locationId.toString()) || myLocationsSelect[0]?.name}
-                    onValueChange={handleValueChange}
-                    placeholder={t("notificationMeasurementRule.selectUserLocation")}
-                    triggerProps={{
-                        width: 280,
-                        iconAfter: ChevronDown,
-                        backgroundColor: isDark ? '$gray8' : '$gray2',
-                        borderColor: isDark ? '$gray7' : '$gray4'
-                    }}
-                />
+                <SelectSheet />
                 {selectedUserLocation && (
                     <Card key={"harbor-master-notification"} marginTop="$4" padding="$4" borderWidth={1} borderColor="$borderColor">
                         <XStack gap={"$4"} alignItems="center">
@@ -131,6 +166,9 @@ export function MyNotificationsTab() {
                         <H4 color="$accent7" fontFamily="$oswald">{getTextFromMeasurementType(notification.measurementTypeId.toString(), t)}</H4>
                         <XStack justifyContent="space-between" alignItems="center">
                             <YStack>
+                                <Text color="$color" opacity={0.7}>
+                                    {t('dashboard.measurements.currentValue')}: {getCurrentValueMeasurement(currentValues, getCurrentValueMeasurement(currentValues, notification.measurementTypeId.toString()) ? notification.measurementTypeId.toString() : "")} {getMeasurementTypeSymbol(notification.measurementTypeId.toString(), t)}
+                                </Text>
                                 <Text color="$color" opacity={0.7}>
                                     {t('dashboard.measurements.condition')}: {notification.operator === '>' ? t('dashboard.measurements.greaterThanTargetValue') : t('dashboard.measurements.lessThanTargetValue')}
                                 </Text>
@@ -162,7 +200,7 @@ export function MyNotificationsTab() {
                                 placement="top"
                                 Icon={Edit3}
                                 Name={getTextFromMeasurementType(notification.measurementTypeId.toString(), t)}
-                                Value={notification.measurementValue}
+                                Value={getCurrentValueMeasurement(currentValues, getCurrentValueMeasurement(currentValues, notification.measurementTypeId.toString()) ? notification.measurementTypeId.toString() : "")}
                                 MeasurementType={notification.measurementTypeId.toString()}
                                 marinaID={notification.locationId}
                                 userID={1}
@@ -186,3 +224,19 @@ export function MyNotificationsTab() {
     );
 };
 
+function getCurrentValueMeasurement(currentValues: any, type: string) {
+    switch (type) {
+        case "Temperature, water":
+        case "WTemp":
+        case "1603253327":
+            return currentValues.waterTemp;
+        case "Wave Height":
+        case "-1705811922":
+            return currentValues.waveHeight;
+        case "Tide":
+        case "2606550":
+            return currentValues.waterLevel;
+        default:
+            return null;
+    }
+}

@@ -333,7 +333,8 @@
       "condition": "Bedingung",
       "lastNotifiedAt": "Zuletzt benachrichtigt am",
       "delete": "Löschen",
-      "deleteConfirmText": "Sind Sie sicher, dass Sie diese Benachrichtigungsregel löschen möchten?"
+      "deleteConfirmText": "Sind Sie sicher, dass Sie diese Benachrichtigungsregel löschen möchten?",
+      "currentValue": "Aktuelle Messung"
     },
     "units": {
       "celsius": "°C",
