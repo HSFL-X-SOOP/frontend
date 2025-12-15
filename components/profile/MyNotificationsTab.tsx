@@ -8,37 +8,23 @@ import {
     XStack
 } from 'tamagui';
 import { ChevronDown, Edit3, Trash, Check, X, Bell, BellOff } from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/ui/useTranslation';
+import { useTranslation, useToast } from '@/hooks/ui';
 import { useNotificationMeasurementRules } from '@/hooks/ui/useNotificationMeasurementRules';
 import { useUserLocations } from '@/hooks/data/useUserLocations';
 import { UserLocation } from '@/api/models/userLocation';
 import { NotificationMeasurementRule } from '@/api/models/notificationMeasurementRule';
 import { SelectWithSheet } from '@/components/ui/SelectWithSheet';
-import { getLatestMeasurements, getMeasurementTypeSymbol, getTextFromMeasurementType } from '@/utils/measurements';
+import { getMeasurementTypeSymbol, getTextFromMeasurementType } from '@/utils/measurements';
 import { SetNotificationMeasurementRulePopover } from '@/components/notifications/Popovers/SetNotificationMeasurementRulePopover';
+import { mapTimeRangeToApi, getFilteredMeasurements, getCurrentValues, getCurrentValueByType } from '@/utils/sensorMeasurements';
 import { useSession } from '@/context/SessionContext';
 import { useLocations } from '@/hooks/data/useLocations';
 import { formatTimeToLocal } from '@/utils/time';
 import { DeleteNotificationMeasurementRulePopover } from '@/components/notifications/Popovers/DeleteNotificationMeasurementRulePopover';
 import { useSensorDataTimeRange } from '@/hooks/data/useSensors';
-import {ChevronDown, Edit3, Trash, Check, X, Bell, BellOff} from '@tamagui/lucide-icons';
-import {useTranslation, useToast} from '@/hooks/ui';
-import {useNotificationMeasurementRules} from '@/hooks/ui/useNotificationMeasurementRules';
-import {useUserLocations} from '@/hooks/data/useUserLocations';
-import {UserLocation} from '@/api/models/userLocation';
-import {NotificationMeasurementRule} from '@/api/models/notificationMeasurementRule';
-import {SelectWithSheet} from '@/components/ui/SelectWithSheet';
-import {getMeasurementTypeSymbol, getTextFromMeasurementType} from '@/utils/measurements';
-import {
-    SetNotificationMeasurementRulePopover
-} from '@/components/notifications/Popovers/SetNotificationMeasurementRulePopover';
-import {useSession} from '@/context/SessionContext';
-import {useLocations} from '@/hooks/data/useLocations';
-import {formatTimeToLocal} from '@/utils/time';
-import {
-    DeleteNotificationMeasurementRulePopover
-} from '@/components/notifications/Popovers/DeleteNotificationMeasurementRulePopover';
-
+import { AppError } from "@/utils/errors";
+import { LocationWithBoxes } from '@/api/models/sensor';
+import { ChartTimeRange } from '@/components/dashboard';
 
 export function MyNotificationsTab() {
     const {t} = useTranslation();
@@ -51,11 +37,13 @@ export function MyNotificationsTab() {
     const [allLocations, setAllLocations] = useState<any[]>([]);
     const [selectedUserLocationId, setSelectedUserLocationId] = useState<number | undefined>(undefined);
     const [selectedUserLocation, setSelectedUserLocation] = useState<UserLocation | undefined>(undefined);
+    const [timeRange, setTimeRange] = useState<ChartTimeRange>('today');
+    const [timeRangeData, setTimeRangeData] = useState<LocationWithBoxes | null>(null);
+
     const isDark = false;
     const session = useSession();
     const userID = session?.session?.profile?.id ?? 0;
-    const location = useLocations();
-    const userID = session?.session?.profile?.id ?? -1;
+    const {fetchData: fetchTimeRangeData} = useSensorDataTimeRange(selectedUserLocationId || 0, mapTimeRangeToApi(timeRange));
 
     useEffect(() => {
         void userLocations.getAllUserLocationByUserId(
@@ -77,10 +65,6 @@ export function MyNotificationsTab() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userID]); // userLocations is a hook object and changes on every render
 
-    const fetchNotifications = async () => {
-        const notificationsData = await notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(userID, selectedUserLocationId || 0);
-        setMyNotifications(notificationsData);
-    };
     useEffect(() => {
         void fetchLocationData(
             (locations) => {
@@ -117,6 +101,21 @@ export function MyNotificationsTab() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedUserLocationId]); // fetchNotifications includes hook functions in its dependencies
 
+    useEffect(() => {
+        if (!selectedUserLocationId) {
+            setTimeRangeData(null);
+            return;
+        }
+        void fetchTimeRangeData(
+            (data: LocationWithBoxes) => setTimeRangeData(data),
+            (error: AppError) => {
+                toast.error(t('common.error'), {message: t(error.onGetMessage())});
+                setTimeRangeData(null);
+            }
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedUserLocationId]); // fetchTimeRangeData is a hook function and changes on every render
+
     const handleValueChange = (value: string) => {
         setSelectedUserLocationId(Number(value))
         setSelectedUserLocation(myLocations?.find(location => location.locationId === Number(value)));
@@ -132,6 +131,10 @@ export function MyNotificationsTab() {
                 name: allLocations.filter((loc) => loc.id === data!.locationId)[0]?.name || ''
             }));
     }, [myLocations, allLocations]);
+
+    const filteredMeasurements = useMemo(() => getFilteredMeasurements(timeRangeData), [timeRangeData]);
+
+    const currentValues = useMemo(() => getCurrentValues(filteredMeasurements), [filteredMeasurements]);
 
     const updateUserLocationSentHarborNotifications = useCallback(() => {
         if (!selectedUserLocation) return;
@@ -157,27 +160,33 @@ export function MyNotificationsTab() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedUserLocation, userID]); // userLocations is a hook object and changes on every render
 
+    const SelectSheet = useCallback(() => {
+        return (
+            <SelectWithSheet
+                id="user-location-select"
+                name="user-location"
+                items={myLocationsSelect?.map(location => ({
+                    value: location.locationId.toString(),
+                    label: location.name.toString()
+                })) || []}
+                value={(myLocationsSelect?.filter(location => location.locationId === selectedUserLocationId)[0]?.locationId.toString()) || myLocationsSelect[0]?.name}
+                onValueChange={handleValueChange}
+                placeholder={t("notificationMeasurementRule.selectUserLocation")}
+                triggerProps={{
+                    width: 280,
+                    iconAfter: ChevronDown,
+                    backgroundColor: isDark ? '$gray8' : '$gray2',
+                    borderColor: isDark ? '$gray7' : '$gray4'
+                }}
+            />
+        )
+    }, [myLocationsSelect, selectedUserLocationId, handleValueChange, isDark, t]);
+
     return (
         <YStack gap="$4">
             <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5"
                   borderWidth={1} borderColor="$borderColor">
-                <SelectWithSheet
-                    id="user-location-select"
-                    name="user-location"
-                    items={myLocationsSelect?.map(location => ({
-                        value: location.locationId.toString(),
-                        label: location.name.toString()
-                    })) || []}
-                    value={(myLocationsSelect?.filter(location => location.locationId === selectedUserLocationId)[0]?.locationId.toString()) || ''}
-                    onValueChange={handleValueChange}
-                    placeholder={t("notificationMeasurementRule.selectUserLocation")}
-                    triggerProps={{
-                        width: 280,
-                        iconAfter: ChevronDown,
-                        backgroundColor: isDark ? '$gray8' : '$gray2',
-                        borderColor: isDark ? '$gray7' : '$gray4'
-                    }}
-                />
+                <SelectSheet />
                 {selectedUserLocation && (
                     <Card key={"harbor-master-notification"} marginTop="$4" padding="$4" borderWidth={1}
                           borderColor="$borderColor">
@@ -214,7 +223,7 @@ export function MyNotificationsTab() {
                         <XStack justifyContent="space-between" alignItems="center">
                             <YStack>
                                 <Text color="$color" opacity={0.7}>
-                                    {t('dashboard.measurements.currentValue')}: {getCurrentValueMeasurement(currentValues, getCurrentValueMeasurement(currentValues, notification.measurementTypeId.toString()) ? notification.measurementTypeId.toString() : "")} {getMeasurementTypeSymbol(notification.measurementTypeId.toString(), t)}
+                                    {t('dashboard.measurements.currentValue')}: {getCurrentValueByType(currentValues, notification.measurementTypeId.toString())} {getMeasurementTypeSymbol(notification.measurementTypeId.toString(), t)}
                                 </Text>
                                 <Text color="$color" opacity={0.7}>
                                     {t('dashboard.measurements.condition')}: {notification.operator === '>' ? t('dashboard.measurements.greaterThanTargetValue') : t('dashboard.measurements.lessThanTargetValue')}
@@ -290,21 +299,4 @@ export function MyNotificationsTab() {
             </Card>
         </YStack>
     );
-}
-
-function getCurrentValueMeasurement(currentValues: any, type: string) {
-    switch (type) {
-        case "Temperature, water":
-        case "WTemp":
-        case "1603253327":
-            return currentValues.waterTemp;
-        case "Wave Height":
-        case "-1705811922":
-            return currentValues.waveHeight;
-        case "Tide":
-        case "2606550":
-            return currentValues.waterLevel;
-        default:
-            return null;
-    }
 }

@@ -111,8 +111,8 @@ export default function SensorList({
             {/* Fixed Header Section - NOT scrollable */}
             <YStack backgroundColor="$background" zIndex={1}>
                 {/* Header with count and toggle */}
-                <YStack padding="$3" paddingBottom="$2">
-                    <XStack justifyContent="space-between" alignItems="center" marginBottom="$2">
+                <YStack padding="$2.5" paddingBottom="$1">
+                    <XStack justifyContent="space-between" alignItems="center" marginBottom="$1.5">
                         <H4 fontSize="$5" fontWeight="700" color="$color">
                             {showAllSensors ? t('sensor.allSensors') : t('sensor.sensorsInView')}
                         </H4>
@@ -176,7 +176,7 @@ export default function SensorList({
                 </YStack>
 
                 {/* Search Bar */}
-                <YStack paddingHorizontal="$3" paddingBottom="$2">
+                <YStack paddingHorizontal="$3" paddingVertical="$1">
                     <XStack alignItems="center" gap="$2" position="relative">
                         <XStack position="absolute" left="$3" zIndex={1} pointerEvents="none">
                             <Search size={16}/>
@@ -196,7 +196,7 @@ export default function SensorList({
                 </YStack>
 
                 {/* Filter and Sort Controls */}
-                <YStack paddingHorizontal="$3" paddingBottom="$2">
+                <YStack paddingHorizontal="$3" paddingVertical="$1">
                     <XStack gap="$2" flexWrap="wrap">
                         {/* Filter Type */}
                         <XStack flex={1} minWidth="45%" gap="$2" alignItems="center">
@@ -288,7 +288,7 @@ export default function SensorList({
                         </YStack>
                     ) : (
                         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            <XStack gap="$3" paddingHorizontal="$3" paddingVertical="$2">
+                            <XStack gap="$3" paddingHorizontal="$3" paddingVertical="$1">
                                 {processedSensors.map((sensor) => (
                                     <YStack key={sensor.location?.id} width={280}>
                                         <SensorListItem

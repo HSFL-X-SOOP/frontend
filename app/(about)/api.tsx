@@ -30,7 +30,8 @@ export default function APIScreen() {
                             </Text>
                         </YStack>
 
-                        <Card padding="$0" borderRadius="$6" borderWidth={1} borderColor="$borderColor" overflow="hidden">
+                        <Card padding="$0" borderRadius="$6" borderWidth={1} borderColor="$borderColor"
+                              overflow="hidden">
                             <LinearGradient
                                 colors={['$accent7', '$accent9']}
                                 start={[0, 0]}
@@ -140,12 +141,9 @@ export default function APIScreen() {
                                                 alignSelf="flex-start"
                                                 onPress={() => Linking.openURL('https://www.marlin-live.com/api/')}
                                             >
-                                                <XStack alignItems="center" gap="$2">
-                                                    <ExternalLink size={16} color="white"/>
-                                                    <PrimaryButtonText fontSize={14}>
-                                                        {t('api.viewDocs')}
-                                                    </PrimaryButtonText>
-                                                </XStack>
+                                                <PrimaryButtonText fontSize={14}>
+                                                    {t('api.viewDocs')}
+                                                </PrimaryButtonText>
                                             </PrimaryButton>
                                         </YStack>
                                     </XStack>

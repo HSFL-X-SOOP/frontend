@@ -21,19 +21,24 @@ import {createLogger} from '@/utils/logger'
 
 import tamaguiConfig from '@/tamagui.config'
 import {PortalProvider} from '@tamagui/portal'
-import {TamaguiProvider, Theme, XStack, YStack} from 'tamagui'
+import {TamaguiProvider, Theme, XStack, YStack, Text, useTheme} from 'tamagui'
 import {Toast, ToastProvider, ToastViewport, useToastState} from '@tamagui/toast'
-import {CheckCircle, XCircle, AlertTriangle, Info} from '@tamagui/lucide-icons'
+import {CheckCircle, XCircle, AlertTriangle, Info, LayoutDashboard, User} from '@tamagui/lucide-icons'
 
-import {TabBarNative} from "@/components/navigation/native/tabbar.tsx"
 import {NavbarWeb} from '@/components/navigation/web/navbar'
 import {Footer} from '@/components/navigation/web/Footer'
 import {AuthProvider} from '@/context/SessionContext'
 import {ThemeProvider, useThemeContext} from '@/context/ThemeSwitch.tsx'
-import {Slot, usePathname} from 'expo-router'
-import {SafeAreaProvider, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context'
+import {Slot, usePathname, Tabs} from 'expo-router'
+import {MapIcon, LOGO} from '@/components/ui/Icons'
+import {useTranslation} from '@/hooks/ui'
+import {SafeAreaProvider, useSafeAreaInsets} from 'react-native-safe-area-context'
 import type {ToastType} from '@/hooks/ui'
 
+
+function TabBarIcon({ icon: Icon, color }: { icon: any; color: string }) {
+    return <Icon size={24} color={color} />;
+}
 
 function CurrentToast() {
     const currentToast = useToastState()
@@ -131,6 +136,9 @@ function RootContent() {
     const {currentTheme} = useThemeContext()
     const logger = useMemo(() => createLogger('RootContent'), [])
     const pathname = usePathname()
+    const {t} = useTranslation()
+    const insets = useSafeAreaInsets()
+    const theme = useTheme()
 
     const isWeb = Platform.OS === 'web'
     const shouldShowFooter = isWeb && pathname !== '/map'
@@ -200,19 +208,86 @@ function RootContent() {
                             <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
                         </View>
                     ) : (
-                        <SafeAreaView style={{flex: 1}} edges={['top','left','right','bottom']}>
-                            <TabBarNative/>
-                            <View style={{flex: 1}}>
-                                <Slot/>
-                            </View>
-                            <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
-                        </SafeAreaView>
+                        <YStack flex={1}>
+                            {/* Header with Logo - matching NavbarWeb styling */}
+                            <XStack
+                                backgroundColor="$background"
+                                alignItems="center"
+                                paddingHorizontal="$4"
+                                paddingVertical="$1"
+                                paddingTop={insets.top}
+                                gap="$2"
+                            >
+                                <LOGO size={50} color={theme.accent8?.val} />
+                                <Text
+                                    fontSize={28}
+                                    fontFamily="$oswald"
+                                    fontWeight="bold"
+                                    color="$accent8"
+                                >
+                                    Marlin
+                                </Text>
+                            </XStack>
+
+                            {/* Tab Navigation - Only 3 main tabs */}
+                            <Tabs
+                                screenOptions={{
+                                    headerShown: false,
+                                    tabBarStyle: {
+                                        backgroundColor: theme.background?.val,
+                                        borderTopColor: theme.borderColor?.val,
+                                        borderTopWidth: 1,
+                                        paddingBottom: insets.bottom + 8,
+                                        paddingHorizontal: 12,
+                                        paddingVertical: 8,
+                                        height: 80 + insets.bottom,
+                                    },
+                                    tabBarLabelPosition: 'below-icon',
+                                    tabBarActiveTintColor: theme.accent7?.val || '#0066CC',
+                                    tabBarInactiveTintColor: theme.accent8?.val || '#666666',
+                                }}
+                            >
+                                {/* Map Tab */}
+                                <Tabs.Screen
+                                    name="(map)/map"
+                                    options={{
+                                        title: t('navigation.map'),
+                                        tabBarIcon: ({ color }) => (
+                                            <TabBarIcon icon={MapIcon} color={color} />
+                                        ),
+                                    }}
+                                />
+
+                                {/* Dashboard Tab */}
+                                <Tabs.Screen
+                                    name='(dashboard)/marina/[name]'
+                                    options={{
+                                        title: t('navigation.dashboard'),
+                                        tabBarIcon: ({ color }) => (
+                                            <TabBarIcon icon={LayoutDashboard} color={color} />
+                                        ),
+                                    }}
+                                    initialParams={{ name: 'Stadthafen Flensburg "Im Jaich"' }}
+                                />
+
+                                {/* Account Tab */}
+                                <Tabs.Screen
+                                    name="(profile)/profile"
+                                    options={{
+                                        title: t('navigation.account'),
+                                        tabBarIcon: ({ color }) => (
+                                            <TabBarIcon icon={User} color={color} />
+                                        ),
+                                    }}
+                                />
+                            </Tabs>
+                        </YStack>
                     )}
                 </AuthProvider>
                 <SafeToastViewport/>
             </ToastProvider>
         </Theme>
-    )
+    );
 }
 
 export default function RootLayout() {

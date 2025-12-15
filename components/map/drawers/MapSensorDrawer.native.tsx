@@ -40,7 +40,8 @@ export default function MapSensorDrawer({isOpen, onToggle, children}: MapSensorD
                 backgroundColor="$background"
                 borderTopLeftRadius="$4"
                 borderTopRightRadius="$4"
-                paddingBottom={insets.bottom + 16}
+                paddingBottom={insets.bottom}
+                flex={1}
             >
                 {/* Header */}
                 <XStack

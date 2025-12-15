@@ -17,13 +17,13 @@ import {ENV} from '@/config/environment';
 import type {AppError} from '@/utils/errors';
 import {
     createMeasurementDictionary,
-    getLatestMeasurements,
     formatMeasurementValue,
     getMeasurementColor,
     getMeasurementIcon,
     getMeasurementTypeSymbol,
     getTextFromMeasurementType
 } from '@/utils/measurements';
+import { mapTimeRangeToApi, getFilteredMeasurements, getCurrentValues } from '@/utils/sensorMeasurements';
 import {formatTimeToLocal} from '@/utils/time';
 import {
     Activity,
@@ -69,8 +69,6 @@ import {IconButton} from '@/types/button';
 // Constants
 // ============================================================================
 
-const EXCLUDED_MEASUREMENTS = ["Standard deviation", "Battery, voltage"];
-const MEASUREMENT_ORDER = ["Temperature, water", "Tide", "Wave Height"];
 const DEFAULT_MARINA_NAME = 'Stadthafen Flensburg "Im Jaich"';
 const DEFAULT_IMAGE_URL = "https://fastly.picsum.photos/id/17/2500/1667.jpg?hmac=HD-JrnNUZjFiP2UZQvWcKrgLoC_pc_ouUSWv8kHsJJY";
 
@@ -81,19 +79,6 @@ const DEFAULT_IMAGE_URL = "https://fastly.picsum.photos/id/17/2500/1667.jpg?hmac
 const getMarinaIdByName = (name: string, locations: LocationWithBoxes[]): number | null => {
     const location = locations.find(loc => loc.location?.name === name);
     return location?.location?.id ?? null;
-};
-
-const mapTimeRangeToApi = (timeRange: ChartTimeRange): string => {
-    const mapping: Record<ChartTimeRange, string> = {
-        'today': '24h',
-        'yesterday': '48h',
-        'last7days': '7d',
-        'last30days': '30d',
-        'last90days': '90d',
-        'last180days': '180d',
-        'last1year': '1y'
-    };
-    return mapping[timeRange] ?? '24h';
 };
 
 const getTimeRangeLabel = (timeRange: ChartTimeRange, t: any): string => {
@@ -168,29 +153,9 @@ export default function DashboardScreen() {
     const harbourName = detailedLocation?.name || "";
     const [locationImageUrl, setLocationImageUrl] = useState<string>(DEFAULT_IMAGE_URL);
 
-    const filteredMeasurements = useMemo(() => {
-        if (!timeRangeData?.boxes) return [];
+    const filteredMeasurements = useMemo(() => getFilteredMeasurements(timeRangeData), [timeRangeData]);
 
-        const latestMeasurements = getLatestMeasurements(timeRangeData.boxes);
-        const filtered = latestMeasurements.filter(m => !EXCLUDED_MEASUREMENTS.includes(m.measurementType));
-
-        return filtered.sort((a, b) => {
-            const indexA = MEASUREMENT_ORDER.indexOf(a.measurementType);
-            const indexB = MEASUREMENT_ORDER.indexOf(b.measurementType);
-            if (indexA === -1 && indexB === -1) return 0;
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-            return indexA - indexB;
-        });
-    }, [timeRangeData]);
-
-    const currentValues = useMemo(() => ({
-        waterTemp: filteredMeasurements.find(m =>
-            m.measurementType === "Temperature, water" || m.measurementType === "WTemp"
-        )?.value,
-        waveHeight: filteredMeasurements.find(m => m.measurementType === "Wave Height")?.value,
-        waterLevel: filteredMeasurements.find(m => m.measurementType === "Tide")?.value
-    }), [filteredMeasurements]);
+    const currentValues = useMemo(() => getCurrentValues(filteredMeasurements), [filteredMeasurements]);
 
     const latestTime = timeRangeData?.boxes[0]?.measurementTimes[0]?.time || new Date().toISOString();
     const infoItemWidth = media.md ? '48%' : '100%';

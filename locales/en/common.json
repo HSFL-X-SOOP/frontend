@@ -11,7 +11,9 @@
     "settings": "Settings",
     "language": "Language",
     "theme": "Theme",
-    "projectWebsite": "Go to Project Website"
+    "projectWebsite": "Go to Project Website",
+    "dashboard": "Dashboard",
+    "account": "Account"
   },
   "language": {
     "name": "English"
@@ -205,7 +207,8 @@
     "next": "Next",
     "finish": "Finish",
     "enable": "Enable",
-    "disable": "Disable"
+    "disable": "Disable",
+    "close": "Close"
   },
   "errors": {
     "notFound": "The requested resource was not found",

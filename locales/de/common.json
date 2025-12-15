@@ -11,7 +11,9 @@
     "settings": "Einstellungen",
     "language": "Sprache",
     "theme": "Theme",
-    "projectWebsite": "Zur Projektwebseite"
+    "projectWebsite": "Zur Projektwebseite",
+    "dashboard": "Dashboard",
+    "account": "Konto"
   },
   "language": {
     "name": "Deutsch"
@@ -206,7 +208,8 @@
     "next": "Weiter",
     "finish": "Fertig",
     "enable": "Aktivieren",
-    "disable": "Deaktivieren"
+    "disable": "Deaktivieren",
+    "close": "Schließen"
   },
   "errors": {
     "notFound": "Die angeforderte Ressource wurde nicht gefunden",
