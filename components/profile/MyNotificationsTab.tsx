@@ -92,7 +92,7 @@ export function MyNotificationsTab() {
                         value: location.locationId.toString(),
                         label: location.name.toString()
                     })) || []}
-                    value={(myLocationsSelect?.filter (location => location.locationId === selectedUserLocationId)[0]?.locationId.toString()) || ''}
+                    value={(myLocationsSelect?.filter (location => location.locationId === selectedUserLocationId)[0]?.locationId.toString()) || myLocationsSelect[0]?.name}
                     onValueChange={handleValueChange}
                     placeholder={t("notificationMeasurementRule.selectUserLocation")}
                     triggerProps={{
