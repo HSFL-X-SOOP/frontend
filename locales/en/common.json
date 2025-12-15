@@ -352,6 +352,7 @@
       "lastNotifiedAt": "Last Notified At",
       "delete": "Delete",
       "deleteConfirmText": "Are you sure you want to delete this notification rule?",
+      "currentValue": "Current measurement",
       "notificationRuleSaved": "Notification rule saved successfully",
       "notificationRuleDeleted": "Notification rule deleted successfully"
     },

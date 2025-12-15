@@ -116,7 +116,7 @@
       "profile": "Profil",
       "boats": "Boote",
       "settings": "Einstellungen",
-      "myNotifications": "Meine Benachrichtigungen"
+      "myNotifications": "Benachrichtigungen"
     },
     "boats": {
       "title": "Meine Boote",
@@ -352,6 +352,7 @@
       "condition": "Bedingung",
       "lastNotifiedAt": "Zuletzt benachrichtigt am",
       "delete": "Löschen",
+      "currentValue": "Aktuelle Messung",
       "deleteConfirmText": "Sind Sie sicher, dass Sie diese Benachrichtigungsregel löschen möchten?",
       "notificationRuleSaved": "Benachrichtigungsregel erfolgreich gespeichert",
       "notificationRuleDeleted": "Benachrichtigungsregel erfolgreich gelöscht"

@@ -122,10 +122,9 @@ export default function ProfileScreen() {
                                 elevation="$3"
                             >
                                 <Tabs.Tab
-                                    flex={1}
+                                    flex={0.5}
                                     value="profile"
                                     borderRadius="$4"
-                                    paddingVertical="$3.5"
                                     paddingHorizontal="$4"
                                     backgroundColor={activeTab === "profile" ? "$accent7" : "transparent"}
                                     borderWidth={activeTab === "profile" ? 2 : 0}
@@ -152,11 +151,10 @@ export default function ProfileScreen() {
                                         </Text>
                                     </XStack>
                                 </Tabs.Tab>
-                                <Tabs.Tab
+                                {/* <Tabs.Tab
                                     flex={1}
                                     value="boats"
                                     borderRadius="$4"
-                                    paddingVertical="$3.5"
                                     paddingHorizontal="$4"
                                     backgroundColor={activeTab === "boats" ? "$accent7" : "transparent"}
                                     borderWidth={activeTab === "boats" ? 2 : 0}
@@ -170,7 +168,7 @@ export default function ProfileScreen() {
                                     animation="quick"
                                     scale={activeTab === "boats" ? 1 : 0.95}
                                 >
-                                    <XStack gap="$3" alignItems="center" justifyContent="center">
+                                    <XStack gap="$3" alignItems="center" justifyContent="center" >
                                         <Anchor size={activeTab === "boats" ? 22 : 20}
                                                 color={"$accent7"}/>
                                         <Text
@@ -178,16 +176,16 @@ export default function ProfileScreen() {
                                             fontWeight={activeTab === "boats" ? "800" : "600"}
                                             color={"$accent7"}
                                             letterSpacing={activeTab === "boats" ? 0.5 : 0}
+                                            
                                         >
                                             {t('profile.tabs.boats')}
                                         </Text>
                                     </XStack>
-                                </Tabs.Tab>
+                                </Tabs.Tab> */}
                                 <Tabs.Tab
                                     flex={1}
                                     value="myNotifications"
                                     borderRadius="$4"
-                                    paddingVertical="$3.5"
                                     paddingHorizontal="$4"
                                     backgroundColor={activeTab === "myNotifications" ? "$accent7" : "transparent"}
                                     borderWidth={activeTab === "myNotifications" ? 2 : 0}
@@ -202,8 +200,6 @@ export default function ProfileScreen() {
                                     scale={activeTab === "myNotifications" ? 1 : 0.95}
                                 >
                                     <XStack gap="$3" alignItems="center" justifyContent="center">
-                                        <Anchor size={activeTab === "myNotifications" ? 22 : 20}
-                                                color={"$accent7"}/>
                                         <Text
                                             fontSize={activeTab === "myNotifications" ? "$5" : "$4"}
                                             fontWeight={activeTab === "myNotifications" ? "800" : "600"}

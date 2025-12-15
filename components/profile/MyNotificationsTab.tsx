@@ -7,6 +7,20 @@ import {
     Button,
     XStack
 } from 'tamagui';
+import { ChevronDown, Edit3, Trash, Check, X, Bell, BellOff } from '@tamagui/lucide-icons';
+import {useTranslation} from '@/hooks/ui/useTranslation';
+import { useNotificationMeasurementRules } from '@/hooks/ui/useNotificationMeasurementRules';
+import { useUserLocations } from '@/hooks/data/useUserLocations';
+import { UserLocation } from '@/api/models/userLocation';
+import { NotificationMeasurementRule } from '@/api/models/notificationMeasurementRule';
+import { SelectWithSheet } from '@/components/ui/SelectWithSheet';
+import { getLatestMeasurements, getMeasurementTypeSymbol, getTextFromMeasurementType } from '@/utils/measurements';
+import { SetNotificationMeasurementRulePopover } from '@/components/notifications/Popovers/SetNotificationMeasurementRulePopover';
+import { useSession } from '@/context/SessionContext';
+import { useLocations } from '@/hooks/data/useLocations';
+import { formatTimeToLocal } from '@/utils/time';
+import { DeleteNotificationMeasurementRulePopover } from '@/components/notifications/Popovers/DeleteNotificationMeasurementRulePopover';
+import { useSensorDataTimeRange } from '@/hooks/data/useSensors';
 import {ChevronDown, Edit3, Trash, Check, X, Bell, BellOff} from '@tamagui/lucide-icons';
 import {useTranslation, useToast} from '@/hooks/ui';
 import {useNotificationMeasurementRules} from '@/hooks/ui/useNotificationMeasurementRules';
@@ -39,6 +53,8 @@ export function MyNotificationsTab() {
     const [selectedUserLocation, setSelectedUserLocation] = useState<UserLocation | undefined>(undefined);
     const isDark = false;
     const session = useSession();
+    const userID = session?.session?.profile?.id ?? 0;
+    const location = useLocations();
     const userID = session?.session?.profile?.id ?? -1;
 
     useEffect(() => {
@@ -61,6 +77,10 @@ export function MyNotificationsTab() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userID]); // userLocations is a hook object and changes on every render
 
+    const fetchNotifications = async () => {
+        const notificationsData = await notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(userID, selectedUserLocationId || 0);
+        setMyNotifications(notificationsData);
+    };
     useEffect(() => {
         void fetchLocationData(
             (locations) => {
@@ -194,6 +214,9 @@ export function MyNotificationsTab() {
                         <XStack justifyContent="space-between" alignItems="center">
                             <YStack>
                                 <Text color="$color" opacity={0.7}>
+                                    {t('dashboard.measurements.currentValue')}: {getCurrentValueMeasurement(currentValues, getCurrentValueMeasurement(currentValues, notification.measurementTypeId.toString()) ? notification.measurementTypeId.toString() : "")} {getMeasurementTypeSymbol(notification.measurementTypeId.toString(), t)}
+                                </Text>
+                                <Text color="$color" opacity={0.7}>
                                     {t('dashboard.measurements.condition')}: {notification.operator === '>' ? t('dashboard.measurements.greaterThanTargetValue') : t('dashboard.measurements.lessThanTargetValue')}
                                 </Text>
                                 <Text color="$color"
@@ -269,3 +292,19 @@ export function MyNotificationsTab() {
     );
 }
 
+function getCurrentValueMeasurement(currentValues: any, type: string) {
+    switch (type) {
+        case "Temperature, water":
+        case "WTemp":
+        case "1603253327":
+            return currentValues.waterTemp;
+        case "Wave Height":
+        case "-1705811922":
+            return currentValues.waveHeight;
+        case "Tide":
+        case "2606550":
+            return currentValues.waterLevel;
+        default:
+            return null;
+    }
+}
