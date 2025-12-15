@@ -2,6 +2,7 @@ import {Button, Text, XStack, YStack, Sheet, Checkbox, View, Separator} from 'ta
 import {useState} from 'react';
 import {useTranslation} from '@/hooks/ui';
 import {X} from '@tamagui/lucide-icons';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 export interface MapFilterState {
     module1Visible: boolean;
@@ -23,6 +24,7 @@ export default function MapFilterButton({
                                             onOpenChange,
                                         }: MapFilterButtonProps) {
     const {t} = useTranslation();
+    const insets = useSafeAreaInsets();
 
     // Use controlled state if provided, otherwise use internal state
     const isControlled = isOpen !== undefined;
@@ -115,7 +117,7 @@ export default function MapFilterButton({
         >
             <Sheet.Overlay animation="quick" enterStyle={{opacity: 0}} exitStyle={{opacity: 0}}/>
             <Sheet.Handle/>
-            <Sheet.Frame padding="$4" backgroundColor="$background">
+            <Sheet.Frame padding="$4" backgroundColor="$background" paddingBottom={insets.bottom + 16}>
                 <XStack alignItems="center" justifyContent="space-between" marginBottom="$4">
                     <Text fontSize="$6" fontWeight="600">{t('map.filterSettings')}</Text>
                     <Button

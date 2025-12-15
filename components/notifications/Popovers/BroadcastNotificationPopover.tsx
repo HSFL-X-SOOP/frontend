@@ -14,6 +14,7 @@ import {
 import {useNotificationLocations} from '@/hooks/ui';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton} from '@/types/button.ts';
 import {useToast} from '@/hooks/ui/useToast';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 interface BroadcastNotificationPopoverProps extends PopoverProps {
     Icon?: any;
@@ -37,6 +38,7 @@ export function BroadcastNotificationPopover({
     const [notificationMessage, setNotificationMessage] = useState<string>('');
     const notificationLocations = useNotificationLocations();
     const toast = useToast();
+    const insets = useSafeAreaInsets();
 
     const handleSend = useCallback(async () => {
         if (!marinaID) return;
@@ -75,7 +77,7 @@ export function BroadcastNotificationPopover({
             {shouldAdapt && (
                 <Adapt platform="touch">
                     <Sheet animation="medium" modal dismissOnSnapToBottom>
-                        <Sheet.Frame padding="$4">
+                        <Sheet.Frame padding="$4" paddingBottom={insets.bottom + 16}>
                             <Adapt.Contents />
                         </Sheet.Frame>
                         <Sheet.Overlay

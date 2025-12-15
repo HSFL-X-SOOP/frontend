@@ -10,6 +10,7 @@ import {
     useCallback
 } from 'react';
 import {Platform} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 // ==========================================
 // TYPES & INTERFACES
@@ -44,6 +45,11 @@ const SHEET_CONFIG = {
 // ==========================================
 const MapSensorBottomSheet = forwardRef<MapSensorBottomSheetRef, MapSensorBottomSheetProps>(
     ({isOpen, onOpenChange, children}, ref) => {
+        // ==========================================
+        // HOOKS
+        // ==========================================
+        const insets = useSafeAreaInsets();
+
         // ==========================================
         // STATE & REFS
         // ==========================================
@@ -159,6 +165,7 @@ const MapSensorBottomSheet = forwardRef<MapSensorBottomSheetRef, MapSensorBottom
                     backgroundColor="$background"
                     borderTopLeftRadius="$6"
                     borderTopRightRadius="$6"
+                    paddingBottom={insets.bottom + 16}
                 >
                     <YStack flex={1}>
                         {children}

@@ -246,7 +246,7 @@ export default function DashboardScreen() {
             }
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [marinaID]); // fetchTimeRangeData comes from a hook and is unstable; toast/t are static utilities
+    }, [marinaID, apiTimeRange]); // fetchTimeRangeData comes from a hook and is unstable; toast/t are static utilities
 
     useEffect(() => {
         if (!marinaID || !isLoggedIn) return;
@@ -522,7 +522,7 @@ export default function DashboardScreen() {
                                                           textAlign="center">
                                                         {getTextFromMeasurementType(measurement.measurementType, t)}
                                                     </Text>
-                                                    <XStack alignItems="baseline" gap="$2">
+                                                    <XStack alignItems="center" gap="$2">
                                                         <H2 fontSize="$10" fontWeight="700"
                                                             color={getMeasurementColor(measurement.measurementType)}>
                                                             {formatMeasurementValue(measurement.value ?? 0)}

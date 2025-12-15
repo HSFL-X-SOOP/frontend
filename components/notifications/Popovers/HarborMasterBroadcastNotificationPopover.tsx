@@ -2,6 +2,7 @@ import { PopoverProps , YStack, Popover, Button, TextArea, Text, XStack, Label, 
 import { useState, useCallback } from 'react';
 import { useNotificationLocations } from '@/hooks/ui/useNotificationLocations';
 import { useToast } from "@/hooks/ui";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export function HarborMasterBroadcastNotificationPopover({
@@ -17,6 +18,7 @@ export function HarborMasterBroadcastNotificationPopover({
     const [notificationMessage, setNotificationMessage] = useState<string>('');
     const notificationLocations = useNotificationLocations();
     const toast = useToast();
+    const insets = useSafeAreaInsets();
 
     const createNotificationLocation = useCallback(async () => {
         if (!marinaID) return;
@@ -56,7 +58,7 @@ export function HarborMasterBroadcastNotificationPopover({
       {shouldAdapt && (
         <Adapt platform="touch">
           <Sheet animation="medium" modal dismissOnSnapToBottom>
-            <Sheet.Frame padding="$4">
+            <Sheet.Frame padding="$4" paddingBottom={insets.bottom + 16}>
               <Adapt.Contents />
             </Sheet.Frame>
             <Sheet.Overlay

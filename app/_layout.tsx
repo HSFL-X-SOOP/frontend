@@ -30,8 +30,8 @@ import {NavbarWeb} from '@/components/navigation/web/navbar'
 import {Footer} from '@/components/navigation/web/Footer'
 import {AuthProvider} from '@/context/SessionContext'
 import {ThemeProvider, useThemeContext} from '@/context/ThemeSwitch.tsx'
-import {Slot} from 'expo-router'
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context'
+import {Slot, usePathname} from 'expo-router'
+import {SafeAreaProvider, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context'
 import type {ToastType} from '@/hooks/ui'
 
 
@@ -130,9 +130,10 @@ function SafeToastViewport() {
 function RootContent() {
     const {currentTheme} = useThemeContext()
     const logger = useMemo(() => createLogger('RootContent'), [])
+    const pathname = usePathname()
 
-    const shouldShowFooter = Platform.OS === 'web'
     const isWeb = Platform.OS === 'web'
+    const shouldShowFooter = isWeb && pathname !== '/map'
 
     useEffect(() => {
         if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -199,7 +200,7 @@ function RootContent() {
                             <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
                         </View>
                     ) : (
-                        <SafeAreaView style={{flex: 1}} edges={['bottom']}>
+                        <SafeAreaView style={{flex: 1}} edges={['top','left','right','bottom']}>
                             <TabBarNative/>
                             <View style={{flex: 1}}>
                                 <Slot/>
@@ -229,12 +230,14 @@ export default function RootLayout() {
     if (!loaded) return null
 
     return (
-        <TamaguiProvider config={tamaguiConfig}>
-            <PortalProvider shouldAddRootHost>
-                <ThemeProvider>
-                    <RootContent/>
-                </ThemeProvider>
-            </PortalProvider>
-        </TamaguiProvider>
+        <SafeAreaProvider>
+            <TamaguiProvider config={tamaguiConfig}>
+                <PortalProvider shouldAddRootHost>
+                    <ThemeProvider>
+                        <RootContent/>
+                    </ThemeProvider>
+                </PortalProvider>
+            </TamaguiProvider>
+        </SafeAreaProvider>
     )
 }

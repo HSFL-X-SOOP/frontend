@@ -2,6 +2,7 @@ import {ChevronDown, ChevronUp} from '@tamagui/lucide-icons';
 import {Button, ScrollView, Sheet, XStack, YStack} from 'tamagui';
 import {ReactNode} from 'react';
 import {LocationWithBoxes} from '@/api/models/sensor';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 interface MapSensorDrawerProps {
     isOpen: boolean;
@@ -11,7 +12,9 @@ interface MapSensorDrawerProps {
     onSensorSelect?: (sensor: LocationWithBoxes) => void;
 }
 
-export default function MapSensorDrawer({isOpen, onToggle, children, sensors = [], onSensorSelect}: MapSensorDrawerProps) {
+export default function MapSensorDrawer({isOpen, onToggle, children}: MapSensorDrawerProps) {
+    const insets = useSafeAreaInsets();
+
     return (
         <Sheet
             forceRemoveScrollEnabled={isOpen}
@@ -37,6 +40,7 @@ export default function MapSensorDrawer({isOpen, onToggle, children, sensors = [
                 backgroundColor="$background"
                 borderTopLeftRadius="$4"
                 borderTopRightRadius="$4"
+                paddingBottom={insets.bottom + 16}
             >
                 {/* Header */}
                 <XStack

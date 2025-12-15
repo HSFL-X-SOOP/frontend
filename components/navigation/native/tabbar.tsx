@@ -47,7 +47,7 @@ export function TabBarNative() {
                 width="100%"
             >
                 {/* Logo */}
-                <Link href="/map">
+                <Link href={"/map" as Href}>
                     <XStack alignItems="center" gap="$2">
                         <LOGO size={50} color={t.accent8?.val}/>
                         <Text
@@ -103,6 +103,7 @@ export function TabBarNative() {
                     backgroundColor="$background"
                     borderTopLeftRadius="$6"
                     borderTopRightRadius="$6"
+                    paddingBottom={insets.bottom + 16}
                 >
                     <Sheet.Handle backgroundColor="$borderColor"/>
 

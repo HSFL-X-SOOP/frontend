@@ -1,9 +1,10 @@
 import {Link, useRouter, Href} from 'expo-router';
-import {Button, Popover, Sheet, Text, XStack, YStack, useTheme, Tooltip} from 'tamagui';
+import {Button, Popover, Sheet, Text, XStack, YStack, useTheme, ScrollView, Tooltip} from 'tamagui';
 import {useState} from 'react';
 
-import {useToast, useTranslation, useIsMobileWeb} from '@/hooks/ui';
-import {ThemeSwitch, useThemeContext} from '@/context/ThemeSwitch';
+import {useToast,useTranslation,useIsMobileWeb} from '@/hooks/ui';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {ThemeSwitch} from '@/context/ThemeSwitch';
 import {LOGO, BadgeIcon, MapIcon, CloudIcon} from '@/components/ui/Icons';
 import {User, Languages, Menu, LogOut, LayoutDashboard, BookOpen} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
@@ -23,7 +24,7 @@ export function NavbarWeb() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const isMobileWeb = useIsMobileWeb();
     const toast = useToast();
-    const {toggleTheme} = useThemeContext();
+    const insets = useSafeAreaInsets();
 
     const handleLogout = () => {
         logout();
@@ -72,15 +73,13 @@ export function NavbarWeb() {
                 <XStack gap="$6" alignItems="center">
                     <Tooltip placement="bottom" delay={200}>
                         <Tooltip.Trigger>
-                            <Button
-                                circular
+                            <IconButton
                                 size="$3"
-                                chromeless
                                 onPress={() => router.push("/(about)/api")}
                                 cursor="pointer"
                             >
                                 <CloudIcon color={t.accent8?.val} size={26}/>
-                            </Button>
+                            </IconButton>
                         </Tooltip.Trigger>
                         <Tooltip.Content
                             enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
@@ -105,15 +104,13 @@ export function NavbarWeb() {
 
                     <Tooltip placement="bottom" delay={200}>
                         <Tooltip.Trigger>
-                            <Button
-                                circular
+                            <IconButton
                                 size="$3"
-                                chromeless
                                 onPress={() => router.push("/(about)/sensors")}
                                 cursor="pointer"
                             >
                                 <BadgeIcon color={t.accent8?.val} size={26}/>
-                            </Button>
+                            </IconButton>
                         </Tooltip.Trigger>
                         <Tooltip.Content
                             enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
@@ -138,15 +135,13 @@ export function NavbarWeb() {
 
                     <Tooltip placement="bottom" delay={200}>
                         <Tooltip.Trigger>
-                            <Button
-                                circular
+                            <IconButton
                                 size="$3"
-                                chromeless
                                 onPress={() => window.open('https://projekt.marlin-live.com', '_blank')}
                                 cursor="pointer"
                             >
                                 <BookOpen color={t.accent8?.val} size={24}/>
-                            </Button>
+                            </IconButton>
                         </Tooltip.Trigger>
                         <Tooltip.Content
                             enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
@@ -242,20 +237,32 @@ export function NavbarWeb() {
             )}
 
             {isMobileWeb && (
-                <IconButton
-                    size="$4"
-                    icon={Menu}
-                    color="$accent8"
+                <Button
                     onPress={() => setIsMenuOpen(true)}
-                    aria-label="Open menu"
-                />
+                    circular
+                    size="$4"
+                    backgroundColor="$background"
+                    borderWidth={2}
+                    borderColor="$accent8"
+                    hoverStyle={{
+                        backgroundColor: "$backgroundHover",
+                        borderColor: "$accent9"
+                    }}
+                    pressStyle={{
+                        backgroundColor: "$backgroundPress",
+                        borderColor: "$accent10",
+                        scale: 0.95
+                    }}
+                >
+                    <Menu size={24} color={t.accent8?.val} strokeWidth={2.5}/>
+                </Button>
             )}
 
             <Sheet
                 modal
                 open={isMenuOpen}
                 onOpenChange={setIsMenuOpen}
-                snapPoints={[99]}
+                snapPoints={[85, 50]}
                 dismissOnSnapToBottom
                 animation="medium"
             >
@@ -263,190 +270,233 @@ export function NavbarWeb() {
                     animation="lazy"
                     enterStyle={{opacity: 0}}
                     exitStyle={{opacity: 0}}
-                    backgroundColor="rgba(0,0,0,0.5)"
-                    opacity={1}
+                    opacity={0}
                 />
                 <Sheet.Frame
                     padding="$0"
                     backgroundColor="$background"
                     borderTopLeftRadius="$6"
                     borderTopRightRadius="$6"
+                    paddingBottom={insets.bottom + 16}
                 >
                     <Sheet.Handle backgroundColor="$borderColor"/>
 
-                    <YStack padding="$3" gap="$2.5" height="100%">
-                        {/* Header */}
-                        <XStack justifyContent="space-between" alignItems="center" paddingBottom="$2">
-                            <Text fontSize="$6" fontWeight="bold" color="$accent8" fontFamily="$oswald">
-                                Menu
-                            </Text>
-                            <Button
-                                circular
-                                size="$2.5"
-                                chromeless
-                                onPress={() => setIsMenuOpen(false)}
-                            >
-                                <Text fontSize="$5" color="$color">✕</Text>
-                            </Button>
-                        </XStack>
+                    <ScrollView>
+                        <YStack padding="$4" gap="$2">
+                            <XStack justifyContent="space-between" alignItems="center" paddingBottom="$4"
+                                    borderBottomWidth={1} borderBottomColor="$borderColor">
+                                <Text fontSize="$7" fontWeight="bold" color="$accent8" fontFamily="$oswald">
+                                    Menu
+                                </Text>
+                                <IconButton
+                                    size="$3"
+                                    onPress={() => setIsMenuOpen(false)}
+                                >
+                                    <Text fontSize="$6" color="$color">✕</Text>
+                                </IconButton>
+                            </XStack>
 
-                        {/* Main Navigation - Compact */}
-                        <XStack gap="$2" width="100%">
-                            <Link href={"/map" as Href} onPress={() => setIsMenuOpen(false)} asChild>
-                                <Button flex={1} size="$3" chromeless backgroundColor="$accent2"
-                                        pressStyle={{backgroundColor: "$accent3"}}>
-                                    <YStack gap="$1" alignItems="center">
-                                        <MapIcon color={t.accent8?.val} size={22}/>
-                                        <Text fontSize="$2" fontWeight="500" color="$accent8">
+                            <YStack gap="$2" paddingTop="$3">
+                                <Link href={"/map" as Href} onPress={() => setIsMenuOpen(false)}>
+                                    <XStack
+                                        alignItems="center"
+                                        gap="$3"
+                                        padding="$3"
+                                        borderColor={"$borderColor"}
+                                        borderWidth={"$1"}
+                                        borderRadius="$3"
+                                        hoverStyle={{
+                                            backgroundColor: "$backgroundHover"
+                                        }}
+                                        pressStyle={{
+                                            backgroundColor: "$backgroundPress"
+                                        }}
+                                    >
+                                        <MapIcon color={t.accent8?.val} size={24}/>
+                                        <Text fontSize="$5" fontWeight="500" color="$accent8">
                                             {translate('navigation.map')}
                                         </Text>
-                                    </YStack>
-                                </Button>
-                            </Link>
+                                    </XStack>
+                                </Link>
 
-                            <Link href={'/marina/Stadthafen Flensburg "Im Jaich"' as Href}
-                                  onPress={() => setIsMenuOpen(false)} asChild>
-                                <Button flex={1} size="$3" chromeless backgroundColor="$accent2"
-                                        pressStyle={{backgroundColor: "$accent3"}}>
-                                    <YStack gap="$1" alignItems="center">
-                                        <LayoutDashboard color={t.accent8?.val} size={22}/>
-                                        <Text fontSize="$2" fontWeight="500" color="$accent8">
-                                            Dashboard
+                                <Link href={'/marina/Stadthafen Flensburg "Im Jaich"' as Href} onPress={() => setIsMenuOpen(false)}>
+                                    <XStack
+                                        alignItems="center"
+                                        gap="$3"
+                                        padding="$3"
+                                        borderColor={"$borderColor"}
+                                        borderWidth={"$1"}
+                                        borderRadius="$3"
+                                        hoverStyle={{
+                                            backgroundColor: "$backgroundHover"
+                                        }}
+                                        pressStyle={{
+                                            backgroundColor: "$backgroundPress"
+                                        }}
+                                    >
+                                        <LayoutDashboard color={t.accent8?.val} size={24}/>
+                                        <Text fontSize="$5" fontWeight="500" color="$accent8">
+                                            {translate('dashboard.dashboard')}
                                         </Text>
-                                    </YStack>
-                                </Button>
-                            </Link>
-                        </XStack>
+                                    </XStack>
+                                </Link>
 
-                        {/* Quick Links Grid */}
-                        <XStack gap="$2" width="100%" justifyContent="space-evenly" paddingVertical="$2">
-                            <Button
-                                circular
-                                size="$4"
-                                backgroundColor="$accent1"
-                                chromeless
-                                onPress={() => {
-                                    router.push("/(about)/api");
-                                    setIsMenuOpen(false);
-                                }}
-                                cursor="pointer"
-                                pressStyle={{backgroundColor: "$accent3"}}
-                            >
-                                <YStack gap="$0.5" alignItems="center">
-                                    <CloudIcon color={t.accent12?.val} size={24}/>
-                                    <Text fontSize="$1" fontWeight="500" color="$accent8">API</Text>
-                                </YStack>
-                            </Button>
-
-                            <Button
-                                circular
-                                size="$4"
-                                backgroundColor="$accent1"
-                                chromeless
-                                onPress={() => {
-                                    router.push("/(about)/sensors");
-                                    setIsMenuOpen(false);
-                                }}
-                                cursor="pointer"
-                                pressStyle={{backgroundColor: "$accent3"}}
-                            >
-                                <YStack gap="$0.5" alignItems="center">
-                                    <BadgeIcon color={t.accent12?.val} size={24}/>
-                                    <Text fontSize="$1" fontWeight="500" color="$accent8">Sensoren</Text>
-                                </YStack>
-                            </Button>
-
-                            <Button
-                                circular
-                                size="$4"
-                                backgroundColor="$accent1"
-                                chromeless
-                                onPress={() => window.open('https://projekt.marlin-live.com', '_blank')}
-                                cursor="pointer"
-                                pressStyle={{backgroundColor: "$accent3"}}
-                            >
-                                <YStack gap="$0.5" alignItems="center">
-                                    <BookOpen color={t.accent12?.val} size={24}/>
-                                    <Text fontSize="$1" fontWeight="500" color="$accent8">Projekt</Text>
-                                </YStack>
-                            </Button>
-                        </XStack>
-
-                        {/* Settings - Compact Inline */}
-                        <YStack gap="$2" paddingTop="$2" borderTopWidth={1} borderTopColor="$borderColor">
-                            <XStack gap="$2" alignItems="center" justifyContent="space-between" paddingHorizontal="$2">
-                                <XStack gap="$2" alignItems="center" flex={1}>
-                                    <Languages color={t.accent8?.val} size={18}/>
-                                    <Text fontSize="$3" fontWeight="500"
-                                          color="$color">{translate('settings.language')}</Text>
-                                </XStack>
-                                <LanguageSelector/>
-                            </XStack>
-
-                            <XStack gap="$2" alignItems="center" justifyContent="space-between" paddingHorizontal="$2">
-                                <XStack gap="$2" alignItems="center" flex={1}>
-                                    <Text fontSize="$3" fontWeight="500"
-                                          color="$color">{translate('settings.theme')}</Text>
-                                </XStack>
-                                <Button
-                                    size="$2.5"
-                                    circular
-                                    chromeless
-                                    backgroundColor="$gray5"
-                                    onPress={toggleTheme}
-                                    pressStyle={{backgroundColor: "$gray6"}}
+                                <XStack
+                                    alignItems={"center"}
+                                    justifyContent="center"
+                                    gap="$4"
+                                    paddingVertical="$2"
                                 >
-                                    <ThemeSwitch size={18}/>
-                                </Button>
-                            </XStack>
-                        </YStack>
+                                    <YStack
+                                        alignItems={"center"}
+                                        justifyContent="center"
+                                        gap="$1"
+                                        paddingVertical="$2"
+                                    >
+                                        <IconButton
+                                            size="$4"
+                                            padding={"$2"}
+                                            backgroundColor={"$accent1"}
+                                            onPress={() => {
+                                                router.push("/(about)/api");
+                                                setIsMenuOpen(false);
+                                            }}
+                                            cursor="pointer"
+                                        >
+                                            <CloudIcon color={t.accent12?.val} size={30}/>
+                                        </IconButton>
+                                        <Text
+                                            fontSize="$4"
+                                            fontWeight="500"
+                                            color="$accent8"
+                                            textAlign={"center"}
+                                            textOverflow={"ellipsis"}>API</Text>
+                                    </YStack>
 
-                        {/* Auth Section - Compact */}
-                        {!session && (
-                            <YStack gap="$2" paddingTop="$3" marginTop="auto">
-                                <Link href={"/login" as Href} onPress={() => setIsMenuOpen(false)} asChild>
-                                    <PrimaryButton width="100%" size="$3.5">
-                                        <PrimaryButtonText fontSize="$4">
-                                            {translate('auth.login')}
-                                        </PrimaryButtonText>
-                                    </PrimaryButton>
-                                </Link>
-                                <Link href={"/register" as Href} onPress={() => setIsMenuOpen(false)} asChild>
-                                    <SecondaryButton width="100%" size="$3.5">
-                                        <SecondaryButtonText color="$accent8" fontSize="$4">
-                                            {translate('auth.register')}
-                                        </SecondaryButtonText>
-                                    </SecondaryButton>
-                                </Link>
+                                    <YStack
+                                        alignItems={"center"}
+                                        justifyContent="center"
+                                        gap="$1"
+                                        paddingVertical="$2"
+                                    >
+                                        <IconButton
+                                            size="$4"
+                                            padding={"$2"}
+                                            backgroundColor={"$accent1"}
+                                            onPress={() => {
+                                                router.push("/(about)/sensors");
+                                                setIsMenuOpen(false);
+                                            }}
+                                            cursor="pointer"
+                                        >
+                                            <BadgeIcon color={t.accent12?.val} size={30}/>
+                                        </IconButton>
+                                        <Text
+                                            fontSize="$4"
+                                            fontWeight="500"
+                                            color="$accent8"
+                                            textAlign={"center"}
+                                            textOverflow={"ellipsis"}>Sensoren</Text>
+                                    </YStack>
+
+                                    <YStack
+                                        alignItems={"center"}
+                                        justifyContent="center"
+                                        gap="$1"
+                                        paddingVertical="$2"
+                                    >
+                                        <IconButton
+                                            size="$4"
+                                            padding={"$2"}
+                                            backgroundColor={"$accent1"}
+                                            onPress={() => {
+                                                window.open('https://projekt.marlin-live.com', '_blank');
+                                                setIsMenuOpen(false);
+                                            }}
+                                            cursor="pointer"
+                                        >
+                                            <BookOpen color={t.accent12?.val} size={30}/>
+                                        </IconButton>
+                                        <Text
+                                            fontSize="$4"
+                                            fontWeight="500"
+                                            color="$accent8"
+                                            textAlign={"center"}
+                                            textOverflow={"ellipsis"}>Projekt</Text>
+                                    </YStack>
+                                </XStack>
                             </YStack>
-                        )}
 
-                        {session && (
-                            <YStack gap="$2" paddingTop="$3" marginTop="auto">
-                                <Link href={"/(profile)/profile" as Href} onPress={() => setIsMenuOpen(false)} asChild>
-                                    <SecondaryButton width="100%" size="$3.5">
-                                        <XStack alignItems="center" gap="$2" justifyContent="center">
-                                            <User size={20} color={"$accent8"}/>
-                                            <SecondaryButtonText color="$accent8" fontSize="$4">
-                                                {translate('navigation.profile')}
+                            <YStack gap="$3" paddingTop="$4" borderTopWidth={1} borderTopColor="$borderColor">
+                                <YStack gap="$2">
+                                    <XStack gap="$3" padding="$3" alignItems="center" justifyContent="space-between">
+                                        <XStack gap="$2" alignItems="center">
+                                            <Languages color={t.accent8?.val} size={22}/>
+                                            <Text fontSize="$4" fontWeight="500"
+                                                  color="$color">{translate('settings.language')}</Text>
+                                        </XStack>
+                                        <Text fontSize="$3" color="$color">{translate('language.name')}</Text>
+                                    </XStack>
+                                    <YStack paddingHorizontal="$3">
+                                        <LanguageSelector/>
+                                    </YStack>
+                                </YStack>
+
+                                <XStack gap="$3" padding="$3" alignItems="center" justifyContent="space-between">
+                                    <XStack gap="$2" alignItems="center">
+                                        <Text fontSize="$4" fontWeight="500"
+                                              color="$color">{translate('settings.theme')}</Text>
+                                    </XStack>
+                                    <ThemeSwitch size={24}/>
+                                </XStack>
+                            </YStack>
+
+                            {!session && (
+                                <YStack gap="$3" paddingTop="$4">
+                                    <Link href={"/login" as Href} onPress={() => setIsMenuOpen(false)}>
+                                        <PrimaryButton width="100%">
+                                            <PrimaryButtonText fontSize="$5">
+                                                {translate('auth.login')}
+                                            </PrimaryButtonText>
+                                        </PrimaryButton>
+                                    </Link>
+                                    <Link href={"/register" as Href} onPress={() => setIsMenuOpen(false)}>
+                                        <SecondaryButton width="100%">
+                                            <SecondaryButtonText color="$accent8" fontSize="$5">
+                                                {translate('auth.register')}
+                                            </SecondaryButtonText>
+                                        </SecondaryButton>
+                                    </Link>
+                                </YStack>
+                            )}
+
+                            {session && (
+                                <YStack gap="$3" paddingTop="$4">
+                                    <Link href={"/(profile)/profile" as Href} onPress={() => setIsMenuOpen(false)}>
+                                        <SecondaryButton width="100%">
+                                            <XStack alignItems="center" gap="$2">
+                                                <User size={24} color={"$accent8"}/>
+                                                <SecondaryButtonText color="$accent8" fontSize="$5">
+                                                    {translate('navigation.profile')}
+                                                </SecondaryButtonText>
+                                            </XStack>
+                                        </SecondaryButton>
+                                    </Link>
+                                    <SecondaryButton width="100%" onPress={() => {
+                                        handleLogout();
+                                        setIsMenuOpen(false);
+                                    }}>
+                                        <XStack alignItems="center" gap="$2">
+                                            <LogOut size={24} color={"$accent8"}/>
+                                            <SecondaryButtonText color="$accent8" fontSize="$5">
+                                                {translate('auth.logout')}
                                             </SecondaryButtonText>
                                         </XStack>
                                     </SecondaryButton>
-                                </Link>
-                                <SecondaryButton width="100%" size="$3.5" onPress={() => {
-                                    handleLogout();
-                                    setIsMenuOpen(false);
-                                }}>
-                                    <XStack alignItems="center" gap="$2" justifyContent="center">
-                                        <LogOut size={20} color={"$accent8"}/>
-                                        <SecondaryButtonText color="$accent8" fontSize="$4">
-                                            {translate('auth.logout')}
-                                        </SecondaryButtonText>
-                                    </XStack>
-                                </SecondaryButton>
-                            </YStack>
-                        )}
-                    </YStack>
+                                </YStack>
+                            )}
+                        </YStack>
+                    </ScrollView>
                 </Sheet.Frame>
             </Sheet>
         </XStack>
