@@ -20,7 +20,7 @@ import { useSession } from '@/context/SessionContext';
 import { useLocations } from '@/hooks/data/useLocations';
 import { formatTimeToLocal } from '@/utils/time';
 import { DeleteNotificationMeasurementRulePopover } from '@/components/notifications/Popovers/DeleteNotificationMeasurementRulePopover';
-import { useSensorDataNew, useSensorDataTimeRange } from '@/hooks/data/useSensors';
+import { useSensorDataTimeRange } from '@/hooks/data/useSensors';
 
 export function MyNotificationsTab() {
     const {t} = useTranslation();
@@ -190,9 +190,8 @@ export function MyNotificationsTab() {
                                         isActive: !notification.isActive
                                     }
                                 ).then(async () => {
-                                    const notificationsData = await notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(1, selectedUserLocationId || 0);
-                                    setMyNotifications(notificationsData);})
-                                }}>
+                                    fetchNotifications();
+                                })}}>
                                 {notification.isActive ? t('common.disable') : t('common.enable')}
                             </Button>
                             <SetNotificationMeasurementRulePopover 
