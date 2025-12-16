@@ -358,42 +358,42 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
                             colors={['transparent', 'rgba(0,0,0,0.6)']}
                             style={{position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%'}}
                         />
-                        <Stack position="absolute" bottom="$4" left="$4" right="$4">
+                        <Stack position="absolute" bottom="$4" left="$3" right="$3">
                             <Text color="white" fontSize="$3" opacity={0.9} marginBottom="$1">
                                 {t('dashboard.title')}
                             </Text>
-                            <View style={{width: 300}}>
-                                <XStack gap={20}>
-                                    <NavigateDashboardDropdownMenu
-                                        isDark={isDark}
-                                        router={router}
-                                        sensorLocations={sensorLocations}
-                                        selectedMarina={harbourName}
-                                        onSelectMarina={onSelectMarina}
-                                    />
-                                    {isLoggedIn && (
-                                        <XStack>
-                                            <Button size="$5" variant="outlined"
-                                                    icon={userLocation ? HeartMinus : HeartPlus}
-                                                    onPress={handleFavoriteToggle} circular visibility='hidden'/>
-                                            {userLocation && (
+                                <XStack justifyContent="space-between" gap={5} alignItems="center">
+                                    <XStack width={275}>
+                                        <NavigateDashboardDropdownMenu
+                                            isDark={isDark}
+                                            router={router}
+                                            sensorLocations={sensorLocations}
+                                            selectedMarina={harbourName}
+                                            onSelectMarina={onSelectMarina}
+                                        />
+                                    </XStack>
+                                        {/* <BroadcastNotificationPopover
+                                            shouldAdapt={false}
+                                            placement="top"
+                                            Icon={MessageSquarePlus}
+                                            Name={t("harbor.harborMasterNotification")}
+                                            userID={userID}
+                                            marinaID={marinaID}
+                                            t={t}
+                                            /> */}
+                                        {isLoggedIn && (
+                                            <XStack gap={5}>
                                                 <Button size="$5" variant="outlined"
-                                                        icon={userLocation?.sentHarborNotifications ? BellOff : Bell}
-                                                        onPress={handleNotificationToggle} circular/>
-                                            )}
-                                            <BroadcastNotificationPopover
-                                                shouldAdapt={false}
-                                                placement="top"
-                                                Icon={MessageSquarePlus}
-                                                Name={t("harbor.harborMasterNotification")}
-                                                userID={userID}
-                                                marinaID={marinaID}
-                                                t={t}
-                                            />
-                                        </XStack>
-                                    )}
+                                                        icon={userLocation ? HeartMinus : HeartPlus}
+                                                        onPress={handleFavoriteToggle} circular visibility='hidden'/>
+                                                {userLocation && (
+                                                    <Button size="$5" variant="outlined"
+                                                            icon={userLocation?.sentHarborNotifications ? BellOff : Bell}
+                                                            onPress={handleNotificationToggle} circular/>
+                                                )}
+                                            </XStack>
+                                        )}
                                 </XStack>
-                            </View>
                         </Stack>
                     </Stack>
 
