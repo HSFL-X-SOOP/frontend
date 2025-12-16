@@ -1,3 +1,5 @@
+import {DetailedLocationDTO} from "@/api/models/location.ts";
+
 export interface UserProfile {
     id: number;
     email: string;
@@ -8,7 +10,7 @@ export interface UserProfile {
     roles?: ActivityRole[]; // Alias for activityRoles
     authorityRole: AuthorityRole;
     measurementSystem: MeasurementSystem | null;
-    assignedLocation?: object | null;
+    assignedLocation?: DetailedLocationDTO | null;
     verified: boolean;
     profileCreatedAt: string | null;
     profileUpdatedAt: string | null;
