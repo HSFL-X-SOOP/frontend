@@ -1,6 +1,6 @@
 import {useRouter} from 'expo-router';
-import {useState, useEffect} from 'react';
-import {ScrollView} from "react-native";
+import {useState, useEffect, use} from 'react';
+import {Platform, ScrollView} from "react-native";
 import {
     Button,
     Text,
@@ -21,6 +21,8 @@ import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
 import {MyNotificationsTab} from '@/components/profile/MyNotificationsTab';
 import {useLocationInfo, useUser} from '@/hooks/data';
 import {DetailedLocationDTO} from '@/api/models/location';
+import { SpeedDial } from '@/components/speeddial/SpeedDial';
+import { Menu, MessagesSquare, User2 } from '@tamagui/lucide-icons';
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -115,6 +117,63 @@ export default function ProfileScreen() {
         );
     }
 
+    interface SpeedDialAction {
+        key: string;
+        label: string;
+        closeOnPress: boolean;
+        icon: any;
+        onPress: () => void;
+    }
+
+    const [speedDialActions, setSpeedDialActions] = useState<SpeedDialAction[]>([]);
+
+    useEffect(() => {
+
+        let actions = [
+                        {
+                    key: 'notifications',
+                    label: t('profile.tabs.myNotifications'),
+                    closeOnPress: false,
+                    icon: MessagesSquare,
+                    onPress: () => {
+                            setActiveTab('myNotifications');
+                    },
+                },
+                {
+                    key: 'profile',
+                    label: t('profile.tabs.profile'),
+                    closeOnPress: false,
+                    icon: User2,
+                    onPress: () => {
+                            setActiveTab('profile');
+                    },
+                },
+            // {
+            //     key: 'boats',
+            //     label: t('profile.tabs.boats'),
+            //     closeOnPress: false,
+            //     icon: Home,
+            //     onPress: () => {
+            //          setActiveTab('boats');
+            //     },
+            // },
+                ]
+
+            if (isHarborMaster) {
+                actions.push(                {
+                    key: 'harborMaster',
+                    label: t('harbor.title'),
+                    closeOnPress: false,
+                    icon: Home,
+                    onPress: () => {
+                        setActiveTab('harbor');
+                    },
+                });
+            }
+
+        setSpeedDialActions(actions);
+    }, []);
+
     return (
         <View style={{flex: 1}}>
             <YStack flex={1} backgroundColor="$content1">
@@ -130,6 +189,8 @@ export default function ProfileScreen() {
                             borderRadius="$4"
                             overflow="hidden"
                         >
+                            {Platform.OS === 'web' && (
+                                <View>
                             <Tabs.List
                                 separator={<Separator vertical borderColor="$borderColor" opacity={0.3}/>}
                                 disablePassBorderRadius="bottom"
@@ -282,6 +343,8 @@ export default function ProfileScreen() {
                             </Tabs.List>
 
                             <Separator/>
+                                </View>
+                            )}
 
                             <Tabs.Content value="profile" padding="$0" marginTop="$4">
                                 <ProfileTab/>
@@ -304,6 +367,25 @@ export default function ProfileScreen() {
                     </YStack>
                 </ScrollView>
             </YStack>
+            {Platform.OS !== 'web' && (
+                    <XStack right={0} bottom={0}>
+
+                        {/* SpeedDial für Web (Mobile und Desktop) */}
+                        <SpeedDial
+                            placement="bottom-right"
+                            labelPlacement="left"
+                            portal={false}
+                            icon={Menu}
+                            closeOnActionPress={true}
+                            actions={[
+                                ...speedDialActions
+                            ]}
+                            fabSize="$6"
+                            gap="$2"
+
+                            />
+                    </XStack>
+                    )}
         </View>
     );
 }

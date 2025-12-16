@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
 import { useActionSheet } from '@expo/react-native-action-sheet';
-import { Text } from 'tamagui';
+import { Card, Text } from 'tamagui';
+import { rgba } from '@tamagui/core';
 
 export type SelectItem<T extends string | number> = {
   label: string;
@@ -40,20 +41,20 @@ export function ActionSheetSelect<T extends string | number>({
   };
 
   return (
-    <Pressable style={styles.button} onPress={openSheet}>
-      <Text style={[styles.text, !value && styles.placeholder]}>
-        {selectedLabel}
-      </Text>
-    </Pressable>
+    <Card backgroundColor="$content2" borderColor="$borderColor" borderWidth={1} borderRadius={8}>
+
+      <Pressable style={styles.button} onPress={openSheet}>
+        <Text style={[styles.text, !value && styles.placeholder]}>
+          {selectedLabel}
+        </Text>
+      </Pressable>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
     height: 48,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
     paddingHorizontal: 12,
     justifyContent: 'center',
   },
