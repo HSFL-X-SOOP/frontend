@@ -2,7 +2,8 @@ import {LoginResponse} from "@/api/models/auth";
 import {useSession} from "@/context/SessionContext";
 import axios, {AxiosError, InternalAxiosRequestConfig} from "axios";
 import {ENV} from "@/config/environment";
-import { createLogger } from "@/utils/logger";
+import {createLogger} from "@/utils/logger";
+import {useEffect} from "react";
 
 const logger = createLogger('HTTP:Client');
 
@@ -28,23 +29,17 @@ export function useHttpClient() {
                     {refreshToken}
                 )
 
-                const newSession = {
-                    accessToken: data.accessToken,
-                    refreshToken: data.refreshToken,
-                    loggedInSince: session?.loggedInSince ?? new Date(),
-                    lastTokenRefresh: new Date(),
-                    profile: data.profile,
-                    role: data.profile?.authorityRole ?? null
-                }
+        const newSession = {
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+            loggedInSince: session?.loggedInSince ?? new Date(),
+            lastTokenRefresh: new Date(),
+            profile: data.profile,
+            role: data.profile?.authorityRole ?? null
+        }
 
-                login(newSession)
-                return newSession.accessToken
-            } finally {
-                refreshPromise = null;
-            }
-        })();
-
-        return refreshPromise;
+        login(newSession)
+        return newSession.accessToken
     }
 
     httpClient.interceptors.request.use(
@@ -74,6 +69,7 @@ export function useHttpClient() {
             return config
         }
     )
+
 
     httpClient.interceptors.response.use(
         (res) => res,
