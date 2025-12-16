@@ -71,7 +71,7 @@ export function NotificationRuleDialog({
                 setExistingRule(null);
             }
         );
-    }, [marinaID, userID, MeasurementType, notificationMeasurementRules]);
+    }, [marinaID, userID, MeasurementType]);
 
     const handleSave = useCallback((value: number) => {
         if (!marinaID) return;

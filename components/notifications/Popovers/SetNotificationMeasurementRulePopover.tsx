@@ -61,7 +61,7 @@ export function SetNotificationMeasurementRulePopover({
                 setExistingRule(null);
             }
         );
-    }, [marinaID, userID, MeasurementType, notificationMeasurementRules]);
+    }, [marinaID, userID, MeasurementType]);
 
     const createNotificationMeasurementRule = useCallback((value: number, onSuccess: () => void, onError: (error: any) => void) => {
         if (!marinaID) {
@@ -69,7 +69,7 @@ export function SetNotificationMeasurementRulePopover({
             return;
         }
         const notificationMeasurementRule = {
-            userId: userID || -1,
+            userId: userID || 0,
             locationId: marinaID,
             measurementTypeId: getIDFromMeasurementType(MeasurementType),
             operator: operator,

@@ -297,7 +297,7 @@ export function MyNotificationsTab() {
                                         Value={notification.measurementValue}
                                         MeasurementType={notification.measurementTypeId.toString()}
                                         marinaID={notification.locationId}
-                                        userID={1}
+                                        userID={userID}
                                         measurementId={notification.id}
                                         t={t}
                                         fetchNotifications={fetchNotifications}
