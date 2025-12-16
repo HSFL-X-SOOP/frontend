@@ -10,7 +10,7 @@ export interface UserProfile {
     roles?: ActivityRole[]; // Alias for activityRoles
     authorityRole: AuthorityRole;
     measurementSystem: MeasurementSystem | null;
-    assignedLocation?: DetailedLocationDTO | null;
+    assignedLocation: DetailedLocationDTO | null;
     verified: boolean;
     profileCreatedAt: string | null;
     profileUpdatedAt: string | null;
