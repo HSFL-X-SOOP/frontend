@@ -1,8 +1,8 @@
 import {useThemeContext} from "@/context/ThemeSwitch";
-import {useTranslation} from "@/hooks/useTranslation";
+import {useTranslation} from "@/hooks/ui";
 import {Activity} from "@tamagui/lucide-icons";
 import {useMemo, useState} from "react";
-import {View} from "react-native";
+import {View, GestureResponderEvent} from "react-native";
 import Svg, {G, Line, Path, Circle, Text as SvgText} from "react-native-svg";
 import {Card, H3, Text, useMedia, XStack, YStack} from "tamagui";
 
@@ -84,7 +84,7 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
         return {path, points};
     }, [displayData, innerWidth, innerHeight, minValue, maxValue]);
 
-    const handleTouch = (event: any) => {
+    const handleTouch = (event: GestureResponderEvent) => {
         const {locationX, locationY} = event.nativeEvent;
         const x = locationX - padding.left;
         const y = locationY - padding.top;
@@ -134,7 +134,7 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
                                             ? (data[data.length - 1] < 1 ? data[data.length - 1].toFixed(2) : data[data.length - 1].toFixed(1))
                                             : '0'}
                                 </Text>
-                                <Text fontSize="$3" color="$gray10">
+                                <Text fontSize="$3" color={color}>
                                     {unit}
                                 </Text>
                             </XStack>

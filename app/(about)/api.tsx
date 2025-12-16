@@ -1,14 +1,17 @@
 import {Link, Href} from 'expo-router';
-import {SafeAreaView, ScrollView, Linking} from 'react-native';
-import {Text, YStack, Card, H1, H2, XStack, View, Button} from 'tamagui';
+import {ScrollView, Linking} from 'react-native';
+import {Text, YStack, Card, H1, H2, XStack, View} from 'tamagui';
 import {Code, Database, Key, ExternalLink} from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
+import {PrimaryButton, PrimaryButtonText} from '@/types/button';
+import {IconContainer} from '@/components/ui/IconContainer';
+import {LinearGradient} from 'tamagui/linear-gradient';
 
 export default function APIScreen() {
     const {t} = useTranslation('api');
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <YStack flex={1} backgroundColor="$content1">
                 <ScrollView
                     showsVerticalScrollIndicator={false}
@@ -27,33 +30,37 @@ export default function APIScreen() {
                             </Text>
                         </YStack>
 
-                        <Card padding="$6" backgroundColor="$accent1" borderRadius="$6" borderWidth={1}
-                              borderColor="$accent6">
-                            <XStack alignItems="center" gap="$4">
-                                <View
-                                    width={60}
-                                    height={60}
-                                    backgroundColor="$accent7"
-                                    borderRadius="$10"
-                                    alignItems="center"
-                                    justifyContent="center"
-                                >
-                                    <Key size={32} color="white"/>
-                                </View>
-                                <YStack flex={1} gap="$2">
-                                    <Text fontSize={18} fontWeight="600" color="$accent8">
-                                        {t('api.accessRequired')}
-                                    </Text>
-                                    <Text fontSize={15} color="$color" opacity={0.9}>
-                                        {t('api.accessDescription')}
-                                    </Text>
-                                    <Link href={"/(other)/prices" as Href}>
-                                        <Text color="$accent8" textDecorationLine="underline" fontWeight="600">
-                                            {t('api.pricingLink')}
+                        <Card padding="$0" borderRadius="$6" borderWidth={1} borderColor="$borderColor"
+                              overflow="hidden">
+                            <LinearGradient
+                                colors={['$accent7', '$accent9']}
+                                start={[0, 0]}
+                                end={[1, 1]}
+                                padding="$6"
+                            >
+                                <XStack alignItems="center" gap="$4">
+                                    <IconContainer
+                                        icon={Key}
+                                        size={32}
+                                        containerSize={60}
+                                        borderRadius="$10"
+                                        marginBottom="$0"
+                                    />
+                                    <YStack flex={1} gap="$2">
+                                        <Text fontSize={18} fontWeight="600" color="white">
+                                            {t('api.accessRequired')}
                                         </Text>
-                                    </Link>
-                                </YStack>
-                            </XStack>
+                                        <Text fontSize={15} color="white" opacity={0.9}>
+                                            {t('api.accessDescription')}
+                                        </Text>
+                                        <Link href={"/(other)/prices" as Href}>
+                                            <Text color="white" textDecorationLine="underline" fontWeight="600">
+                                                {t('api.pricingLink')}
+                                            </Text>
+                                        </Link>
+                                    </YStack>
+                                </XStack>
+                            </LinearGradient>
                         </Card>
 
                         <YStack gap="$5">
@@ -65,16 +72,13 @@ export default function APIScreen() {
                                 <Card padding="$5" backgroundColor="$content2" borderRadius="$6" borderWidth={1}
                                       borderColor="$borderColor">
                                     <XStack alignItems="flex-start" gap="$4">
-                                        <View
-                                            width={56}
-                                            height={56}
-                                            backgroundColor="$accent2"
+                                        <IconContainer
+                                            icon={Database}
+                                            size={28}
+                                            containerSize={56}
                                             borderRadius="$10"
-                                            alignItems="center"
-                                            justifyContent="center"
-                                        >
-                                            <Database size={28} color="$accent7"/>
-                                        </View>
+                                            marginBottom="$0"
+                                        />
                                         <YStack flex={1} gap="$3">
                                             <H2 fontSize={20} fontWeight="600"
                                                 color="$accent7">{t('features.flexibleQuery')}</H2>
@@ -99,16 +103,13 @@ export default function APIScreen() {
                                 <Card padding="$5" backgroundColor="$content2" borderRadius="$6" borderWidth={1}
                                       borderColor="$borderColor">
                                     <XStack alignItems="flex-start" gap="$4">
-                                        <View
-                                            width={56}
-                                            height={56}
-                                            backgroundColor="$accent2"
+                                        <IconContainer
+                                            icon={Code}
+                                            size={28}
+                                            containerSize={56}
                                             borderRadius="$10"
-                                            alignItems="center"
-                                            justifyContent="center"
-                                        >
-                                            <Code size={28} color="$accent7"/>
-                                        </View>
+                                            marginBottom="$0"
+                                        />
                                         <YStack flex={1} gap="$3">
                                             <H2 fontSize={20} fontWeight="600"
                                                 color="$accent7">{t('features.restfulInterface')}</H2>
@@ -122,39 +123,28 @@ export default function APIScreen() {
                                 <Card padding="$5" backgroundColor="$content2" borderRadius="$6" borderWidth={1}
                                       borderColor="$borderColor">
                                     <XStack alignItems="flex-start" gap="$4">
-                                        <View
-                                            width={56}
-                                            height={56}
-                                            backgroundColor="$accent2"
+                                        <IconContainer
+                                            icon={ExternalLink}
+                                            size={28}
+                                            containerSize={56}
                                             borderRadius="$10"
-                                            alignItems="center"
-                                            justifyContent="center"
-                                        >
-                                            <Database size={28} color="$accent7"/>
-                                        </View>
+                                            marginBottom="$0"
+                                        />
                                         <YStack flex={1} gap="$3">
                                             <H2 fontSize={20} fontWeight="600"
                                                 color="$accent7">{t('api.documentation')}</H2>
                                             <Text fontSize={16} color="$color" opacity={0.9} lineHeight={22}>
                                                 {t('api.documentationDesc')}
                                             </Text>
-                                            <Button
-                                                backgroundColor="$accent7"
-                                                color="white"
-                                                borderRadius="$6"
-                                                paddingHorizontal="$4"
-                                                paddingVertical="$3"
+                                            <PrimaryButton
                                                 marginTop="$2"
                                                 alignSelf="flex-start"
-                                                hoverStyle={{backgroundColor: "$accent4"}}
                                                 onPress={() => Linking.openURL('https://www.marlin-live.com/api/')}
                                             >
-                                                <XStack alignItems="center" gap="$2">
-                                                    <ExternalLink size={16} color="white"/>
-                                                    <Text color="white" fontWeight="600"
-                                                          fontSize={14}>{t('api.viewDocs')}</Text>
-                                                </XStack>
-                                            </Button>
+                                                <PrimaryButtonText fontSize={14}>
+                                                    {t('api.viewDocs')}
+                                                </PrimaryButtonText>
+                                            </PrimaryButton>
                                         </YStack>
                                     </XStack>
                                 </Card>
@@ -178,17 +168,17 @@ export default function APIScreen() {
                                     {t('api.readyDescription')}
                                 </Text>
                                 <Link href={"/(other)/prices" as Href}>
-                                    <Button backgroundColor="$accent7" color="white" borderRadius="$6"
-                                            paddingHorizontal="$6" paddingVertical="$4"
-                                            hoverStyle={{backgroundColor: "$accent4"}}>
-                                        <Text color="white" fontWeight="600" fontSize={16}>{t('api.viewPricing')}</Text>
-                                    </Button>
+                                    <PrimaryButton>
+                                        <PrimaryButtonText fontSize={16}>
+                                            {t('api.viewPricing')}
+                                        </PrimaryButtonText>
+                                    </PrimaryButton>
                                 </Link>
                             </YStack>
                         </Card>
                     </YStack>
                 </ScrollView>
             </YStack>
-        </SafeAreaView>
+        </View>
     );
 }

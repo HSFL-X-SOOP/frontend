@@ -1,7 +1,9 @@
-import { PopoverProps } from "tamagui";
+import { PopoverProps , YStack, Popover, Button, TextArea, Text, XStack, Label, Sheet, Adapt, Input } from "tamagui";
 import { useState, useCallback } from 'react';
-import { useNotificationLocations } from '@/hooks/useNotificationLocations';
-import { YStack, Popover, Button, TextArea, Text, XStack, Label, Sheet, Adapt, Input } from 'tamagui';
+import { useNotificationLocations } from '@/hooks/ui/useNotificationLocations';
+import { useToast } from "@/hooks/ui";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 
 export function HarborMasterBroadcastNotificationPopover({
   Icon,
@@ -15,6 +17,8 @@ export function HarborMasterBroadcastNotificationPopover({
     const [notificationTitle, setNotificationTitle] = useState<string>('');
     const [notificationMessage, setNotificationMessage] = useState<string>('');
     const notificationLocations = useNotificationLocations();
+    const toast = useToast();
+    const insets = useSafeAreaInsets();
 
     const createNotificationLocation = useCallback(async () => {
         if (!marinaID) return;
@@ -25,8 +29,20 @@ export function HarborMasterBroadcastNotificationPopover({
             notificationText: notificationMessage,
             createdBy: userID || -1,
         }
-        await notificationLocations.create(notificationLocation);
-    }, [marinaID, notificationTitle, notificationMessage, userID]);
+        await notificationLocations.create(
+            notificationLocation,
+            () => {
+                toast.success(t('harbor.notificationSent'), {
+                    message: notificationTitle
+                });
+            },
+            (error) => {
+                toast.error(t('errors.unexpected'), {
+                    message: t(error.onGetMessage())
+                });
+            }
+        );
+    }, [marinaID, notificationTitle, notificationMessage, userID, notificationLocations, toast, t]);
 
     return (
     <Popover size="$5" allowFlip stayInFrame offset={15} resize {...props}>
@@ -42,7 +58,7 @@ export function HarborMasterBroadcastNotificationPopover({
       {shouldAdapt && (
         <Adapt platform="touch">
           <Sheet animation="medium" modal dismissOnSnapToBottom>
-            <Sheet.Frame padding="$4">
+            <Sheet.Frame padding="$4" paddingBottom={insets.bottom + 16}>
               <Adapt.Contents />
             </Sheet.Frame>
             <Sheet.Overlay

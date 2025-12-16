@@ -4,10 +4,9 @@ import {useThemeContext} from "@/context/ThemeSwitch.tsx";
 
 type SensorMarkerContentProps = {
     locationWithBoxes: LocationWithBoxes
-    isHovered?: boolean
 }
 
-export const SensorMarkerContent: React.FC<SensorMarkerContentProps> = ({locationWithBoxes, isHovered = false}) => {
+export const SensorMarkerContent: React.FC<SensorMarkerContentProps> = ({locationWithBoxes}) => {
     const {isDark} = useThemeContext();
     const box = locationWithBoxes.boxes.find(box =>
         box.type === BoxType.WaterBox ||
@@ -24,9 +23,9 @@ export const SensorMarkerContent: React.FC<SensorMarkerContentProps> = ({locatio
 
     const temperature = tempValue !== undefined ? Math.round(Number(tempValue)) : "--";
 
-    const accentColor = !isDark ? '#006e99' : '#7db07d';
-    const backgroundColor = isDark ? '#1a1a1a' : '#1c1c1c';
-    const textColor = 'white';
+    const accentColor = !isDark ? '#006e99' : 'rgb(91,138,246)';
+    const backgroundColor = isDark ? 'rgba(237,245,253,0.9)' : '#1c1c1c';
+    const textColor = isDark ? '#010107' : 'white';
 
     const getIndicatorColor = (boxType?: string): string => {
         switch (boxType) {
@@ -48,7 +47,7 @@ export const SensorMarkerContent: React.FC<SensorMarkerContentProps> = ({locatio
             backgroundColor={backgroundColor}
             textColor={textColor}
             indicatorColor={getIndicatorColor(box?.type)}
-            enableAnimations={isHovered}
+            enableAnimations={true}
         />
     );
 }

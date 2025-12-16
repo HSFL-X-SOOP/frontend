@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {STORAGE_KEYS} from '@/config/constants';
 
 
 import enCommon from '../locales/en/common.json';
@@ -29,7 +30,7 @@ const resources = {
 
 const getStoredLanguage = async (): Promise<string> => {
   try {
-    const stored = await AsyncStorage.getItem('user-language');
+    const stored = await AsyncStorage.getItem(STORAGE_KEYS.USER_LANGUAGE);
     return stored || 'de';
   } catch {
     return 'de';
@@ -38,7 +39,7 @@ const getStoredLanguage = async (): Promise<string> => {
 
 const saveLanguage = async (language: string): Promise<void> => {
   try {
-    await AsyncStorage.setItem('user-language', language);
+    await AsyncStorage.setItem(STORAGE_KEYS.USER_LANGUAGE, language);
   } catch {
   }
 };

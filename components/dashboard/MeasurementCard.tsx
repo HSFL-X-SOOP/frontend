@@ -1,4 +1,4 @@
-import {useTranslation} from "@/hooks/useTranslation";
+import {useTranslation} from "@/hooks/ui";
 import { getMeasurementIcon, getMeasurementTypeSymbol, getTextFromMeasurementType } from "@/utils/measurements";
 import { Card, H4, Text, useMedia, XStack, YStack } from "tamagui";
 type MeasurementCardProps = {

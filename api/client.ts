@@ -3,7 +3,6 @@ import {useSession} from "@/context/SessionContext";
 import axios, {AxiosError, InternalAxiosRequestConfig} from "axios";
 import {ENV} from "@/config/environment";
 import {createLogger} from "@/utils/logger";
-import {useEffect} from "react";
 
 const logger = createLogger('HTTP:Client');
 

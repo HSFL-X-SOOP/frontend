@@ -2,16 +2,18 @@ import {Link, useRouter, Href} from 'expo-router';
 import {Button, Popover, Sheet, Text, XStack, YStack, useTheme, ScrollView, Tooltip} from 'tamagui';
 import {useState} from 'react';
 
-import {useToast} from '@/components/useToast';
+import {useToast,useTranslation,useIsMobileWeb} from '@/hooks/ui';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {ThemeSwitch} from '@/context/ThemeSwitch';
 import {LOGO, BadgeIcon, MapIcon, CloudIcon} from '@/components/ui/Icons';
 import {User, Languages, Menu, LogOut, LayoutDashboard, BookOpen} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
-import {PrimaryButton, SecondaryButton} from '@/types/button';
-import {useTranslation} from '@/hooks/useTranslation';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText, IconButton} from '@/types/button';
+
 import {LanguageSelector} from '@/components/common/LanguageSelector';
-import {useIsMobileWeb} from '@/hooks/useIsMobileWeb';
-import {useViewportHeight} from '@/hooks/useViewportHeight';
+
+
+import {UI_CONSTANTS} from '@/config/constants';
 
 
 export function NavbarWeb() {
@@ -22,26 +24,58 @@ export function NavbarWeb() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const isMobileWeb = useIsMobileWeb();
     const toast = useToast();
-    const {viewportHeight, safeBottomOffset} = useViewportHeight();
+    const insets = useSafeAreaInsets();
+    const logoSize = isMobileWeb ? 50 : 55;
+    const navbarMinHeight = logoSize + (isMobileWeb ? 12 : 16);
+    const logoVerticalOffset = isMobileWeb ? 1 : 2;
 
     const handleLogout = () => {
         logout();
         toast.info(translate('auth.logoutSuccess'), {
             message: translate('auth.logoutMessage'),
-            duration: 3000
+            duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
         });
         router.push('/map');
     };
 
     return (
-        <XStack jc={"space-between"} backgroundColor={"$background"} alignItems={"center"} px={"$14"} $md={{px: "$4"}}
-                gap={"$4"}
-                py={"$1"}>
+        <XStack
+            jc={"space-between"}
+            backgroundColor={"$background"}
+            alignItems={"center"}
+            px={"$14"}
+            $md={{px: "$4"}}
+            gap={"$4"}
+            py={isMobileWeb ? "$1" : "$2"}
+            minHeight={navbarMinHeight}
+        >
             <Link href={"/map" as Href}>
-                <XStack ac="center" jc="flex-start" gap="$2">
-                    <LOGO size={isMobileWeb ? 50 : 55} color={t.accent8?.val}/>
-                    <Text fontSize={isMobileWeb ? 28 : 32} fontFamily={"$oswald"} alignSelf={"center"} fontWeight="bold"
-                          textAlign={"left"} color={"$accent8"}>Marlin</Text>
+                <XStack alignItems="center" jc="flex-start" gap="$2" minHeight={logoSize}>
+                    <YStack height={logoSize} justifyContent="center">
+                        <LOGO
+                            size={logoSize}
+                            color={t.accent8?.val}
+                            style={{transform: [{translateY: logoVerticalOffset}]}}
+                        />
+                    </YStack>
+                    <YStack
+                        gap="$0"
+                        justifyContent="center"
+                        alignItems="flex-start"
+                        height={logoSize}
+                    >
+                        <Text fontSize={isMobileWeb ? 28 : 32} fontFamily={"$oswald"} fontWeight="bold"
+                              textAlign={"left"} color={"$accent8"}>Marlin</Text>
+                        <Text
+                            fontSize={isMobileWeb ? 10 : 12}
+                            fontWeight="600"
+                            fontFamily={"$oswald"}
+                            color={"$accent8"}
+                            letterSpacing={1}
+                        >
+                            MARLIN - Maritime Live Information
+                        </Text>
+                    </YStack>
                 </XStack>
             </Link>
 
@@ -71,15 +105,13 @@ export function NavbarWeb() {
                 <XStack gap="$6" alignItems="center">
                     <Tooltip placement="bottom" delay={200}>
                         <Tooltip.Trigger>
-                            <Button
-                                circular
+                            <IconButton
                                 size="$3"
-                                chromeless
                                 onPress={() => router.push("/(about)/api")}
                                 cursor="pointer"
                             >
                                 <CloudIcon color={t.accent8?.val} size={26}/>
-                            </Button>
+                            </IconButton>
                         </Tooltip.Trigger>
                         <Tooltip.Content
                             enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
@@ -104,15 +136,13 @@ export function NavbarWeb() {
 
                     <Tooltip placement="bottom" delay={200}>
                         <Tooltip.Trigger>
-                            <Button
-                                circular
+                            <IconButton
                                 size="$3"
-                                chromeless
                                 onPress={() => router.push("/(about)/sensors")}
                                 cursor="pointer"
                             >
                                 <BadgeIcon color={t.accent8?.val} size={26}/>
-                            </Button>
+                            </IconButton>
                         </Tooltip.Trigger>
                         <Tooltip.Content
                             enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
@@ -137,15 +167,13 @@ export function NavbarWeb() {
 
                     <Tooltip placement="bottom" delay={200}>
                         <Tooltip.Trigger>
-                            <Button
-                                circular
+                            <IconButton
                                 size="$3"
-                                chromeless
                                 onPress={() => window.open('https://projekt.marlin-live.com', '_blank')}
                                 cursor="pointer"
                             >
                                 <BookOpen color={t.accent8?.val} size={24}/>
-                            </Button>
+                            </IconButton>
                         </Tooltip.Trigger>
                         <Tooltip.Content
                             enterStyle={{x: 0, y: -5, opacity: 0, scale: 0.9}}
@@ -200,13 +228,17 @@ export function NavbarWeb() {
                         <XStack gap="$2">
                             <Link href={"/login" as Href}>
                                 <PrimaryButton>
-                                    <Text color="#ffffff">{translate('auth.login')}</Text>
+                                    <PrimaryButtonText>
+                                        {translate('auth.login')}
+                                    </PrimaryButtonText>
                                 </PrimaryButton>
                             </Link>
 
                             <Link href={"/register" as Href}>
                                 <SecondaryButton>
-                                    <Text>{translate('auth.register')}</Text>
+                                    <SecondaryButtonText color="$accent8">
+                                        {translate('auth.register')}
+                                    </SecondaryButtonText>
                                 </SecondaryButton>
                             </Link>
                         </XStack>
@@ -214,19 +246,23 @@ export function NavbarWeb() {
                     {session && (
                         <XStack gap="$2">
                             <Link href={"/(profile)/profile" as Href}>
-                                <Button variant="outlined">
+                                <SecondaryButton>
                                     <XStack alignItems="center" gap="$2">
                                         <User size={20} color={"$accent8"}/>
-                                        <Text>{translate('navigation.profile')}</Text>
+                                        <SecondaryButtonText color="$accent8">
+                                            {translate('navigation.profile')}
+                                        </SecondaryButtonText>
                                     </XStack>
-                                </Button>
+                                </SecondaryButton>
                             </Link>
-                            <Button variant="outlined" onPress={handleLogout}>
+                            <SecondaryButton onPress={handleLogout}>
                                 <XStack alignItems="center" gap="$2">
                                     <LogOut size={20} color={"$accent8"}/>
-                                    <Text>{translate('auth.logout')}</Text>
+                                    <SecondaryButtonText color="$accent8">
+                                        {translate('auth.logout')}
+                                    </SecondaryButtonText>
                                 </XStack>
-                            </Button>
+                            </SecondaryButton>
                         </XStack>
                     )}
                 </XStack>
@@ -258,9 +294,7 @@ export function NavbarWeb() {
                 modal
                 open={isMenuOpen}
                 onOpenChange={setIsMenuOpen}
-                snapPoints={isMobileWeb && viewportHeight > 0
-                    ? [Math.min(85, ((viewportHeight - safeBottomOffset) / viewportHeight) * 100), 50]
-                    : [85, 50]}
+                snapPoints={[85, 50]}
                 dismissOnSnapToBottom
                 animation="medium"
             >
@@ -275,9 +309,7 @@ export function NavbarWeb() {
                     backgroundColor="$background"
                     borderTopLeftRadius="$6"
                     borderTopRightRadius="$6"
-                    maxHeight={isMobileWeb && viewportHeight > 0
-                        ? viewportHeight - safeBottomOffset - 20
-                        : undefined}
+                    paddingBottom={insets.bottom + 16}
                 >
                     <Sheet.Handle backgroundColor="$borderColor"/>
 
@@ -288,14 +320,12 @@ export function NavbarWeb() {
                                 <Text fontSize="$7" fontWeight="bold" color="$accent8" fontFamily="$oswald">
                                     Menu
                                 </Text>
-                                <Button
-                                    circular
+                                <IconButton
                                     size="$3"
-                                    chromeless
                                     onPress={() => setIsMenuOpen(false)}
                                 >
                                     <Text fontSize="$6" color="$color">✕</Text>
-                                </Button>
+                                </IconButton>
                             </XStack>
 
                             <YStack gap="$2" paddingTop="$3">
@@ -355,17 +385,18 @@ export function NavbarWeb() {
                                         gap="$1"
                                         paddingVertical="$2"
                                     >
-                                        <Button
-                                            circular
+                                        <IconButton
                                             size="$4"
                                             padding={"$2"}
                                             backgroundColor={"$accent1"}
-                                            chromeless
-                                            onPress={() => router.push("/(about)/api")}
+                                            onPress={() => {
+                                                router.push("/(about)/api");
+                                                setIsMenuOpen(false);
+                                            }}
                                             cursor="pointer"
                                         >
                                             <CloudIcon color={t.accent12?.val} size={30}/>
-                                        </Button>
+                                        </IconButton>
                                         <Text
                                             fontSize="$4"
                                             fontWeight="500"
@@ -380,17 +411,18 @@ export function NavbarWeb() {
                                         gap="$1"
                                         paddingVertical="$2"
                                     >
-                                        <Button
-                                            circular
+                                        <IconButton
                                             size="$4"
                                             padding={"$2"}
                                             backgroundColor={"$accent1"}
-                                            chromeless
-                                            onPress={() => router.push("/(about)/sensors")}
+                                            onPress={() => {
+                                                router.push("/(about)/sensors");
+                                                setIsMenuOpen(false);
+                                            }}
                                             cursor="pointer"
                                         >
                                             <BadgeIcon color={t.accent12?.val} size={30}/>
-                                        </Button>
+                                        </IconButton>
                                         <Text
                                             fontSize="$4"
                                             fontWeight="500"
@@ -405,17 +437,18 @@ export function NavbarWeb() {
                                         gap="$1"
                                         paddingVertical="$2"
                                     >
-                                        <Button
-                                            circular
+                                        <IconButton
                                             size="$4"
                                             padding={"$2"}
                                             backgroundColor={"$accent1"}
-                                            chromeless
-                                            onPress={() => window.open('https://projekt.marlin-live.com', '_blank')}
+                                            onPress={() => {
+                                                window.open('https://projekt.marlin-live.com', '_blank');
+                                                setIsMenuOpen(false);
+                                            }}
                                             cursor="pointer"
                                         >
                                             <BookOpen color={t.accent12?.val} size={30}/>
-                                        </Button>
+                                        </IconButton>
                                         <Text
                                             fontSize="$4"
                                             fontWeight="500"
@@ -454,12 +487,16 @@ export function NavbarWeb() {
                                 <YStack gap="$3" paddingTop="$4">
                                     <Link href={"/login" as Href} onPress={() => setIsMenuOpen(false)}>
                                         <PrimaryButton width="100%">
-                                            <Text color="#ffffff" fontSize="$5">{translate('auth.login')}</Text>
+                                            <PrimaryButtonText fontSize="$5">
+                                                {translate('auth.login')}
+                                            </PrimaryButtonText>
                                         </PrimaryButton>
                                     </Link>
                                     <Link href={"/register" as Href} onPress={() => setIsMenuOpen(false)}>
                                         <SecondaryButton width="100%">
-                                            <Text fontSize="$5">{translate('auth.register')}</Text>
+                                            <SecondaryButtonText color="$accent8" fontSize="$5">
+                                                {translate('auth.register')}
+                                            </SecondaryButtonText>
                                         </SecondaryButton>
                                     </Link>
                                 </YStack>
@@ -468,22 +505,26 @@ export function NavbarWeb() {
                             {session && (
                                 <YStack gap="$3" paddingTop="$4">
                                     <Link href={"/(profile)/profile" as Href} onPress={() => setIsMenuOpen(false)}>
-                                        <Button variant="outlined" width="100%">
+                                        <SecondaryButton width="100%">
                                             <XStack alignItems="center" gap="$2">
                                                 <User size={24} color={"$accent8"}/>
-                                                <Text fontSize="$5">{translate('navigation.profile')}</Text>
+                                                <SecondaryButtonText color="$accent8" fontSize="$5">
+                                                    {translate('navigation.profile')}
+                                                </SecondaryButtonText>
                                             </XStack>
-                                        </Button>
+                                        </SecondaryButton>
                                     </Link>
-                                    <Button variant="outlined" width="100%" onPress={() => {
+                                    <SecondaryButton width="100%" onPress={() => {
                                         handleLogout();
                                         setIsMenuOpen(false);
                                     }}>
                                         <XStack alignItems="center" gap="$2">
                                             <LogOut size={24} color={"$accent8"}/>
-                                            <Text fontSize="$5">{translate('auth.logout')}</Text>
+                                            <SecondaryButtonText color="$accent8" fontSize="$5">
+                                                {translate('auth.logout')}
+                                            </SecondaryButtonText>
                                         </XStack>
-                                    </Button>
+                                    </SecondaryButton>
                                 </YStack>
                             )}
                         </YStack>
@@ -493,4 +534,3 @@ export function NavbarWeb() {
         </XStack>
     );
 }
-

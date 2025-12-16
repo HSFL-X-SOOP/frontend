@@ -30,44 +30,37 @@ import {
     Mail,
     Globe,
     MessageCircle,
-    RefreshCw,
     AlertCircle
 } from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/components/useToast';
-import {Platform} from 'react-native';
-import {useLocationInfo} from '@/hooks/useLocationInfo';
-import {UpdateLocationRequest, DetailedLocationDTO} from '@/api/models/location';
+import {useTranslation, useToast} from '@/hooks/ui';
 
+import {Platform} from 'react-native';
+import {useLocationInfo} from '@/hooks/data';
+import {UpdateLocationRequest, DetailedLocationDTO} from '@/api/models/location';
+import {UI_CONSTANTS} from '@/config/constants';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface HarborMasterTabProps {
-    initialLocationData?: DetailedLocationDTO | null;
-    isLoadingInitial?: boolean;
+    // Component manages its own location data
 }
 
-export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
-    initialLocationData,
-    isLoadingInitial = false
-}) => {
+export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
     const {t} = useTranslation();
     const toast = useToast();
 
-    // Pass initial data to avoid duplicate API call
     const {
-        locationData,
-        locationId,
-        isLoading,
-        error,
         isHarborMaster,
+        fetchLocationInfo,
         updateLocation,
-        refetch,
-        clearError,
         getImageUrl
-    } = useLocationInfo(initialLocationData);
+    } = useLocationInfo();
 
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [locationData, setLocationData] = useState<DetailedLocationDTO | null>(null);
 
     // Initialize edited info from API data
     const [editedInfo, setEditedInfo] = useState<UpdateLocationRequest>({
@@ -83,26 +76,49 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
     const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
     const [imageKey, setImageKey] = useState<number>(0);
 
-    // Initialize editedInfo when locationData first loads
+    // Fetch location info on mount
     useEffect(() => {
-        if (locationData && !isEditing) {
-            // Only set editedInfo if we're not currently editing
-            // This prevents overwriting user changes
-            setEditedInfo({
-                name: locationData.name || '',
-                address: locationData.address || '',
-                description: locationData.description || null,
-                openingHours: locationData.openingHours || null,
-                contact: locationData.contact || null,
-                image: null
-            });
-
-            // Set image URL using the helper function only when not editing
-            if (getImageUrl) {
-                setCurrentImageUrl(getImageUrl());
+        void fetchLocationInfo(
+            (data) => {
+                setLocationData(data);
+            },
+            (error) => {
+                toast.error(t('harbor.errorLoading'), {
+                    message: t(error.onGetMessage())
+                });
             }
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // fetchLocationInfo is a hook function and changes on every render
+
+    // Update edited info and fetch image when locationData changes
+    useEffect(() => {
+        if (!locationData) return;
+
+        setEditedInfo({
+            name: locationData.name || '',
+            address: locationData.address || '',
+            description: locationData.description || null,
+            openingHours: locationData.openingHours || null,
+            contact: locationData.contact || null,
+            image: null
+        });
+
+        if (locationData.id) {
+            void getImageUrl(
+                locationData.id,
+                (url) => {
+                    setCurrentImageUrl(url);
+                },
+                (error) => {
+                    toast.error(t('harbor.errorLoading'), {
+                        message: t(error.onGetMessage())
+                    });
+                }
+            );
         }
-    }, [locationData, getImageUrl, isEditing]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [locationData]); // getImageUrl is a hook function and changes on every render
 
     const handleEdit = () => {
         if (locationData) {
@@ -119,78 +135,74 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
     };
 
     const handleCancel = () => {
-        if (locationData) {
-            setEditedInfo({
-                name: locationData.name || '',
-                address: locationData.address || '',
-                description: locationData.description || null,
-                openingHours: locationData.openingHours || null,
-                contact: locationData.contact || null,
-                image: null
-            });
+        if (!locationData) {
+            setIsEditing(false);
+            return;
         }
+        setEditedInfo({
+            name: locationData.name || '',
+            address: locationData.address || '',
+            description: locationData.description || null,
+            openingHours: locationData.openingHours || null,
+            contact: locationData.contact || null,
+            image: null
+        });
         setIsEditing(false);
         // Reset image URL to original
-        if (getImageUrl) {
-            setCurrentImageUrl(getImageUrl());
+        if (locationData.id) {
+            void getImageUrl(
+                locationData.id,
+                (url) => setCurrentImageUrl(url),
+                (error) => {
+                    toast.error(t('harbor.errorLoading'), {
+                        message: t(error.onGetMessage())
+                    });
+                }
+            );
         }
     };
 
     const handleSave = async () => {
-        if (!updateLocation) {
+        if (!locationData?.id) {
             toast.error(t('harbor.noPermission'), {
                 message: t('harbor.noPermissionMessage'),
-                duration: 5000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
             return;
         }
 
         setIsSaving(true);
-        try {
-            // Debug log to see what we're sending
-            console.log('Updating location with data:', {
-                ...editedInfo,
-                image: editedInfo.image ? {
-                    hasBase64: !!editedInfo.image.base64,
-                    contentType: editedInfo.image.contentType
-                } : null
-            });
 
-            const result = await updateLocation(editedInfo);
-
-            if (!result) throw new Error('Update failed');
-
-            toast.success(t('harbor.saveSuccess'), {
-                message: t('harbor.infoUpdated'),
-                duration: 3000
-            });
-
-            // Refresh data to get updated info
-            if (refetch) {
-                await refetch();
+        // Actually call updateLocation to save changes
+        void updateLocation(
+            locationData.id,
+            editedInfo,
+            (updatedData) => {
+                // Show success only AFTER successful save
+                toast.success(t('harbor.saveSuccess'), {
+                    message: t('harbor.infoUpdated')
+                });
+                setLocationData(updatedData);
+                setImageKey(prev => prev + 1);
+                setIsEditing(false);
+                setIsSaving(false);
+            },
+            (error) => {
+                const message = t(error.onGetMessage());
+                toast.error(t('harbor.saveError'), {
+                    message,
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                });
+                setIsSaving(false);
             }
-
-            // Increment imageKey to force image reload from server
-            setImageKey(prev => prev + 1);
-
-            // Set isEditing to false - useEffect will handle updating currentImageUrl
-            setIsEditing(false);
-        } catch (error) {
-            console.error('Failed to save harbor info:', error);
-            toast.error(t('harbor.saveError'), {
-                message: t('harbor.saveErrorMessage'),
-                duration: 5000
-            });
-        } finally {
-            setIsSaving(false);
-        }
+        );
     };
 
     const processFile = (file: File) => {
         if (!file.type.startsWith('image/')) {
             toast.error(t('harbor.invalidFileType'), {
                 message: t('harbor.pleaseSelectImage'),
-                duration: 3000
+                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
             });
             return;
         }
@@ -198,8 +210,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
         // Check file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             toast.error(t('harbor.fileTooLarge'), {
-                message: t('harbor.maxFileSize'),
-                duration: 3000
+                message: t('harbor.maxFileSize')
             });
             return;
         }
@@ -225,7 +236,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
 
             toast.success(t('harbor.imageUploaded'), {
                 message: file.name,
-                duration: 2000
+                duration: UI_CONSTANTS.TOAST_DURATION.SHORT
             });
         };
         reader.readAsDataURL(file);
@@ -273,39 +284,12 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
         }
     };
 
-    const handleRefresh = async () => {
-        if (refetch) {
-            clearError();
-            await refetch();
-        }
-    };
-
-    // Show loading state (either initial loading from profile or refetch)
-    if ((isLoadingInitial || isLoading) && !locationData) {
+    // Show loading state while fetching data
+    if (!locationData) {
         return (
             <YStack flex={1} alignItems="center" justifyContent="center" padding="$8">
                 <Spinner size="large" color="$accent7"/>
                 <Text marginTop="$4" color="$gray11">{t('harbor.loading')}</Text>
-            </YStack>
-        );
-    }
-
-    // Show error state
-    if (error && !locationData) {
-        return (
-            <YStack flex={1} alignItems="center" justifyContent="center" padding="$8" gap="$4">
-                <AlertCircle size={48} color="$red10"/>
-                <Text fontSize="$5" fontWeight="600" color="$color">{t('harbor.errorLoading')}</Text>
-                <Text color="$gray11" textAlign="center">{error}</Text>
-                <Button
-                    size="$3"
-                    backgroundColor="$accent7"
-                    color="white"
-                    onPress={handleRefresh}
-                    icon={<RefreshCw size={20}/>}
-                >
-                    {t('harbor.retry')}
-                </Button>
             </YStack>
         );
     }
@@ -333,8 +317,8 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
     return (
         <ScrollView showsVerticalScrollIndicator={false}>
             <YStack gap="$4">
-                {/* Header with Edit Button */}
-                <XStack justifyContent="space-between" alignItems="center">
+                {/* Header */}
+                <YStack gap="$3">
                     <YStack>
                         <H4 color="$accent7" fontFamily="$oswald">
                             {displayData.name || t('harbor.manageHarbor')}
@@ -343,32 +327,21 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             {t('harbor.manageDescription')}
                         </Text>
                     </YStack>
-                    <XStack gap="$2">
-                        {error && (
-                            <Button
-                                size="$3"
-                                variant="outlined"
-                                onPress={handleRefresh}
-                                icon={<RefreshCw size={18}/>}
-                            >
-                                {t('harbor.retry')}
-                            </Button>
-                        )}
+                    {/* Edit Button */}
+                    <XStack justifyContent="flex-end" alignItems="center">
                         {!isEditing && (
-                            <Button
+                            <PrimaryButton
                                 size="$3"
-                                backgroundColor="$accent7"
-                                color="white"
-                                pressStyle={{backgroundColor: "$accent6"}}
-                                hoverStyle={{backgroundColor: "$accent4"}}
                                 onPress={handleEdit}
-                                disabled={isLoading}
+                                disabled={isSaving}
                             >
-                                {t('profile.edit')}
-                            </Button>
+                                <PrimaryButtonText>
+                                    {t('profile.edit')}
+                                </PrimaryButtonText>
+                            </PrimaryButton>
                         )}
                     </XStack>
-                </XStack>
+                </YStack>
 
                 {/* Harbor Image Section */}
                 <Card backgroundColor="$content1" borderRadius="$6" padding="$5"
@@ -378,7 +351,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             <View
                                 width={40}
                                 height={40}
-                                backgroundColor="$accent2"
+                                backgroundColor="$content2"
                                 borderRadius="$8"
                                 alignItems="center"
                                 justifyContent="center"
@@ -424,53 +397,53 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                                 transition: 'all 0.2s ease'
                                             }}
                                         >
-                                        {currentImageUrl ? (
-                                            <YStack width="100%" height="100%" gap="$2">
-                                                <Image
-                                                    key={imageKey}
-                                                    source={{uri: currentImageUrl}}
-                                                    width="100%"
-                                                    height={160}
-                                                    borderRadius="$3"
-                                                    resizeMode="cover"
-                                                />
-                                                <Button
-                                                    size="$2"
-                                                    variant="outlined"
-                                                    onPress={(e) => {
-                                                        e.stopPropagation();
-                                                        triggerFileInput();
-                                                    }}
-                                                    icon={<Upload size={16}/>}
-                                                >
-                                                    {t('harbor.changeImage')}
-                                                </Button>
-                                            </YStack>
-                                        ) : (
-                                            <YStack alignItems="center" gap="$3">
-                                                <View
-                                                    width={80}
-                                                    height={80}
-                                                    borderRadius="$10"
-                                                    backgroundColor="$accent2"
-                                                    alignItems="center"
-                                                    justifyContent="center"
-                                                >
-                                                    <FileImage size={40} color="$accent7"/>
-                                                </View>
-                                                <YStack alignItems="center" gap="$2">
-                                                    <Text fontSize="$5" fontWeight="600" color="$color">
-                                                        {t('harbor.dragDropImage')}
-                                                    </Text>
-                                                    <Text fontSize="$3" color="$gray11">
-                                                        {t('harbor.orClickToSelect')}
-                                                    </Text>
-                                                    <Text fontSize="$2" color="$gray10">
-                                                        {t('harbor.maxSizeInfo')}
-                                                    </Text>
+                                            {currentImageUrl ? (
+                                                <YStack width="100%" gap="$2">
+                                                    <Image
+                                                        key={imageKey}
+                                                        source={{uri: currentImageUrl}}
+                                                        width="100%"
+                                                        height={160}
+                                                        borderRadius="$3"
+                                                        resizeMode="cover"
+                                                    />
+                                                    <Button
+                                                        size="$2"
+                                                        variant="outlined"
+                                                        onPress={(e) => {
+                                                            e.stopPropagation();
+                                                            triggerFileInput();
+                                                        }}
+                                                        icon={<Upload size={16}/>}
+                                                    >
+                                                        {t('harbor.changeImage')}
+                                                    </Button>
                                                 </YStack>
-                                            </YStack>
-                                        )}
+                                            ) : (
+                                                <YStack alignItems="center" gap="$3">
+                                                    <View
+                                                        width={80}
+                                                        height={80}
+                                                        borderRadius="$10"
+                                                        backgroundColor="$content2"
+                                                        alignItems="center"
+                                                        justifyContent="center"
+                                                    >
+                                                        <FileImage size={40} color="$accent7"/>
+                                                    </View>
+                                                    <YStack alignItems="center" gap="$2">
+                                                        <Text fontSize="$5" fontWeight="600" color="$color">
+                                                            {t('harbor.dragDropImage')}
+                                                        </Text>
+                                                        <Text fontSize="$3" color="$gray11">
+                                                            {t('harbor.orClickToSelect')}
+                                                        </Text>
+                                                        <Text fontSize="$2" color="$gray10">
+                                                            {t('harbor.maxSizeInfo')}
+                                                        </Text>
+                                                    </YStack>
+                                                </YStack>
+                                            )}
                                         </div>
                                     ) : (
                                         <View
@@ -485,50 +458,50 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                                             minHeight={200}
                                             onPress={triggerFileInput}
                                         >
-                                        {currentImageUrl ? (
-                                            <YStack width="100%" height="100%" gap="$2">
-                                                <Image
-                                                    key={imageKey}
-                                                    source={{uri: currentImageUrl}}
-                                                    width="100%"
-                                                    height={160}
-                                                    borderRadius="$3"
-                                                    resizeMode="cover"
-                                                />
-                                                <Button
-                                                    size="$2"
-                                                    variant="outlined"
-                                                    onPress={(e) => {
-                                                        e.stopPropagation();
-                                                        triggerFileInput();
-                                                    }}
-                                                    icon={<Upload size={16}/>}
-                                                >
-                                                    {t('harbor.changeImage')}
-                                                </Button>
-                                            </YStack>
-                                        ) : (
-                                            <YStack alignItems="center" gap="$3">
-                                                <View
-                                                    width={80}
-                                                    height={80}
-                                                    borderRadius="$10"
-                                                    backgroundColor="$accent2"
-                                                    alignItems="center"
-                                                    justifyContent="center"
-                                                >
-                                                    <FileImage size={40} color="$accent7"/>
-                                                </View>
-                                                <YStack alignItems="center" gap="$2">
-                                                    <Text fontSize="$5" fontWeight="600" color="$color">
-                                                        {t('harbor.tapToSelectImage')}
-                                                    </Text>
-                                                    <Text fontSize="$2" color="$gray10">
-                                                        {t('harbor.maxSizeInfo')}
-                                                    </Text>
+                                            {currentImageUrl ? (
+                                                <YStack width="100%" gap="$2">
+                                                    <Image
+                                                        key={imageKey}
+                                                        source={{uri: currentImageUrl}}
+                                                        width="100%"
+                                                        height={160}
+                                                        borderRadius="$3"
+                                                        resizeMode="cover"
+                                                    />
+                                                    <Button
+                                                        size="$2"
+                                                        variant="outlined"
+                                                        onPress={(e) => {
+                                                            e.stopPropagation();
+                                                            triggerFileInput();
+                                                        }}
+                                                        icon={<Upload size={16}/>}
+                                                    >
+                                                        {t('harbor.changeImage')}
+                                                    </Button>
                                                 </YStack>
-                                            </YStack>
-                                        )}
+                                            ) : (
+                                                <YStack alignItems="center" gap="$3">
+                                                    <View
+                                                        width={80}
+                                                        height={80}
+                                                        borderRadius="$10"
+                                                        backgroundColor="$content2"
+                                                        alignItems="center"
+                                                        justifyContent="center"
+                                                    >
+                                                        <FileImage size={40} color="$accent7"/>
+                                                    </View>
+                                                    <YStack alignItems="center" gap="$2">
+                                                        <Text fontSize="$5" fontWeight="600" color="$color">
+                                                            {t('harbor.tapToSelectImage')}
+                                                        </Text>
+                                                        <Text fontSize="$2" color="$gray10">
+                                                            {t('harbor.maxSizeInfo')}
+                                                        </Text>
+                                                    </YStack>
+                                                </YStack>
+                                            )}
                                         </View>
                                     )}
                                 </YStack>
@@ -554,7 +527,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             <View
                                 width={40}
                                 height={40}
-                                backgroundColor="$accent2"
+                                backgroundColor="$content2"
                                 borderRadius="$8"
                                 alignItems="center"
                                 justifyContent="center"
@@ -621,7 +594,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             <View
                                 width={40}
                                 height={40}
-                                backgroundColor="$accent2"
+                                backgroundColor="$content2"
                                 borderRadius="$8"
                                 alignItems="center"
                                 justifyContent="center"
@@ -658,7 +631,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             <View
                                 width={40}
                                 height={40}
-                                backgroundColor="$accent2"
+                                backgroundColor="$content2"
                                 borderRadius="$8"
                                 alignItems="center"
                                 justifyContent="center"
@@ -695,7 +668,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                             <View
                                 width={40}
                                 height={40}
-                                backgroundColor="$accent2"
+                                backgroundColor="$content2"
                                 borderRadius="$8"
                                 alignItems="center"
                                 justifyContent="center"
@@ -795,36 +768,29 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = ({
                 </Card>
 
                 {isEditing && (
-                    <XStack gap="$3" justifyContent="flex-end" paddingBottom="$4">
-                        <Button
-                            flex={1}
+                    <XStack gap="$3" justifyContent="flex-end" paddingBottom="$4" flexWrap="wrap">
+                        <SecondaryButton
+                            minWidth={120}
                             size="$4"
-                            backgroundColor="$content2"
-                            color="$color"
-                            borderWidth={1}
-                            borderColor="$borderColor"
-                            pressStyle={{backgroundColor: "$content3"}}
-                            hoverStyle={{backgroundColor: "$content1"}}
                             onPress={handleCancel}
                             disabled={isSaving}
                             icon={<X size={20}/>}
                         >
-                            {t('profile.actions.cancel')}
-                        </Button>
-                        <Button
-                            flex={1}
+                            <SecondaryButtonText flexShrink={0} flexWrap="nowrap">
+                                {t('profile.actions.cancel')}
+                            </SecondaryButtonText>
+                        </SecondaryButton>
+                        <PrimaryButton
+                            minWidth={180}
                             size="$4"
-                            backgroundColor="$accent7"
-                            color="white"
-                            pressStyle={{backgroundColor: "$accent6"}}
-                            hoverStyle={{backgroundColor: "$accent4"}}
                             disabled={isSaving}
-                            opacity={isSaving ? 0.6 : 1}
                             onPress={handleSave}
                             icon={isSaving ? <Spinner color="white"/> : <Save size={20}/>}
                         >
-                            {isSaving ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
-                        </Button>
+                            <PrimaryButtonText flexShrink={0} flexWrap="nowrap">
+                                {isSaving ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
+                            </PrimaryButtonText>
+                        </PrimaryButton>
                     </XStack>
                 )}
             </YStack>

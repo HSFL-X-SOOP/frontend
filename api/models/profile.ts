@@ -1,15 +1,26 @@
+import {DetailedLocationDTO} from "@/api/models/location.ts";
+
 export interface UserProfile {
     id: number;
-    userId: number;
-    language: Language;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    language: Language | null;
     activityRoles: ActivityRole[];
-    authorityRole: AuthorityRole
-    measurementSystem: MeasurementSystem;
-    createdAt: string;
-    updatedAt?: string;
+    roles?: ActivityRole[]; // Alias for activityRoles
+    authorityRole: AuthorityRole;
+    measurementSystem: MeasurementSystem | null;
+    assignedLocation: DetailedLocationDTO | null;
+    verified: boolean;
+    profileCreatedAt: string | null;
+    profileUpdatedAt: string | null;
+    userCreatedAt: string;
+    userUpdatedAt: string | null;
 }
 
 export interface UpdateProfileRequest {
+    firstName?: string;
+    lastName?: string;
     language?: Language;
     roles?: ActivityRole[];
     measurementSystem?: MeasurementSystem;

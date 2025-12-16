@@ -1,5 +1,5 @@
 import {useThemeContext} from "@/context/ThemeSwitch";
-import {useTranslation} from "@/hooks/useTranslation";
+import {useTranslation} from "@/hooks/ui";
 import {Activity} from "@tamagui/lucide-icons";
 import {useMemo, useState, useEffect} from "react";
 import {Card, H3, Text, useMedia, XStack, YStack} from "tamagui";
@@ -166,7 +166,7 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
                                             ? (data[data.length - 1] < 1 ? data[data.length - 1].toFixed(2) : data[data.length - 1].toFixed(1))
                                             : '0'}
                                 </Text>
-                                <Text fontSize="$3" color="$gray10">
+                                <Text fontSize="$3" color={color}>
                                     {unit}
                                 </Text>
                             </XStack>

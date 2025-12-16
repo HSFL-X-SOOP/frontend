@@ -8,7 +8,7 @@ import {
     View
 } from 'tamagui';
 import {Anchor} from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 
 export const BoatsTab: React.FC = () => {
     const {t} = useTranslation();

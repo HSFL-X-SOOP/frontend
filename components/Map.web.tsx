@@ -1,27 +1,24 @@
-import {useSensorDataNew} from '@/hooks/useSensors';
-import {useSupercluster} from '@/hooks/useSupercluster';
+import {useSensorDataNew} from '@/hooks/data';
+import {useSupercluster} from '@/hooks/map';
 import type {MapRef} from '@vis.gl/react-maplibre';
-import {LngLatBoundsLike, Map} from '@vis.gl/react-maplibre';
+import {LngLatBoundsLike, Map, Marker} from '@vis.gl/react-maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import * as React from 'react';
 import {useMemo, useState, useRef, useEffect} from 'react';
 import {View} from 'react-native';
-import ClusterMarker from './map/markers/web/ClusterMarker';
-import SensorMarker from './map/markers/web/SensorMarker';
+import ClusterMarker from './map/markers/WebClusterMarker';
+import SensorMarker from './map/markers/WebSensorMarker';
 import {BoxType, LocationWithBoxes} from '@/api/models/sensor';
 import MapSensorDrawer from './map/drawers/MapSensorDrawer';
 import SensorList from './map/sensors/SensorList';
 import MapSensorBottomSheet, {MapSensorBottomSheetRef} from './map/controls/MapSensorBottomSheet';
-import {useIsMobileWeb, useIsMobile} from '@/hooks/useIsMobileWeb';
+import {useIsMobileWeb, useIsMobile, useTranslation, useToast} from '@/hooks/ui';
 import {SpeedDial} from '@/components/speeddial';
 import {Plus, Home, Navigation, ZoomIn, ZoomOut, List, Filter} from '@tamagui/lucide-icons';
-import MapFilterButton from './map/controls/MapFilterButton';
-import {useTranslation} from '@/hooks/useTranslation';
+import MapFilterButton, {MapFilterState} from './map/controls/MapFilterButton';
 import * as Location from 'expo-location';
-import {Marker} from "@vis.gl/react-maplibre";
-import { YStack, Text } from 'tamagui';
-import GPSMarker from './map/markers/GPSMarker';
 import GpsPin from './map/markers/GPSMarker';
+import {MAP_CONSTANTS} from '@/config/constants';
 
 interface MapProps {
     module1Visible?: boolean;
@@ -41,25 +38,39 @@ export default function WebMap(props: MapProps) {
     const [module2Visible, setModule2Visible] = useState(props.module2Visible ?? true);
     const [module3Visible, setModule3Visible] = useState(props.module3Visible ?? false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const toast = useToast();
 
-    const {data: content, loading} = useSensorDataNew();
+    const {loading, fetchData} = useSensorDataNew();
+    const [content, setContent] = useState<LocationWithBoxes[]>([]);
+
+    // Create consolidated filter state
+    const filterState: MapFilterState = {
+        module1Visible,
+        module2Visible,
+        module3Visible,
+    };
+
+    const handleFilterChange = (newState: MapFilterState) => {
+        if (newState.module1Visible !== module1Visible) setModule1Visible(newState.module1Visible);
+        if (newState.module2Visible !== module2Visible) setModule2Visible(newState.module2Visible);
+        if (newState.module3Visible !== module3Visible) setModule3Visible(newState.module3Visible);
+    };
+
     const mapRef = React.useRef<MapRef>(null);
     const bottomSheetRef = React.useRef<MapSensorBottomSheetRef>(null);
     const isMobileWeb = useIsMobileWeb();
     const isMobile = useIsMobile();
 
-    const homeCoordinate: [number, number] = [9.26, 54.47926];
-    const minMaxZoomLevel = {min: 3, max: 16};
-    const mapBoundariesLongLat: LngLatBoundsLike = [[-31.266001, 27.560001], [49.869301, 71.185001]];
+    const mapBoundariesLongLat: LngLatBoundsLike = [MAP_CONSTANTS.BOUNDARIES.SW, MAP_CONSTANTS.BOUNDARIES.NE];
 
-    const [zoomLevel, setZoomLevel] = useState(7);
+    const [zoomLevel, setZoomLevel] = useState<number>(MAP_CONSTANTS.ZOOM_LEVELS.DEFAULT);
     const [bearing, setBearing] = useState(0);
     const [pitch, setPitch] = useState(0);
-    const [currentCoordinate, setCurrentCoordinate] = useState<[number, number]>(homeCoordinate);
-    const [viewState, setViewState] = useState({
-        longitude: homeCoordinate[0],
-        latitude: homeCoordinate[1],
-        zoom: zoomLevel
+    const [currentCoordinate, setCurrentCoordinate] = useState<[number, number]>(MAP_CONSTANTS.HOME_COORDINATE);
+    const [viewState, setViewState] = useState<{ longitude: number; latitude: number; zoom: number }>({
+        longitude: MAP_CONSTANTS.HOME_COORDINATE[0],
+        latitude: MAP_CONSTANTS.HOME_COORDINATE[1],
+        zoom: MAP_CONSTANTS.ZOOM_LEVELS.DEFAULT
     });
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [highlightedSensorId, setHighlightedSensorId] = useState<number | null>(null);
@@ -75,11 +86,9 @@ export default function WebMap(props: MapProps) {
             bounds.getEast(),
             bounds.getNorth(),
         ];
-    }, [viewState]);
+    }, []);
 
     const filteredContent = useMemo(() => {
-        if (!content) return [];
-
         return content.filter(locationWithBoxes => {
             const hasWaterBoxes = locationWithBoxes.boxes.some(box =>
                 box.type === BoxType.WaterBox || box.type === BoxType.WaterTemperatureOnlyBox
@@ -91,7 +100,7 @@ export default function WebMap(props: MapProps) {
             if (module1Visible && hasWaterBoxes) return true;
             return module2Visible && hasAirBoxes;
         });
-    }, [content, module1Visible, module2Visible, module3Visible]);
+    }, [content, module1Visible, module2Visible]);
 
     const {clusters, getClusterExpansionZoom} = useSupercluster(
         filteredContent,
@@ -101,6 +110,7 @@ export default function WebMap(props: MapProps) {
 
     const visibleSensors = useMemo(() => {
         return filteredContent.filter(sensor => {
+            if (!sensor.location?.coordinates) return false;
             const {lat, lon} = sensor.location.coordinates;
             return (
                 lon >= bounds[0] &&
@@ -111,14 +121,29 @@ export default function WebMap(props: MapProps) {
         });
     }, [filteredContent, bounds]);
 
+    useEffect(() => {
+        void fetchData(
+            (res) => {
+                setContent(res);
+            },
+            (error) => {
+                toast.error(
+                    t("common.error"),
+                    {message: t(error.onGetMessage())}
+                );
+            }
+        );
+    }, []);
+
     const handleSensorSelect = (sensor: LocationWithBoxes) => {
+        if (!sensor.location?.coordinates) return;
         const {lat, lon} = sensor.location.coordinates;
         setHighlightedSensorId(sensor.location.id);
 
         mapRef.current?.flyTo({
             center: [lon, lat],
-            zoom: Math.max(zoomLevel, 12),
-            duration: 1000,
+            zoom: Math.max(zoomLevel, MAP_CONSTANTS.ZOOM_LEVELS.SENSOR_DETAIL),
+            duration: MAP_CONSTANTS.ANIMATION.CAMERA_DURATION * 2,
         });
 
         if (isMobile) {
@@ -127,7 +152,7 @@ export default function WebMap(props: MapProps) {
 
         setTimeout(() => {
             setHighlightedSensorId(null);
-        }, 3000);
+        }, MAP_CONSTANTS.ANIMATION.HIGHLIGHT_DURATION);
     };
 
 
@@ -164,26 +189,24 @@ export default function WebMap(props: MapProps) {
 
             return (
                 <SensorMarker
-                    key={locationWithBoxes!.location.id}
+                    key={locationWithBoxes!.location!.id}
                     locationWithBoxes={locationWithBoxes!}
                 />
             );
         });
-    }, [clusters, getClusterExpansionZoom, highlightedSensorId]);
+    }, [clusters, getClusterExpansionZoom]);
 
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
-    const [errorMsg, setErrorMsg] = useState("");
 
     useEffect(() => {
         (async () => {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-            setErrorMsg('Permission denied');
-            return;
-        }
+            let {status} = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                return;
+            }
 
-        let currentLocation = await Location.getCurrentPositionAsync({});
-        setLocation(currentLocation);
+            let currentLocation = await Location.getCurrentPositionAsync({});
+            setLocation(currentLocation);
         })();
     }, []);
 
@@ -258,107 +281,106 @@ export default function WebMap(props: MapProps) {
                 {pins}
                 {location && (
                     <Marker
-                    key={"user-location"}
-                    longitude={location?.coords.longitude || 0}
-                    latitude={location?.coords.latitude || 0}
-                    anchor="center"
-                >
-                    <GpsPin />
-                </Marker>
+                        key={"user-location"}
+                        longitude={location?.coords.longitude || 0}
+                        latitude={location?.coords.latitude || 0}
+                        anchor="center"
+                    >
+                        <GpsPin
+                            latitude={location?.coords.latitude || 0}
+                            longitude={location?.coords.longitude || 0}
+                        />
+                    </Marker>
                 )}
             </Map>
 
             {/* SpeedDial für Web (Mobile und Desktop) */}
             <SpeedDial
-                    placement="bottom-right"
-                    labelPlacement="left"
-                    portal={false}
-                    icon={Plus}
-                    closeOnActionPress={true}
-                    actions={[
-                        {
-                            key: 'sensors',
-                            label: t('navigation.sensors'),
-                            icon: List,
-                            onPress: () => setIsDrawerOpen(!isDrawerOpen),
-                        },
-                        {
-                            key: 'filter',
-                            label: t('map.filters'),
-                            icon: Filter,
-                            onPress: () => setIsFilterOpen(true),
-                        },
-                        {
-                            key: 'zoomin',
-                            label: 'Zoom In',
-                            closeOnPress: false,
-                            icon: ZoomIn,
-                            onPress: () => {
-                                if (zoomLevel < minMaxZoomLevel.max) {
-                                    const newZoom = zoomLevel + 1;
-                                    setZoomLevel(newZoom);
-                                    setViewState({
-                                        longitude: currentCoordinate[0],
-                                        latitude: currentCoordinate[1],
-                                        zoom: newZoom
-                                    });
-                                }
-                            },
-                        },
-                        {
-                            key: 'zoomout',
-                            label: 'Zoom Out',
-                            closeOnPress: false,
-                            icon: ZoomOut,
-                            onPress: () => {
-                                if (zoomLevel > minMaxZoomLevel.min) {
-                                    const newZoom = zoomLevel - 1;
-                                    setZoomLevel(newZoom);
-                                    setViewState({
-                                        longitude: currentCoordinate[0],
-                                        latitude: currentCoordinate[1],
-                                        zoom: newZoom
-                                    });
-                                }
-                            },
-                        },
-                        {
-                            key: 'compass',
-                            label: 'Reset View',
-                            closeOnPress: false,
-                            icon: Navigation,
-                            onPress: () => {
-                                setBearing(0);
-                                setPitch(0);
-                            },
-                        },
-                        {
-                            key: 'home',
-                            label: 'Go Home',
-                            closeOnPress: false,
-                            icon: Home,
-                            onPress: () => {
-                                setCurrentCoordinate(homeCoordinate);
+                placement="bottom-right"
+                labelPlacement="left"
+                portal={false}
+                icon={Plus}
+                closeOnActionPress={true}
+                actions={[
+                    {
+                        key: 'sensors',
+                        label: t('navigation.sensors'),
+                        icon: List,
+                        onPress: () => setIsDrawerOpen(!isDrawerOpen),
+                    },
+                    {
+                        key: 'filter',
+                        label: t('map.filters'),
+                        icon: Filter,
+                        onPress: () => setIsFilterOpen(true),
+                    },
+                    {
+                        key: 'zoomin',
+                        label: 'Zoom In',
+                        closeOnPress: false,
+                        icon: ZoomIn,
+                        onPress: () => {
+                            if (zoomLevel < MAP_CONSTANTS.ZOOM_LEVELS.MAX) {
+                                const newZoom = zoomLevel + 1;
+                                setZoomLevel(newZoom);
                                 setViewState({
-                                    longitude: homeCoordinate[0],
-                                    latitude: homeCoordinate[1],
-                                    zoom: zoomLevel
+                                    longitude: currentCoordinate[0],
+                                    latitude: currentCoordinate[1],
+                                    zoom: newZoom
                                 });
-                            },
+                            }
                         },
-                    ]}
-                    fabSize="$6"
-                    gap="$2"
-                />
+                    },
+                    {
+                        key: 'zoomout',
+                        label: 'Zoom Out',
+                        closeOnPress: false,
+                        icon: ZoomOut,
+                        onPress: () => {
+                            if (zoomLevel > MAP_CONSTANTS.ZOOM_LEVELS.MIN) {
+                                const newZoom = zoomLevel - 1;
+                                setZoomLevel(newZoom);
+                                setViewState({
+                                    longitude: currentCoordinate[0],
+                                    latitude: currentCoordinate[1],
+                                    zoom: newZoom
+                                });
+                            }
+                        },
+                    },
+                    {
+                        key: 'compass',
+                        label: 'Reset View',
+                        closeOnPress: false,
+                        icon: Navigation,
+                        onPress: () => {
+                            setBearing(0);
+                            setPitch(0);
+                        },
+                    },
+                    {
+                        key: 'home',
+                        label: 'Go Home',
+                        closeOnPress: false,
+                        icon: Home,
+                        onPress: () => {
+                            setCurrentCoordinate(MAP_CONSTANTS.HOME_COORDINATE);
+                            setViewState({
+                                longitude: MAP_CONSTANTS.HOME_COORDINATE[0],
+                                latitude: MAP_CONSTANTS.HOME_COORDINATE[1],
+                                zoom: zoomLevel
+                            });
+                        },
+                    },
+                ]}
+                fabSize="$6"
+                gap="$2"
+            />
 
             {/* Filter Sheet - controlled by SpeedDial */}
             <MapFilterButton
-                module1Visible={module1Visible}
-                setModule1Visible={setModule1Visible}
-                module2Visible={module2Visible}
-                setModule2Visible={setModule2Visible}
-                module3Visible={module3Visible}
-                setModule3Visible={setModule3Visible}
+                filterState={filterState}
+                onFilterChange={handleFilterChange}
                 isOpen={isFilterOpen}
                 onOpenChange={setIsFilterOpen}
             />

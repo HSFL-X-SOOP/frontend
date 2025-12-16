@@ -1,24 +1,27 @@
 import {useSession} from '@/context/SessionContext';
-import {useAuth} from '@/hooks/useAuth';
+import {useAuth, useGoogleSignIn} from '@/hooks/auth';
 import {AuthorityRole} from '@/api/models/profile';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
-import {PermissionsAndroid, Platform, SafeAreaView} from 'react-native';
-import {Button, Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
+import {Platform} from 'react-native';
+import {Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {User} from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/components/useToast';
+import {useTranslation, useToast, usePasswordValidation, useEmailValidation} from '@/hooks/ui';
+
 import {GoogleIcon, AppleIcon} from '@/components/ui/Icons';
-import {useGoogleSignIn} from '@/hooks/useGoogleSignIn';
-import {useAppleSignIn} from '@/hooks/useAppleSignIn';
-import {usePasswordValidation, useEmailValidation} from '@/hooks/usePasswordValidation';
+
+import {useAppleSignIn} from '@/hooks/auth/useAppleSignIn';
+
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
 import {PasswordStrengthIndicator} from '@/components/auth/PasswordStrengthIndicator';
 import {createLogger} from '@/utils/logger';
-import { useUserDeviceStore } from '@/api/stores/userDevice';
+import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
+import {UI_CONSTANTS} from '@/config/constants';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
+import {getAuthRoute} from '@/utils/navigation';
 
 const logger = createLogger('Auth:Register');
 
@@ -27,9 +30,10 @@ export default function RegisterScreen() {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [agreeTermsOfService, setAgreeTermsOfService] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const router = useRouter();
-    const {register, registerStatus} = useAuth();
+    const {register} = useAuth();
     const {login, session} = useSession();
     const {t} = useTranslation();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
@@ -56,7 +60,7 @@ export default function RegisterScreen() {
             logger.warn('Password mismatch');
             toast.error(t('auth.registerError'), {
                 message: t('auth.passwordsDoNotMatch'),
-                duration: 4000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
             return;
         }
@@ -64,7 +68,7 @@ export default function RegisterScreen() {
             logger.warn('Terms of service not accepted');
             toast.error(t('auth.registerError'), {
                 message: t('auth.agreeToTermsRequired'),
-                duration: 4000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
             return;
         }
@@ -72,7 +76,7 @@ export default function RegisterScreen() {
             logger.warn('Invalid password format');
             toast.error(t('auth.registerError'), {
                 message: t('auth.invalidPasswordFormat'),
-                duration: 4000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
             return;
         }
@@ -80,54 +84,67 @@ export default function RegisterScreen() {
             logger.warn('Invalid email format');
             toast.error(t('auth.registerError'), {
                 message: t('auth.invalidEmail'),
-                duration: 4000
+                duration: UI_CONSTANTS.TOAST_DURATION.LONG
             });
             return;
         }
 
         logger.info('Registration attempt', {email});
-        const res = await register({email, password, rememberMe: false});
-        if (res) {
-            logger.info('Registration successful');
-            login({
-                accessToken: res.accessToken,
-                refreshToken: res.refreshToken,
-                loggedInSince: new Date(),
-                lastTokenRefresh: null,
-                role: res.profile?.authorityRole ?? AuthorityRole.USER, // Standard: USER falls nicht vom Backend geliefert
-                profile: res.profile
-            });
-            toast.success(t('auth.registerSuccess'), {
-                message: t('auth.accountCreated'),
-                duration: 3000
-            });
-            handleRegisterUserDevice(res.profile?.id || 0);
-            router.push("/");
-        } else {
-            logger.error('Registration failed', registerStatus.error);
-            toast.error(t('auth.registerError'), {
-                message: registerStatus.error?.message || t('auth.registerErrorGeneric'),
-                duration: 5000
-            });
-        }
+        setIsLoading(true);
+
+        await register(
+            {email, password, rememberMe: false},
+            (res) => {
+                logger.info('Registration successful');
+                login({
+                    accessToken: res.accessToken,
+                    refreshToken: res.refreshToken,
+                    loggedInSince: new Date(),
+                    lastTokenRefresh: null,
+                    role: res.profile?.authorityRole ?? AuthorityRole.USER,
+                    profile: res.profile
+                });
+                toast.success(t('auth.registerSuccess'), {
+                    message: t('auth.accountCreated')
+                });
+                handleRegisterUserDevice(res.profile?.id || 0);
+                router.push("/");
+            },
+            (error) => {
+                toast.error(
+                    t('auth.registerError'),
+                    {message: t(error.onGetMessage())}
+                );
+            }
+        );
+        setIsLoading(false);
     };
 
     const handleRegisterUserDevice = async (userId: number) => {
         if (Platform.OS === 'web') {return;}
 
-        const authStatus = await messaging().requestPermission();
-        const enabled =
-            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        try {
+            const authStatus = await messaging().requestPermission();
+            const enabled =
+                authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+                authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-        if (enabled) {
-            try {
-                let token = await messaging().getToken();
-                console.log('FCM Token:', token);
-                userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
-            } catch (error) {
-                console.log('Error getting FCM token:', error);
+            if (enabled) {
+                try {
+                    let token = await messaging().getToken();
+                    logger.debug('FCM Token obtained');
+                    const result = await userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+                    if (result.ok) {
+                        logger.info('User device registered with FCM token');
+                    } else {
+                        logger.warn('Failed to register user device (non-critical)', {message: result.error.message});
+                    }
+                } catch (error) {
+                    logger.error('Failed to get FCM token', error);
+                }
             }
+        } catch (error) {
+            logger.error('Failed to request messaging permission', error);
         }
     }
 
@@ -135,7 +152,7 @@ export default function RegisterScreen() {
     const isFormValid = isEmailValid && isPasswordValid && passwordsMatch && agreeTermsOfService;
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
                 <AuthCard
                     title={t('auth.createAccount')}
@@ -186,11 +203,6 @@ export default function RegisterScreen() {
                             />
                         </YStack>
 
-                        {registerStatus.error && (
-                            <Text color="$red10" fontSize={14} textAlign="center">
-                                {registerStatus.error.message}
-                            </Text>
-                        )}
 
                         <XStack gap="$2" alignItems="center" width="100%" pressStyle={{opacity: 0.7}}
                                 onPress={() => setAgreeTermsOfService(!agreeTermsOfService)}>
@@ -218,26 +230,24 @@ export default function RegisterScreen() {
                             </Text>
                         </XStack>
 
-                        <Button
-                            backgroundColor="$accent7"
-                            color="white"
+                        <PrimaryButton
                             size="$4"
                             onPress={handleSubmit}
-                            disabled={!isFormValid || registerStatus.loading}
-                            opacity={!isFormValid || registerStatus.loading ? 0.6 : 1}
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent4"}}
-                            pressStyle={{backgroundColor: "$accent6"}}
+                            disabled={!isFormValid || isLoading}
                         >
-                            {registerStatus.loading ? (
+                            {isLoading ? (
                                 <XStack gap="$2" alignItems="center">
                                     <Spinner size="small" color="white"/>
-                                    <Text color="white" fontWeight="600">{t('auth.creating')}</Text>
+                                    <PrimaryButtonText>
+                                        {t('auth.creating')}
+                                    </PrimaryButtonText>
                                 </XStack>
                             ) : (
-                                <Text color="white" fontWeight="600">{t('auth.createAccount')}</Text>
+                                <PrimaryButtonText>
+                                    {t('auth.createAccount')}
+                                </PrimaryButtonText>
                             )}
-                        </Button>
+                        </PrimaryButton>
                     </YStack>
 
                     <XStack gap="$3" alignItems="center" width="100%">
@@ -247,93 +257,97 @@ export default function RegisterScreen() {
                     </XStack>
 
                     <YStack gap="$3" width="100%">
-                        <Button
-                            variant="outlined"
+                        <SecondaryButton
                             size="$4"
                             onPress={async () => {
-                                const result = await handleGoogleSignIn('/');
-                                if (result?.success) {
-                                    toast.success(t('auth.googleSignInSuccess'), {
-                                        message: t('auth.accountCreated'),
-                                        duration: 3000
-                                    });
-                                } else if (result && !result.success) {
-                                    toast.error(t('auth.googleSignInError'), {
-                                        message: result.error || t('auth.googleSignInErrorGeneric'),
-                                        duration: 5000
-                                    });
-                                }
+                                await handleGoogleSignIn(
+                                    '/',
+                                    () => {
+                                        toast.success(t('auth.googleSignInSuccess'), {
+                                            message: t('auth.accountCreated'),
+                                            duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
+                                        });
+                                    },
+                                    (error) => {
+                                        toast.error(
+                                            t('auth.googleSignInError'),
+                                            {message: t(error.onGetMessage())}
+                                        );
+                                    }
+                                );
                             }}
                             disabled={googleLoading}
-                            opacity={googleLoading ? 0.6 : 1}
-                            borderColor="$borderColor"
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$content2"}}
                             width="100%"
                         >
                             {googleLoading ? (
                                 <XStack gap="$2" alignItems="center">
                                     <Spinner size="small"/>
-                                    <Text color="$color">{t('auth.signingIn')}</Text>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signingIn')}
+                                    </SecondaryButtonText>
                                 </XStack>
                             ) : (
                                 <XStack gap="$3" alignItems="center">
                                     <GoogleIcon size={20}/>
-                                    <Text color="$color">{t('auth.signUpWithGoogle')}</Text>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signUpWithGoogle')}
+                                    </SecondaryButtonText>
                                 </XStack>
                             )}
-                        </Button>
+                        </SecondaryButton>
 
                         {Platform.OS === 'ios' && (
-                            <Button
-                                variant="outlined"
+                            <SecondaryButton
                                 size="$4"
                                 onPress={async () => {
-                                    const result = await handleAppleSignIn('/');
-                                    if (result?.success) {
-                                        toast.success(t('auth.appleSignInSuccess'), {
-                                            message: t('auth.accountCreated'),
-                                            duration: 3000
-                                        });
-                                        handleRegisterUserDevice(result.userId || 0);
-                                    } else if (result && !result.success) {
-                                        toast.error(t('auth.appleSignInError'), {
-                                            message: result.error || t('auth.appleSignInErrorGeneric'),
-                                            duration: 5000
-                                        });
-                                    }
+                                    await handleAppleSignIn(
+                                        '/',
+                                        (userId) => {
+                                            toast.success(t('auth.appleSignInSuccess'), {
+                                                message: t('auth.accountCreated'),
+                                                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
+                                            });
+                                            handleRegisterUserDevice(userId || 0);
+                                        },
+                                        (error) => {
+                                            toast.error(
+                                                t('auth.appleSignInError'),
+                                                {message: t(error.onGetMessage())}
+                                            );
+                                        }
+                                    );
                                 }}
                                 disabled={appleLoading}
-                                opacity={appleLoading ? 0.6 : 1}
-                                borderColor="$borderColor"
-                                borderRadius="$6"
-                                hoverStyle={{backgroundColor: "$content2"}}
                                 width="100%"
                             >
                                 {appleLoading ? (
                                     <XStack gap="$2" alignItems="center">
                                         <Spinner size="small"/>
-                                        <Text color="$color">{t('auth.signingIn')}</Text>
+                                        <SecondaryButtonText color="$color">
+                                            {t('auth.signingIn')}
+                                        </SecondaryButtonText>
                                     </XStack>
                                 ) : (
                                     <XStack gap="$3" alignItems="center">
                                         <AppleIcon size={24}/>
-                                        <Text color="$color">{t('auth.signUpWithApple')}</Text>
+                                        <SecondaryButtonText color="$color">
+                                            {t('auth.signUpWithApple')}
+                                        </SecondaryButtonText>
                                     </XStack>
                                 )}
-                            </Button>
+                            </SecondaryButton>
                         )}
                     </YStack>
 
                     <Text fontSize={14} color="$color">
                         {t('auth.alreadyHaveAccount')}{' '}
-                        <Link href={"/(auth)/login" as Href}>
+                        <Link href={getAuthRoute('login')}>
                             <Text color="$accent7" textDecorationLine="underline"
                                   fontWeight="600">{t('auth.signIn')}</Text>
                         </Link>
                     </Text>
                 </AuthCard>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }

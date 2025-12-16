@@ -1,6 +1,5 @@
 import {Platform} from 'react-native';
-import {Adapt, Select, YStack, GetProps} from 'tamagui';
-import {useIsMobileWeb} from '@/hooks/useIsMobileWeb';
+import {Adapt, GetProps, Select, YStack} from 'tamagui';
 import {
     SelectItem,
     defaultSelectSheetConfig,
@@ -58,13 +57,11 @@ export function SelectWithSheet<T extends string = string>({
                                                                defaultValue,
                                                                onValueChange,
                                                                placeholder = 'Select...',
-                                                               triggerProps,
                                                                disabled = false,
                                                                id,
                                                                name,
                                                            }: SelectWithSheetProps<T>) {
     const isNative = Platform.OS !== 'web';
-    const isMobileWeb = useIsMobileWeb();
 
     // Styling logic:
     // - Native (iOS/Android): Full styling with borders, backgrounds, etc.
@@ -72,20 +69,19 @@ export function SelectWithSheet<T extends string = string>({
     // - Desktop Web: Default Tamagui styling
     const itemStyle = isNative
         ? defaultSelectItemStyles.native
-        : isMobileWeb
-            ? {
-                backgroundColor: '$content1',
-                hoverStyle: {
-                    backgroundColor: '$accent3'
-                },
-                pressStyle: {
-                    backgroundColor: '$accent4'
-                },
-                focusStyle: {
-                    backgroundColor: '$accent2'
-                }
+        : {
+            backgroundColor: '$content2',
+            hoverStyle: {
+                backgroundColor: '$ctaBgHover'
+            },
+            pressStyle: {
+                backgroundColor: '$ctaBgHover'
+            },
+            focusStyle: {
+                backgroundColor: '$ctaBgHover'
             }
-            : {};
+        }
+
 
     return (
         <Select
@@ -95,7 +91,22 @@ export function SelectWithSheet<T extends string = string>({
             id={id}
             name={name}
         >
-            <Select.Trigger {...triggerProps} disabled={disabled}>
+            <Select.Trigger {...{
+                flex: 1,
+                size: "$3",
+                iconAfter: null,
+                backgroundColor: "$content3",
+                borderColor: "$borderColor",
+                borderWidth: 1,
+                hoverStyle: {
+                    backgroundColor: "$content4",
+                    borderColor: "$accent6"
+                },
+                pressStyle: {
+                    backgroundColor: "$content3",
+                    borderColor: "$accent7"
+                }
+            }} disabled={disabled}>
                 <Select.Value placeholder={placeholder}/>
             </Select.Trigger>
 

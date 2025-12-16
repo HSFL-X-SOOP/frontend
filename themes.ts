@@ -29,25 +29,31 @@ const defaultDark = [
     '#0d0d0e', '#19191c', '#26262a', '#323238', '#3f3f46', '#52525b',
     '#65656b', '#8c8c90', '#b2b2b5', '#d9d9da', '#efeff0', '#ffffff',
 ]
+
 const primaryLight = [
-    '#e0e5e8', '#b4c2c8', '#889ea7', '#5d7a87', '#315666', '#053246',
-    '#04293a', '#03212e', '#021821', '#020f15', '#010b10', '#00080a',
+    '#0a1820', '#0d1f2a', '#102835', '#145080',
+    '#1c4659', '#2a5d74', '#3a758f', '#1a5570',
+    '#1f6382', '#4b8aaa', '#5fa8c5', '#75c1de',
 ]
 
 const primaryDark = [
-    '#003d67', '#004d7f', '#005d97', '#0070b0', '#0084c7', '#1798db',
-    '#3aaced', '#5dc0fc', '#80d0ff', '#a3dfff', '#c6ecff', '#e8f7ff',
+    '#003d67', '#004d7f', '#005d97', '#0070b0',
+    '#0084c7', '#1798db', '#3aaced', '#5dc0fc',
+    '#80d0ff', '#a3dfff', '#c6ecff', '#e8f7ff',
 ]
 
 const secondaryLight = [
-    '#003d67', '#004d7f', '#005d97', '#0070b0', '#0084c7', '#1798db',
-    '#3aaced', '#5dc0fc', '#80d0ff', '#a3dfff', '#c6ecff', '#e8f7ff',
+    '#003d67', '#004d7f', '#005d97', '#0070b0',
+    '#0084c7', '#1798db', '#3aaced', '#5dc0fc',
+    '#80d0ff', '#a3dfff', '#c6ecff', '#e8f7ff',
 ]
 
 const secondaryDark = [
-    '#e0e5e8', '#b4c2c8', '#889ea7', '#5d7a87', '#315666', '#053246',
-    '#04293a', '#03212e', '#021821', '#020f15', '#010b10', '#00080a',
+    '#0a1820', '#0d1f2a', '#102835', '#145080',
+    '#1c4659', '#2a5d74', '#3a758f', '#1a5570',
+    '#1f6382', '#4b8aaa', '#5fa8c5', '#75c1de',
 ]
+
 const successLight = [
     '#e2f8ec', '#b9efd1', '#91e5b5', '#68dc9a', '#40d27f', '#17c964',
     '#13a653', '#0f8341', '#0b5f30', '#073c1e', '#063216', '#041f0e',
@@ -96,7 +102,7 @@ export const themes = createThemes({
                 ...Colors.purple,
                 ...Colors.cyan,
                 ...Colors.red,
-                background: '#f8f8ff',
+                background: '#f0f4f7',
                 color: '#1f1f21',
                 borderColor: '#e4e4e7',
                 placeholderColor: '#8a8a8c',
@@ -106,10 +112,7 @@ export const themes = createThemes({
                 content2: '#f5f5f6',
                 content3: '#e4e4e7',
                 content4: '#d1d1d6',
-                ctaBg: '#5d7a87',
-                ctaBgHover: '#315666',
-                ctaBgPress: '#5d7a87',
-                ctaText: '#ffffff',
+                ctaBgHover: 'rgba(178,220,250,0.5)',
             },
             dark: {
                 ...darkShadows,
@@ -131,10 +134,8 @@ export const themes = createThemes({
                 content2: '#27272a',
                 content3: '#3f3f46',
                 content4: '#52525b',
-                ctaBg: '#63ad63',
-                ctaBgHover: '#a7e2a7',
-                ctaBgPress: '#4e894e',
-                ctaText: '#000000',
+                ctaBgHover: 'rgba(140,212,250,0.2)',
+                ctaBgPress: 'rgba(140,212,250,0.2)',
             },
         },
     },

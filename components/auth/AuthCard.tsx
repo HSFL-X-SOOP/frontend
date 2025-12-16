@@ -1,6 +1,7 @@
-import { Card, YStack, View, H1, Text } from 'tamagui';
+import { Card, YStack, H1, Text } from 'tamagui';
 import { ReactNode } from 'react';
 import type { IconProps } from '@tamagui/helpers-icon';
+import { IconContainer } from '@/components/ui/IconContainer';
 
 interface AuthCardProps {
   children: ReactNode;
@@ -24,16 +25,11 @@ export const AuthCard = ({ children, title, subtitle, icon: Icon }: AuthCardProp
     >
       <YStack gap="$5" alignItems="center">
         <YStack gap="$3" alignItems="center">
-          <View
-            width={80}
-            height={80}
-            backgroundColor="$accent2"
-            borderRadius="$12"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Icon size={40} color="$accent7" />
-          </View>
+          <IconContainer
+            icon={Icon}
+            size={40}
+            containerSize={80}
+          />
           <H1 fontSize={28} fontWeight="bold" color="$accent7" fontFamily="$oswald">
             {title}
           </H1>

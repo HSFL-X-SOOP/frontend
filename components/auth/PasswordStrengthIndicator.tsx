@@ -1,6 +1,6 @@
 import { YStack, XStack, View, Text } from 'tamagui';
 import { Check, X } from '@tamagui/lucide-icons';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/ui';
 
 interface PasswordValidation {
   length: boolean;

@@ -1,9 +1,10 @@
 import React from 'react';
-import {Button, YStack, XStack, Text} from 'tamagui';
-import {useTranslation} from '@/hooks/useTranslation';
+import {YStack, XStack, Text} from 'tamagui';
+import {useTranslation, useToast} from '@/hooks/ui';
 import {useSession} from '@/context/SessionContext';
-import {useUser} from '@/hooks/useUser';
+import {useUser} from '@/hooks/data';
 import {Language} from '@/api/models/profile';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
 const languages = [
     {code: 'de', name: 'Deutsch', flag: '🇩🇪', profileLang: Language.DE},
@@ -11,7 +12,8 @@ const languages = [
 ];
 
 export const LanguageSelector: React.FC = () => {
-    const {currentLanguage, changeLanguage} = useTranslation();
+    const {currentLanguage, changeLanguage, t} = useTranslation();
+    const toast = useToast();
     const {session, updateProfile: updateSessionProfile} = useSession();
     const {updateProfile} = useUser();
 
@@ -19,35 +21,43 @@ export const LanguageSelector: React.FC = () => {
         changeLanguage(code);
 
         if (session?.profile) {
-            try {
-                const updatedProfile = await updateProfile({
+            await updateProfile(
+                {
                     language: profileLang,
-                    roles: session.profile.roles, // Backend erwartet 'roles'
-                    measurementSystem: session.profile.measurementSystem
-                });
-                updateSessionProfile(updatedProfile);
-            } catch (error) {
-                console.error('Failed to update language in backend:', error);
-            }
+                },
+                (updatedProfile) => {
+                    updateSessionProfile(updatedProfile);
+                },
+                (error) => {
+                    toast.error(t('settings.language'), {
+                        message: t(error.onGetMessage())
+                    });
+                }
+            );
         }
     };
 
     return (
         <YStack gap="$3" padding="$2" minWidth={200}>
-            {languages.map((language) => (
-                <Button
-                    key={language.code}
-                    variant={currentLanguage === language.code ? "outlined" : undefined}
-                    justifyContent="flex-start"
-                    onPress={() => handleLanguageChange(language.code, language.profileLang)}
-                >
-                    <XStack alignItems="center" gap="$3" width="100%">
-                        <Text fontSize={"$5"}>{language.flag}</Text>
-                        <Text color="$color">{language.name}</Text>
-                    </XStack>
-                </Button>
-            ))}
+            {languages.map((language) => {
+                const ButtonComponent = currentLanguage === language.code ? PrimaryButton : SecondaryButton;
+                const TextComponent = currentLanguage === language.code ? PrimaryButtonText : SecondaryButtonText;
+                const TextFlagComponentColor = ButtonComponent === SecondaryButton ? "$accent9" : "white";
+                return (
+                    <ButtonComponent
+                        key={language.code}
+                        justifyContent="flex-start"
+                        onPress={() => handleLanguageChange(language.code, language.profileLang)}
+                    >
+                        <XStack alignItems="center" gap="$3" width="100%">
+                            <Text fontSize={"$5"} color={TextFlagComponentColor}>{language.flag}</Text>
+                            <TextComponent >
+                                {language.name}
+                            </TextComponent>
+                        </XStack>
+                    </ButtonComponent>
+                );
+            })}
         </YStack>
     );
 };
-

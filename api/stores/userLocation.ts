@@ -4,24 +4,46 @@ import {
     UserLocation
 } from "@/api/models/userLocation.ts";
 import { useHttpClient } from "@/api/client.ts";
+import { Result } from "@/utils/errors";
+import { api } from "@/utils/api";
 
 export function useUserLocationStore() {
     const httpClient = useHttpClient();
 
     return {
-        getAllUserLocationByUserId: (userId: number,) =>
-            httpClient.get<UserLocation[]>(`/user-locations/user/${userId}`).then(r => r.data),
+        getAllUserLocationByUserId: (userId: number): Promise<Result<UserLocation[]>> => {
+            return api.requestSafe(
+                httpClient.get<UserLocation[]>(`/user-locations/user/${userId}`),
+                'UserLocationStore:getAllUserLocationByUserId'
+            );
+        },
 
-        getUserLocationByUserIdAndLocationId: (userId: number, locationId: number) =>
-            httpClient.get<UserLocation>(`/user-locations/${userId}/${locationId}`).then(r => r.data),
+        getUserLocationByUserIdAndLocationId: (userId: number, locationId: number): Promise<Result<UserLocation>> => {
+            return api.requestSafe(
+                httpClient.get<UserLocation>(`/user-locations/${userId}/${locationId}`),
+                'UserLocationStore:getUserLocationByUserIdAndLocationId'
+            );
+        },
 
-        createUserLocation: (body: CreateOrUpdateUserLocationRequest) =>
-            httpClient.post<CreateOrUpdateUserLocationResponse>("/user-locations", body).then(r => r.data),
+        createUserLocation: (body: CreateOrUpdateUserLocationRequest): Promise<Result<CreateOrUpdateUserLocationResponse>> => {
+            return api.requestSafe(
+                httpClient.post<CreateOrUpdateUserLocationResponse>("/user-locations", body),
+                'UserLocationStore:createUserLocation'
+            );
+        },
 
-        updateUserLocation: (id: number, body: CreateOrUpdateUserLocationRequest) =>
-            httpClient.put<CreateOrUpdateUserLocationResponse>(`/user-locations/${id}`, body).then(r => r.data),
+        updateUserLocation: (id: number, body: CreateOrUpdateUserLocationRequest): Promise<Result<CreateOrUpdateUserLocationResponse>> => {
+            return api.requestSafe(
+                httpClient.put<CreateOrUpdateUserLocationResponse>(`/user-locations/${id}`, body),
+                'UserLocationStore:updateUserLocation'
+            );
+        },
 
-        deleteUserLocation: (id: number) =>
-            httpClient.delete<DeleteUserLocationResponse>(`/user-locations/${id}`).then(r => r.data),
+        deleteUserLocation: (id: number): Promise<Result<DeleteUserLocationResponse>> => {
+            return api.requestSafe(
+                httpClient.delete<DeleteUserLocationResponse>(`/user-locations/${id}`),
+                'UserLocationStore:deleteUserLocation'
+            );
+        },
     };
 }

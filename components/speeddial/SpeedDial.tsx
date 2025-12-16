@@ -1,4 +1,4 @@
-import React, {useState, useCallback, useEffect, useRef} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {
     YStack,
     XStack,
@@ -13,7 +13,7 @@ import {Plus} from '@tamagui/lucide-icons';
 import {BackHandler, Platform, Pressable} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SpeedDialAction} from './SpeedDialAction';
-import {SpeedDialProps, SpeedDialLabelPlacement} from '@/types/speeddial';
+import {SpeedDialProps, SpeedDialLabelPlacement, SpeedDialActionItem} from '@/types/speeddial';
 
 const Backdrop = styled(Pressable, {
     position: 'absolute',
@@ -61,7 +61,6 @@ export function SpeedDial({
                               ...stackProps
                           }: SpeedDialProps) {
     const insets = useSafeAreaInsets();
-    const fabRef = useRef<any>(null);
 
     // Handle controlled/uncontrolled state
     const isControlled = controlledOpen !== undefined;
@@ -88,7 +87,7 @@ export function SpeedDial({
     }, [isControlled, onOpenChange]);
 
     // Close on action press if configured (can be overridden per action)
-    const handleActionPress = useCallback((action: any) => {
+    const handleActionPress = useCallback((action: SpeedDialActionItem) => {
         // Check if this specific action should close the dial
         // Priority: action.closeOnPress > global closeOnActionPress
         const shouldClose = action.closeOnPress !== undefined
@@ -127,7 +126,7 @@ export function SpeedDial({
     // Calculate position styles based on placement
     const getPositionStyles = () => {
         const offset = 20;
-        const styles: any = {};
+        const styles: Record<string, number> = {};
 
         if (placement.includes('bottom')) {
             styles.bottom = offset + insets.bottom;
@@ -248,7 +247,6 @@ export function SpeedDial({
 
                 {/* Floating Action Button - Fixed Position */}
                 <Button
-                    ref={fabRef}
                     circular
                     size={fabSize}
                     disabled={disabled}
@@ -256,7 +254,7 @@ export function SpeedDial({
                     testID={testID}
                     accessibilityLabel={fabAccessibilityLabel}
                     accessibilityRole="button"
-                    backgroundColor="$accent8"
+                    backgroundColor="$accent7"
                     elevation={getTokenSize(elevation as string)}
                     animation="quick"
                     animateOnly={['transform']}

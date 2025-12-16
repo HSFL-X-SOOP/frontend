@@ -3,9 +3,10 @@ import {AnimatePresence, Button, ScrollView, View, XStack, YStack, Text, useThem
 import {ReactNode} from 'react';
 import {LocationWithBoxes} from '@/api/models/sensor';
 import {SmallBadgeIcon} from "@/components/ui/Icons.tsx";
-import {useIsMobileWeb} from '@/hooks/useIsMobileWeb';
-import {useViewportHeight} from '@/hooks/useViewportHeight';
+import {useIsMobileWeb} from '@/hooks/ui';
+
 import {useThemeContext} from "@/context/ThemeSwitch.tsx";
+import {IconButton} from '@/types/button';
 
 interface MapSensorDrawerProps {
     isOpen: boolean;
@@ -28,7 +29,6 @@ export default function MapSensorDrawer({
     const isMobileWeb = useIsMobileWeb();
     const t = useTheme();
     const {isDark} = useThemeContext()
-    const {viewportHeight, safeBottomOffset} = useViewportHeight();
 
     const drawerWidth = isOpen
         ? DRAWER_WIDTH
@@ -39,8 +39,8 @@ export default function MapSensorDrawer({
             position="absolute"
             left={0}
             top={0}
-            bottom={isMobileWeb && safeBottomOffset > 0 ? safeBottomOffset : 0}
             zIndex={1000}
+            height="100vh"
             width={drawerWidth}
             animation="quick"
             backgroundColor="$background"
@@ -51,9 +51,6 @@ export default function MapSensorDrawer({
             shadowOpacity={0.1}
             shadowRadius={8}
             overflow="hidden"
-            height={isMobileWeb && viewportHeight > 0
-                ? viewportHeight - safeBottomOffset
-                : undefined}
         >
             {/* Drawer Content */}
             <YStack flex={1}>
@@ -73,14 +70,11 @@ export default function MapSensorDrawer({
                                 enterStyle={{opacity: 0, x: -10}}
                                 exitStyle={{opacity: 0, x: -10}}
                             >
-                                <Button
+                                <IconButton
                                     size="$3"
-                                    chromeless
                                     icon={ChevronLeft}
-                                    backgroundColor={"$background"}
+                                    color="$accent8"
                                     onPress={onToggle}
-                                    borderColor={"$borderColor"}
-                                    circular
                                     aria-label="Collapse drawer"
                                 />
                             </View>
@@ -88,14 +82,11 @@ export default function MapSensorDrawer({
                     </AnimatePresence>
 
                     {!isOpen && (
-                        <Button
+                        <IconButton
                             size="$3"
-                            chromeless
-                            backgroundColor={"$background"}
-                            borderColor={"$borderColor"}
                             icon={ChevronRight}
+                            color="$accent8"
                             onPress={onToggle}
-                            circular
                             aria-label="Expand drawer"
                         />
                     )}
@@ -121,15 +112,16 @@ export default function MapSensorDrawer({
                         <YStack gap="$2" paddingHorizontal="$1">
                             {sensors.slice(0, 10).map((sensor) => (
                                 <Button
-                                    key={sensor.location.id}
+                                    key={sensor.location?.id ?? Math.random()}
                                     size="$2"
                                     chromeless
                                     padding="$2"
                                     onPress={() => onSensorSelect?.(sensor)}
                                     backgroundColor={isDark ? "$content2" : "$content1"}
                                     borderRadius="$2"
+                                    borderColor={"$borderColor"}
                                     hoverStyle={{
-                                        backgroundColor: "$accent1"
+                                        backgroundColor: "$ctaBgHover"
                                     }}
                                     pressStyle={{
                                         backgroundColor: "$accent2",
@@ -149,7 +141,7 @@ export default function MapSensorDrawer({
                                             width="100%"
                                             lineHeight={10}
                                         >
-                                            {sensor.location.name}
+                                            {sensor.location?.name}
                                         </Text>
                                     </YStack>
                                 </Button>

@@ -1,36 +1,47 @@
 import {useRouter} from 'expo-router';
 import {useState} from 'react';
-import {SafeAreaView, ScrollView} from 'react-native';
-import {Button, Text, YStack, XStack, H2, H5, Card, RadioGroup, Label, Separator, View, Spinner} from 'tamagui';
-import {Globe, Activity, Ruler, Check} from '@tamagui/lucide-icons';
-import {useUser} from '@/hooks/useUser';
+import {ScrollView} from 'react-native';
+import {Text, YStack, XStack, H2, H5, Card, RadioGroup, Label, Separator, View, Spinner} from 'tamagui';
+import {Globe, Activity, Ruler, Check, User} from '@tamagui/lucide-icons';
+import {useUser} from '@/hooks/data';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {useSession} from '@/context/SessionContext';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation, useToast} from '@/hooks/ui';
+import {EmailInput} from '@/components/auth/EmailInput';
+import {PrimaryButton, PrimaryButtonText} from '@/types/button';
+import { createLogger } from '@/utils/logger';
+
+const logger = createLogger('Profile:CreateProfile');
 
 export default function CreateProfileScreen() {
     const router = useRouter();
     const {t, changeLanguage} = useTranslation();
-    const {createProfile, createProfileStatus} = useUser();
+    const toast = useToast();
+    const {createProfile} = useUser();
     const {updateProfile: updateSessionProfile} = useSession();
 
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [selectedLanguage, setSelectedLanguage] = useState<Language>(Language.DE);
     const [selectedRoles, setSelectedRoles] = useState<ActivityRole[]>([]);
     const [selectedMeasurement, setSelectedMeasurement] = useState<MeasurementSystem>(MeasurementSystem.METRIC);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleRoleToggle = (role: ActivityRole) => {
-        console.log('[CreateProfile] Toggling role:', role);
+        logger.debug('Toggling role:', { role });
         setSelectedRoles(prev => {
             const newRoles = prev.includes(role)
                 ? prev.filter(r => r !== role)
                 : [...prev, role];
-            console.log('[CreateProfile] Selected roles after toggle:', newRoles);
+            logger.debug('Selected roles after toggle:', { roles: newRoles });
             return newRoles;
         });
     };
 
     const handleSubmit = async () => {
-        console.log('[CreateProfile] Starting profile creation with:', {
+        logger.debug('Starting profile creation with:', {
+            firstName,
+            lastName,
             language: selectedLanguage,
             selectedRoles: selectedRoles,
             selectedRolesLength: selectedRoles.length,
@@ -39,47 +50,53 @@ export default function CreateProfileScreen() {
         });
 
         // Validierung
-        if (selectedRoles.length === 0) {
-            alert('Bitte wähle mindestens eine Aktivität aus!');
+        if (!firstName.trim() || !lastName.trim()) {
+            toast.error(t('profile.validation.nameRequired'));
             return;
         }
 
-        try {
-            // Versuche zuerst nur mit 'roles' (Backend erwartet möglicherweise nur dieses Feld)
-            const requestData = {
-                language: selectedLanguage,
-                // activityRole: selectedRoles, // Auskommentiert - Backend kennt dieses Feld noch nicht
-                roles: selectedRoles, // Backend erwartet 'roles'
-                measurementSystem: selectedMeasurement
-            };
-            console.log('[CreateProfile] Sending request:', JSON.stringify(requestData, null, 2));
+        if (selectedRoles.length === 0) {
+            toast.error(t('profile.validation.selectAtLeastOneActivity'));
+            return;
+        }
 
-            const profile = await createProfile(requestData);
+        const requestData = {
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            language: selectedLanguage,
+            roles: selectedRoles,
+            measurementSystem: selectedMeasurement
+        };
+        logger.debug('Sending request:', requestData);
 
-            console.log('[CreateProfile] Profile created successfully:', profile);
-
-            if (profile) {
+        setIsLoading(true);
+        await createProfile(
+            requestData,
+            (profile) => {
+                logger.info('Profile created successfully', { profile });
                 updateSessionProfile(profile);
-                console.log('[CreateProfile] Profile saved to session');
+                logger.debug('Profile saved to session');
 
                 const langCode = selectedLanguage === Language.DE ? 'de' : 'en';
                 changeLanguage(langCode);
 
+                toast.success(t('profile.createProfile'), {
+                    message: t('profile.profileCreated')
+                });
+
                 router.replace('/map');
-            } else {
-                console.error('[CreateProfile] No profile returned from API');
-                alert('Fehler: Profil konnte nicht erstellt werden (keine Daten erhalten)');
+            },
+            (error) => {
+                toast.error(t('profile.errors.creationFailed'), {
+                    message: t(error.onGetMessage())
+                });
             }
-        } catch (error) {
-            console.error('[CreateProfile] Failed to create profile:', error);
-            alert(`Fehler beim Erstellen des Profils: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
-        }
+        );
+        setIsLoading(false);
     };
 
-    const isLoading = createProfileStatus.loading;
-
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <YStack flex={1} backgroundColor="$content3">
                 <ScrollView>
                     <YStack padding="$4" gap="$5" paddingBottom="$8" paddingTop="$6">
@@ -93,6 +110,7 @@ export default function CreateProfileScreen() {
                         </YStack>
 
                         <YStack gap="$4">
+                            {/* Name Section */}
                             <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5" borderWidth={1}
                                   borderColor="$borderColor">
                                 <YStack gap="$4">
@@ -100,7 +118,48 @@ export default function CreateProfileScreen() {
                                         <View
                                             width={40}
                                             height={40}
-                                            backgroundColor="$accent2"
+                                            backgroundColor="$content2"
+                                            borderRadius="$8"
+                                            alignItems="center"
+                                            justifyContent="center"
+                                        >
+                                            <User size={22} color="$accent7"/>
+                                        </View>
+                                        <H5 color="$accent7" fontFamily="$oswald">
+                                            {t('profile.nameSection.title')}
+                                        </H5>
+                                    </XStack>
+                                    <Separator/>
+                                    <YStack gap="$3">
+                                        <YStack gap="$2">
+                                            <EmailInput
+                                                value={firstName}
+                                                onChangeText={setFirstName}
+                                                placeholder={t('profile.nameSection.firstNamePlaceholder')}
+                                                label={t('profile.nameSection.firstName')}
+                                            />
+                                        </YStack>
+                                        <YStack gap="$2">
+                                            <EmailInput
+                                                value={lastName}
+                                                onChangeText={setLastName}
+                                                placeholder={t('profile.nameSection.lastNamePlaceholder')}
+                                                label={t('profile.nameSection.lastName')}
+                                            />
+                                        </YStack>
+                                    </YStack>
+                                </YStack>
+                            </Card>
+
+                            {/* Language Section */}
+                            <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5" borderWidth={1}
+                                  borderColor="$borderColor">
+                                <YStack gap="$4">
+                                    <XStack alignItems="center" gap="$3">
+                                        <View
+                                            width={40}
+                                            height={40}
+                                            backgroundColor="$content2"
                                             borderRadius="$8"
                                             alignItems="center"
                                             justifyContent="center"
@@ -114,8 +173,8 @@ export default function CreateProfileScreen() {
                                     <RadioGroup value={selectedLanguage}
                                                 onValueChange={(val) => setSelectedLanguage(val as Language)} gap="$3">
                                         <XStack alignItems="center" gap="$3" padding="$3"
-                                                backgroundColor={selectedLanguage === Language.DE ? "$accent2" : "transparent"}
-                                                borderRadius="$4">
+                                                backgroundColor={selectedLanguage === Language.DE ? "$content2" : "transparent"}
+                                                borderRadius="$6">
                                             <RadioGroup.Item value={Language.DE} id="create-lang-de" size="$4">
                                                 <RadioGroup.Indicator/>
                                             </RadioGroup.Item>
@@ -124,8 +183,8 @@ export default function CreateProfileScreen() {
                                             {selectedLanguage === Language.DE && <Check size={20} color="$accent7"/>}
                                         </XStack>
                                         <XStack alignItems="center" gap="$3" padding="$3"
-                                                backgroundColor={selectedLanguage === Language.EN ? "$accent2" : "transparent"}
-                                                borderRadius="$4">
+                                                backgroundColor={selectedLanguage === Language.EN ? "$content2" : "transparent"}
+                                                borderRadius="$6">
                                             <RadioGroup.Item value={Language.EN} id="create-lang-en" size="$4">
                                                 <RadioGroup.Indicator/>
                                             </RadioGroup.Item>
@@ -144,7 +203,7 @@ export default function CreateProfileScreen() {
                                         <View
                                             width={40}
                                             height={40}
-                                            backgroundColor="$accent2"
+                                            backgroundColor="$content2"
                                             borderRadius="$8"
                                             alignItems="center"
                                             justifyContent="center"
@@ -162,7 +221,7 @@ export default function CreateProfileScreen() {
                                                 gap="$3"
                                                 alignItems="center"
                                                 padding="$3"
-                                                backgroundColor={selectedRoles.includes(role) ? "$accent2" : "transparent"}
+                                                backgroundColor={selectedRoles.includes(role) ? "$content2" : "transparent"}
                                                 borderRadius="$4"
                                                 pressStyle={{opacity: 0.7}}
                                                 onPress={() => handleRoleToggle(role)}
@@ -195,7 +254,7 @@ export default function CreateProfileScreen() {
                                         <View
                                             width={40}
                                             height={40}
-                                            backgroundColor="$accent2"
+                                            backgroundColor="$content2"
                                             borderRadius="$8"
                                             alignItems="center"
                                             justifyContent="center"
@@ -210,8 +269,8 @@ export default function CreateProfileScreen() {
                                                 onValueChange={(val) => setSelectedMeasurement(val as MeasurementSystem)}
                                                 gap="$3">
                                         <XStack alignItems="center" gap="$3" padding="$3"
-                                                backgroundColor={selectedMeasurement === MeasurementSystem.METRIC ? "$accent2" : "transparent"}
-                                                borderRadius="$4">
+                                                backgroundColor={selectedMeasurement === MeasurementSystem.METRIC ? "$content2" : "transparent"}
+                                                borderRadius="$6">
                                             <RadioGroup.Item value={MeasurementSystem.METRIC} id="create-measure-metric"
                                                              size="$4">
                                                 <RadioGroup.Indicator/>
@@ -222,8 +281,8 @@ export default function CreateProfileScreen() {
                                                 <Check size={20} color="$accent7"/>}
                                         </XStack>
                                         <XStack alignItems="center" gap="$3" padding="$3"
-                                                backgroundColor={selectedMeasurement === MeasurementSystem.IMPERIAL ? "$accent2" : "transparent"}
-                                                borderRadius="$4">
+                                                backgroundColor={selectedMeasurement === MeasurementSystem.IMPERIAL ? "$content2" : "transparent"}
+                                                borderRadius="$6">
                                             <RadioGroup.Item value={MeasurementSystem.IMPERIAL}
                                                              id="create-measure-imperial" size="$4">
                                                 <RadioGroup.Indicator/>
@@ -247,25 +306,22 @@ export default function CreateProfileScreen() {
                                     </Card>
                                 )}
                                 <XStack gap="$3" justifyContent="flex-end">
-                                    <Button
+                                    <PrimaryButton
                                         flex={1}
-                                        size="$4"
-                                        backgroundColor="$accent7"
-                                        color="white"
-                                        pressStyle={{backgroundColor: "$accent6"}}
-                                        hoverStyle={{backgroundColor: "$accent4"}}
                                         disabled={isLoading || selectedRoles.length === 0}
                                         onPress={handleSubmit}
                                         icon={isLoading ? <Spinner color="white"/> : undefined}
                                     >
-                                        {isLoading ? t('profile.actions.saving') : t('profile.createProfile')}
-                                    </Button>
+                                        <PrimaryButtonText>
+                                            {isLoading ? t('profile.actions.saving') : t('profile.createProfile')}
+                                        </PrimaryButtonText>
+                                    </PrimaryButton>
                                 </XStack>
                             </YStack>
                         </YStack>
                     </YStack>
                 </ScrollView>
             </YStack>
-        </SafeAreaView>
+        </View>
     );
 }

@@ -1,5 +1,6 @@
+import React from 'react';
 import {BoxType, LocationWithBoxes} from '@/api/models/sensor';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation} from '@/hooks/ui';
 import {formatTimeToLocal} from '@/utils/time';
 import {Activity, MapPin, Thermometer, Wind} from '@tamagui/lucide-icons';
 import {Card, H4, Text, XStack, YStack} from 'tamagui';
@@ -10,15 +11,31 @@ interface SensorListItemProps {
     isHighlighted?: boolean;
 }
 
-export default function SensorListItem({
-                                           locationWithBoxes,
-                                           onPress,
-                                           isHighlighted = false
-                                       }: SensorListItemProps) {
+/**
+ * Custom comparison function to prevent unnecessary re-renders
+ * Only re-render if sensor ID, highlighted state, or callback changes
+ */
+const arePropsEqual = (prevProps: SensorListItemProps, nextProps: SensorListItemProps): boolean => {
+    return (
+        prevProps.locationWithBoxes?.location?.id === nextProps.locationWithBoxes?.location?.id &&
+        prevProps.isHighlighted === nextProps.isHighlighted &&
+        prevProps.onPress === nextProps.onPress
+    );
+};
+
+/**
+ * Sensor list item component
+ * Memoized to prevent unnecessary re-renders when parent re-renders
+ */
+function SensorListItem({
+                            locationWithBoxes,
+                            onPress,
+                            isHighlighted = false
+                        }: SensorListItemProps) {
     const {t} = useTranslation();
 
     const getKeyMeasurements = () => {
-        const measurements: Array<{ label: string; value: string; icon: React.ReactNode }> = [];
+        const measurements: { label: string; value: string; icon: React.ReactNode }[] = [];
 
         for (const box of locationWithBoxes.boxes) {
             if (!box.measurementTimes[0]) continue;
@@ -78,13 +95,13 @@ export default function SensorListItem({
             marginHorizontal="$3"
             marginVertical="$2"
             height={210}
-            backgroundColor={isHighlighted ? '$accent2' : '$content1'}
+            backgroundColor={'$content1'}
             borderColor={isHighlighted ? '$accent8' : '$borderColor'}
             borderWidth={isHighlighted ? 2 : 1}
             onPress={onPress}
             pressStyle={{
                 scale: 0.98,
-                backgroundColor: '$content2'
+                backgroundColor: '$ctaBgHover'
             }}
             hoverStyle={{
                 scale: 1.01,
@@ -99,7 +116,7 @@ export default function SensorListItem({
                     <XStack gap="$2" alignItems="center">
                         <MapPin size={16} color="$color"/>
                         <H4 fontSize="$5" fontWeight="600" color="$color" numberOfLines={1} flex={1}>
-                            {locationWithBoxes.location.name}
+                            {locationWithBoxes.location?.name || 'Unknown'}
                         </H4>
                     </XStack>
 
@@ -156,3 +173,7 @@ export default function SensorListItem({
         </Card>
     );
 }
+
+SensorListItem.displayName = 'SensorListItem';
+
+export default React.memo(SensorListItem, arePropsEqual);

@@ -1,10 +1,11 @@
 import { Box } from "@/api/models/sensor";
-import { LatestMeasurement, MeasurementDictionary } from "@/types/measurement";
+import { LatestMeasurement, MeasurementDictionary } from "@/types/measurements";
 import { Activity, Battery, HelpCircle, Thermometer, Waves } from "@tamagui/lucide-icons";
 import { formatTimeToLocal } from "@/utils/time";
 import { MeasurementType } from "@/api/models/notificationMeasurementRule";
+import type { TFunction } from 'i18next';
 
-export const GetLatestMeasurements = (boxes: Box[]): LatestMeasurement[] => {
+export const getLatestMeasurements = (boxes: Box[]): LatestMeasurement[] => {
     const measurements: LatestMeasurement[] = [];
 
     boxes.forEach((box) => {
@@ -67,31 +68,35 @@ export const GetLatestMeasurements = (boxes: Box[]): LatestMeasurement[] => {
     return measurements;
 }
 
-export const CreateMeasurementDictionary = (
-    data: any,
+export const createMeasurementDictionary = (
+    data: unknown,
     timeRange: string
 ): MeasurementDictionary => {
-    if (!data?.boxes?.[0]?.measurementTimes) return {};
+    if (!(data && typeof data === 'object' && 'boxes' in data)) return {};
 
-    const measurementTimes = data.boxes[0].measurementTimes;
+    const boxedData = data as any; // Safe after type guard
+    if (!boxedData?.boxes?.[0]?.measurementTimes) return {};
+
+    const measurementTimes = boxedData.boxes[0].measurementTimes;
     const measurementDict: MeasurementDictionary = {};
 
-    measurementTimes.forEach((entry: any) => {
-        if (!entry.time) return;
+    measurementTimes.forEach((entry: unknown) => {
+        const entryData = entry as any; // Safe cast after forEach
+        if (!entryData?.time) return;
 
         // Show time (HH:mm) only for today and yesterday
         // Show date (dd.MM) for all other ranges (7 days, 30 days, 90 days, 180 days, 1 year)
         const showTimeOnly = timeRange === 'today' || timeRange === 'yesterday';
 
         const label = showTimeOnly
-            ? formatTimeToLocal(entry.time, 'HH:mm')
-            : formatTimeToLocal(entry.time, 'dd.MM');
+            ? formatTimeToLocal(entryData.time, 'HH:mm')
+            : formatTimeToLocal(entryData.time, 'dd.MM');
 
         const fullDateTime = showTimeOnly
-            ? formatTimeToLocal(entry.time, 'HH:mm - dd.MM.yyyy')
-            : formatTimeToLocal(entry.time, 'dd.MM.yyyy HH:mm');
+            ? formatTimeToLocal(entryData.time, 'HH:mm - dd.MM.yyyy')
+            : formatTimeToLocal(entryData.time, 'dd.MM.yyyy HH:mm');
 
-        Object.entries(entry.measurements || {}).forEach(([key, value]) => {
+        Object.entries(entryData.measurements || {}).forEach(([key, value]) => {
             if (!measurementDict[key]) {
                 measurementDict[key] = [];
             }
@@ -158,7 +163,7 @@ export const getIconBackground = (measurementType: string): string => {
 };
 
 
-export const getTextFromMeasurementType = (measurementType: string, t: any): string => {
+export const getTextFromMeasurementType = (measurementType: string, t: TFunction): string => {
     switch (measurementType) {
         case "Wave Height":
         case "-1705811922":
@@ -198,7 +203,7 @@ export const getIDFromMeasurementType = (measurementType: string): number => {
     }
 };
 
-export const getMeasurementTypeSymbol = (measurementType: string, t: any): string => {
+export const getMeasurementTypeSymbol = (measurementType: string, t: TFunction): string => {
     switch (measurementType) {
         case "Wave Height":
         case "-1705811922":

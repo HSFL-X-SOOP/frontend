@@ -1,23 +1,24 @@
 import {useSession} from '@/context/SessionContext';
-import {useAuth} from '@/hooks/useAuth';
+import {useAuth, useGoogleSignIn} from '@/hooks/auth';
+import {useAppleSignIn} from '@/hooks/auth/useAppleSignIn';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
-import {Platform, SafeAreaView} from 'react-native';
+import {Platform} from 'react-native';
 import {Lock} from '@tamagui/lucide-icons';
-import {Button, Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
-import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/components/useToast';
+import {Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
+import {useTranslation, useToast, useIsMobile} from '@/hooks/ui';
 import {GoogleIcon, AppleIcon} from '@/components/ui/Icons';
-import {useGoogleSignIn} from '@/hooks/useGoogleSignIn';
-import {useAppleSignIn} from '@/hooks/useAppleSignIn';
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
 import {createLogger} from '@/utils/logger';
 import {AuthorityRole} from '@/api/models/profile';
-import {useIsMobile} from '@/hooks/useIsMobileWeb';
-import { useUserDeviceStore } from '@/api/stores/userDevice';
+import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
+import {UI_CONSTANTS} from '@/config/constants';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
+import {getAuthRoute, getProfileRoute} from '@/utils/navigation';
+
 const logger = createLogger('Auth:Login');
 
 export default function LoginScreen() {
@@ -26,10 +27,11 @@ export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const toast = useToast();
     const isMobile = useIsMobile();
 
-    const {login, loginStatus} = useAuth();
+    const {login} = useAuth();
     const {login: logUserIn, session} = useSession();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
     const {handleAppleSignIn, isLoading: appleLoading} = useAppleSignIn();
@@ -45,52 +47,73 @@ export default function LoginScreen() {
     const handleRegisterUserDevice = async (userId: number) => {
         if (Platform.OS === 'web') {return;}
 
-        const authStatus = await messaging().requestPermission();
-        const enabled =
-            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        try {
+            const authStatus = await messaging().requestPermission();
+            const enabled =
+                authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+                authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-        if (enabled) {
-            try {
-                let token = await messaging().getToken();
-                console.log('FCM Token:', token);
-                userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
-            } catch (error) {
-                console.log('Error getting FCM token:', error);
+            if (enabled) {
+                try {
+                    let token = await messaging().getToken();
+                    logger.debug('FCM Token obtained');
+                    const result = await userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+                    if (result.ok) {
+                        logger.info('User device registered with FCM token');
+                    } else {
+                        logger.warn('Failed to register user device (non-critical)', {message: result.error.message});
+                    }
+                } catch (error) {
+                    logger.error('Failed to get FCM token', error);
+                    // Device registration failure is non-critical - app continues
+                }
             }
+        } catch (error) {
+            logger.error('Failed to request messaging permission', error);
+            // Permission denial is non-critical - app continues
         }
     }
 
     const handleSubmit = async () => {
         logger.info('Login attempt', {email, rememberMe});
-        const res = await login({email, password, rememberMe});
-        if (res) {
-            console.log('Login successful', res);
-            logUserIn({
-                accessToken: res.accessToken,
-                refreshToken: res.refreshToken,
-                loggedInSince: new Date(),
-                lastTokenRefresh: null,
-                role: res.profile?.authorityRole ?? AuthorityRole.USER,
-                profile: res.profile
-            });
-            toast.success(t('auth.loginSuccess'), {
-                message: t('auth.welcomeBack'),
-                duration: 3000
-            });
-            handleRegisterUserDevice(res.profile?.id || 0);
-            router.push("/map");
-        } else {
-            logger.error('Login failed', loginStatus.error);
-            toast.error(t('auth.loginError'), {
-                message: loginStatus.error?.message || t('auth.loginErrorGeneric'),
-                duration: 5000
-            });
-        }
+        setIsLoading(true);
+
+        await login(
+            {email, password, rememberMe},
+            (res) => {
+                logUserIn({
+                    accessToken: res.accessToken,
+                    refreshToken: res.refreshToken,
+                    loggedInSince: new Date(),
+                    lastTokenRefresh: null,
+                    role: res.profile?.authorityRole ?? AuthorityRole.USER,
+                    profile: res.profile
+                });
+                toast.success(t('auth.loginSuccess'), {
+                    message: t('auth.welcomeBack')
+                });
+                handleRegisterUserDevice(res.profile?.id || 0);
+
+                // Check if user has a profile, if not redirect to create-profile
+                if (!res.profile || !res.profile.profileCreatedAt) {
+                    logger.info('No profile found or not created, redirecting to create-profile');
+                    router.push(getProfileRoute('create-profile'));
+                } else {
+                    router.push("/map");
+                }
+            },
+            (error) => {
+                toast.error(
+                    t('auth.loginError'),
+                    {message: t(error.onGetMessage())}
+                );
+            }
+        );
+        setIsLoading(false);
     };
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{
                 flexGrow: 1,
                 justifyContent: 'center',
@@ -186,26 +209,24 @@ export default function LoginScreen() {
                             </XStack>
                         )}
 
-                        <Button
-                            backgroundColor="$accent7"
-                            color="white"
-                            size="$4"
+                        <PrimaryButton
                             onPress={handleSubmit}
-                            disabled={loginStatus.loading}
-                            opacity={loginStatus.loading ? 0.6 : 1}
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent4"}}
-                            pressStyle={{backgroundColor: "$accent6"}}
+                            disabled={isLoading}
+                            opacity={isLoading ? 0.6 : 1}
                         >
-                            {loginStatus.loading ? (
+                            {isLoading ? (
                                 <XStack gap="$2" alignItems="center">
                                     <Spinner size="small" color="white"/>
-                                    <Text color="white" fontWeight="600">{t('auth.signingIn')}</Text>
+                                    <PrimaryButtonText>
+                                        {t('auth.signingIn')}
+                                    </PrimaryButtonText>
                                 </XStack>
                             ) : (
-                                <Text color="white" fontWeight="600">{t('auth.signIn')}</Text>
+                                <PrimaryButtonText>
+                                    {t('auth.signIn')}
+                                </PrimaryButtonText>
                             )}
-                        </Button>
+                        </PrimaryButton>
                     </YStack>
 
                     <XStack gap="$3" alignItems="center" width="100%">
@@ -215,99 +236,101 @@ export default function LoginScreen() {
                     </XStack>
 
                     <YStack gap="$3" width="100%">
-                        <Button
-                            variant="outlined"
-                            size="$4"
+                        <SecondaryButton
                             onPress={async () => {
-                                const result = await handleGoogleSignIn('/map');
-                                if (result?.success) {
-                                    toast.success(t('auth.googleSignInSuccess'), {
-                                        message: t('auth.welcomeBack'),
-                                        duration: 3000
-                                    });
-                                } else if (result && !result.success) {
-                                    toast.error(t('auth.googleSignInError'), {
-                                        message: result.error || t('auth.googleSignInErrorGeneric'),
-                                        duration: 5000
-                                    });
-                                }
+                                await handleGoogleSignIn(
+                                    '/map',
+                                    () => {
+                                        toast.success(t('auth.googleSignInSuccess'), {
+                                            message: t('auth.welcomeBack'),
+                                            duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
+                                        });
+                                    },
+                                    (error) => {
+                                        toast.error(
+                                            t('auth.googleSignInError'),
+                                            {message: t(error.onGetMessage())}
+                                        );
+                                    }
+                                );
                             }}
                             disabled={googleLoading}
                             opacity={googleLoading ? 0.6 : 1}
-                            borderColor="$borderColor"
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$content2"}}
                         >
                             {googleLoading ? (
                                 <XStack gap="$2" alignItems="center">
                                     <Spinner size="small"/>
-                                    <Text color="$color">{t('auth.signingIn')}</Text>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signingIn')}
+                                    </SecondaryButtonText>
                                 </XStack>
                             ) : (
                                 <XStack gap="$3" alignItems="center">
                                     <GoogleIcon size={20}/>
-                                    <Text color="$color">{t('auth.signInWithGoogle')}</Text>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signInWithGoogle')}
+                                    </SecondaryButtonText>
                                 </XStack>
                             )}
-                        </Button>
+                        </SecondaryButton>
 
                         {Platform.OS === 'ios' && (
-                            <Button
-                                variant="outlined"
-                                size="$4"
+                            <SecondaryButton
                                 onPress={async () => {
-                                    const result = await handleAppleSignIn('/map');
-                                    if (result?.success) {
-                                        toast.success(t('auth.appleSignInSuccess'), {
-                                            message: t('auth.welcomeBack'),
-                                            duration: 3000
-                                        });
-                                    } else if (result && !result.success) {
-                                        toast.error(t('auth.appleSignInError'), {
-                                            message: result.error || t('auth.appleSignInErrorGeneric'),
-                                            duration: 5000
-                                        });
-                                    }
+                                    await handleAppleSignIn(
+                                        '/map',
+                                        (userId) => {
+                                            toast.success(t('auth.appleSignInSuccess'), {
+                                                message: t('auth.welcomeBack'),
+                                                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
+                                            });
+                                            handleRegisterUserDevice(userId || 0);
+                                        },
+                                        (error) => {
+                                            toast.error(
+                                                t('auth.appleSignInError'),
+                                                {message: t(error.onGetMessage())}
+                                            );
+                                        }
+                                    );
                                 }}
                                 disabled={appleLoading}
                                 opacity={appleLoading ? 0.6 : 1}
-                                borderColor="$borderColor"
-                                borderRadius="$6"
-                                hoverStyle={{backgroundColor: "$content2"}}
-                            >
-                                {appleLoading ? (
-                                    <XStack gap="$2" alignItems="center">
-                                        <Spinner size="small"/>
-                                        <Text color="$color">{t('auth.signingIn')}</Text>
-                                    </XStack>
-                                ) : (
-                                    <XStack gap="$3" alignItems="center">
-                                        <AppleIcon size={24}/>
-                                        <Text color="$color">{t('auth.signInWithApple')}</Text>
-                                    </XStack>
-                                )}
-                            </Button>
-                        )}
-
-                        <Button
-                            variant="outlined"
-                            size="$4"
-                            onPress={() => router.push("/(auth)/magic-link")}
-                            borderColor="$borderColor"
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$content2"}}
                         >
-                            <XStack gap="$2" alignItems="center">
-                                <Text>✨</Text>
-                                <Text color="$color">{t('auth.signInWithMagicLink')}</Text>
-                            </XStack>
-                        </Button>
+                            {appleLoading ? (
+                                <XStack gap="$2" alignItems="center">
+                                    <Spinner size="small"/>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signingIn')}
+                                    </SecondaryButtonText>
+                                </XStack>
+                            ) : (
+                                <XStack gap="$3" alignItems="center">
+                                    <AppleIcon size={24}/>
+                                    <SecondaryButtonText color="$color">
+                                        {t('auth.signInWithApple')}
+                                    </SecondaryButtonText>
+                                </XStack>
+                            )}
+                        </SecondaryButton>
+                    )}
+
+                    <SecondaryButton
+                        onPress={() => router.push("/(auth)/magic-link")}
+                    >
+                        <XStack gap="$2" alignItems="center">
+                            <Text>✨</Text>
+                            <SecondaryButtonText color="$color">
+                                {t('auth.signInWithMagicLink')}
+                            </SecondaryButtonText>
+                        </XStack>
+                    </SecondaryButton>
                     </YStack>
 
                     <YStack alignItems="center">
                         <Text fontSize={14} color="$color">
                             {t('auth.dontHaveAccount')}{' '}
-                            <Link href={"/(auth)/register" as Href}>
+                            <Link href={getAuthRoute('register')}>
                                 <Text color="$accent7" textDecorationLine="underline" fontWeight="600">
                                     {t('auth.signUp')}
                                 </Text>
@@ -316,6 +339,6 @@ export default function LoginScreen() {
                     </YStack>
                 </AuthCard>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }

@@ -1,17 +1,17 @@
-import {useSensorDataNew} from "@/hooks/useSensors";
-import {useSupercluster} from "@/hooks/useSupercluster";
-import {MapView, Camera, type CameraRef} from "@maplibre/maplibre-react-native";
-import {useMemo, useState, useRef} from "react";
+import {useSensorDataNew} from "@/hooks/data";
+import {useSupercluster, useMapFilters, useMapCamera, useMapState, useMapStyle,useMapSpeedDialActions} from "@/hooks/map";
+import {MapView, Camera, type CameraRef, type MapViewRef} from "@maplibre/maplibre-react-native";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {View} from "react-native";
-import SensorMarker from "./map/markers/native/SensorMarker";
-import ClusterMarker from "./map/markers/native/ClusterMarker";
-import {BoxType, LocationWithBoxes} from "@/api/models/sensor";
+import SensorMarker from "./map/markers/NativeSensorMarker";
+import ClusterMarker from "./map/markers/NativeClusterMarker";
 import MapSensorBottomSheet, {MapSensorBottomSheetRef} from "./map/controls/MapSensorBottomSheet";
 import SensorList from "./map/sensors/SensorList";
 import {SpeedDial} from "@/components/speeddial";
-import {Plus, Home, Navigation, ZoomIn, ZoomOut, List, Filter} from "@tamagui/lucide-icons";
-import MapFilterButton from "./map/controls/MapFilterButton";
-import {useTranslation} from '@/hooks/useTranslation';
+import {Plus} from "@tamagui/lucide-icons";
+import MapFilterButton, {MapFilterState} from "./map/controls/MapFilterButton";
+import {MAP_CONSTANTS} from '@/config/constants';
+import {LocationWithBoxes} from "@/api/models/sensor.ts";
 
 interface MapProps {
     module1Visible?: boolean;
@@ -20,89 +20,68 @@ interface MapProps {
     isDark?: boolean;
 }
 
-const MAP_CONSTANTS = {
-    homeCoordinate: [9.26, 54.47926] as [number, number],
-    zoomLevels: {
-        min: 3,
-        max: 18,
-        default: 7,
-        sensorDetail: 12
-    },
-    boundaries: {
-        ne: [49.869301, 71.185001],
-        sw: [-31.266001, 27.560001]
-    },
-    highlightDuration: 3000,
-    animationDuration: 500
-};
-
 export default function NativeMap(props: MapProps) {
     const {isDark = false} = props;
-    const {t} = useTranslation();
 
     // REFS
-    const mapRef = useRef<any>(null); // für getZoom / getVisibleBounds
-    const cameraRef = useRef<CameraRef>(null); // für setCamera / flyTo etc.
+    const mapRef = useRef<MapViewRef>(null);
+    const cameraRef = useRef<CameraRef>(null);
     const bottomSheetRef = useRef<MapSensorBottomSheetRef>(null);
     const hasSnappedForGestureRef = useRef(false);
+    const [content, setContent] = useState<LocationWithBoxes[]>([]);
+    const {loading, fetchData} = useSensorDataNew();
 
-    // DATA
-    const {data: content, loading} = useSensorDataNew();
+    useEffect(() => {
+        void fetchData(
+            (data) => setContent(data),
+            () => {
+                setContent([]);
+            }
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    // FILTER
-    const [module1Visible, setModule1Visible] = useState(props.module1Visible ?? true);
-    const [module2Visible, setModule2Visible] = useState(props.module2Visible ?? true);
-    const [module3Visible, setModule3Visible] = useState(props.module3Visible ?? false);
+    // CONSOLIDATED HOOKS - Extract shared logic
+    const {
+        module1Visible, setModule1Visible,
+        module2Visible, setModule2Visible,
+        module3Visible, setModule3Visible,
+        filteredContent
+    } = useMapFilters(content, props.module1Visible, props.module2Visible, props.module3Visible);
 
-    // VIEW STATE (ähnlich Web)
-    const [viewportBounds, setViewportBounds] = useState<[number, number, number, number]>([
-        MAP_CONSTANTS.boundaries.sw[0],
-        MAP_CONSTANTS.boundaries.sw[1],
-        MAP_CONSTANTS.boundaries.ne[0],
-        MAP_CONSTANTS.boundaries.ne[1]
-    ]);
-    const [zoomLevel, setZoomLevel] = useState(MAP_CONSTANTS.zoomLevels.default);
-    const [center, setCenter] = useState<[number, number]>(MAP_CONSTANTS.homeCoordinate);
+    // Create consolidated filter state
+    const filterState: MapFilterState = {
+        module1Visible,
+        module2Visible,
+        module3Visible,
+    };
 
-    // UI
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [highlightedSensorId, setHighlightedSensorId] = useState<number | null>(null);
+    const handleFilterChange = (newState: MapFilterState) => {
+        if (newState.module1Visible !== module1Visible) setModule1Visible(newState.module1Visible);
+        if (newState.module2Visible !== module2Visible) setModule2Visible(newState.module2Visible);
+        if (newState.module3Visible !== module3Visible) setModule3Visible(newState.module3Visible);
+    };
 
-    // MAP STYLE
-    const mapStyle = useMemo(
-        () => isDark
-            ? require('@/assets/mapStyles/dark_mode_new.json')
-            : require('@/assets/mapStyles/light_mode_new.json'),
-        [isDark]
-    );
+    const {
+        viewportBounds, setViewportBounds,
+        zoomLevel, setZoomLevel,
+        center, setCenter,
+        bounds
+    } = useMapCamera();
 
-    const bounds: [number, number, number, number] = useMemo(
-        () => viewportBounds,
-        [viewportBounds]
-    );
+    const {
+        isDrawerOpen, setIsDrawerOpen,
+        isFilterOpen, setIsFilterOpen,
+        highlightedSensorId, setHighlightedSensorId
+    } = useMapState();
 
-    // FILTERED CONTENT
-    const filteredContent = useMemo(() => {
-        if (!content) return [];
-        return content.filter(locationWithBoxes => {
-            const hasWater = locationWithBoxes.boxes.some(
-                box =>
-                    box.type === BoxType.WaterBox ||
-                    box.type === BoxType.WaterTemperatureOnlyBox
-            );
-            const hasAir = locationWithBoxes.boxes.some(
-                box => box.type === BoxType.AirBox
-            );
-
-            if (module1Visible && hasWater) return true;
-            return module2Visible && hasAir;
-
-        });
-    }, [content, module1Visible, module2Visible]);
+    const { mapStyle } = useMapStyle(isDark);
 
     const visibleSensors = useMemo(() => {
         return filteredContent.filter(sensor => {
+            // Type guard for location and coordinates
+            if (!sensor.location?.coordinates) return false;
+
             const {lat, lon} = sensor.location.coordinates;
             return (
                 lon >= bounds[0] &&
@@ -142,7 +121,7 @@ export default function NativeMap(props: MapProps) {
 
             return (
                 <SensorMarker
-                    key={locationWithBoxes!.location.id}
+                    key={locationWithBoxes!.location!.id}
                     locationWithBoxes={locationWithBoxes!}
                 />
             );
@@ -154,13 +133,13 @@ export default function NativeMap(props: MapProps) {
 
     const setCameraSafe = (options: Parameters<CameraRef["setCamera"]>[0]) => {
         cameraRef.current?.setCamera({
-            animationDuration: MAP_CONSTANTS.animationDuration,
+            animationDuration: MAP_CONSTANTS.ANIMATION.CAMERA_DURATION,
             ...options,
         });
     };
 
     const flyTo = (lon: number, lat: number, zoom?: number) => {
-        const targetZoom = zoom ?? Math.max(zoomLevel, MAP_CONSTANTS.zoomLevels.sensorDetail);
+        const targetZoom = zoom ?? Math.max(zoomLevel, MAP_CONSTANTS.ZOOM_LEVELS.SENSOR_DETAIL);
         setCameraSafe({
             centerCoordinate: [lon, lat],
             zoomLevel: targetZoom,
@@ -171,12 +150,13 @@ export default function NativeMap(props: MapProps) {
 
     // ========== EVENTS ==========
 
-    const handleSensorSelect = (sensor: LocationWithBoxes) => {
+    const handleSensorSelect = (sensor: { location?: { id: number; coordinates: { lat: number; lon: number } } }) => {
+        if (!sensor.location) return;
         const {lat, lon} = sensor.location.coordinates;
         setHighlightedSensorId(sensor.location.id);
         flyTo(lon, lat);
         bottomSheetRef.current?.snapToPeek();
-        setTimeout(() => setHighlightedSensorId(null), MAP_CONSTANTS.highlightDuration);
+        setTimeout(() => setHighlightedSensorId(null), MAP_CONSTANTS.ANIMATION.HIGHLIGHT_DURATION);
     };
 
     const handleClusterPress = (longitude: number, latitude: number, clusterId: number) => {
@@ -245,70 +225,44 @@ export default function NativeMap(props: MapProps) {
 
     // ========== SPEED DIAL ==========
 
-    const speedDialActions = [
-        {
-            key: 'sensors',
-            label: t('navigation.sensors'),
-            icon: List,
-            onPress: () => setIsDrawerOpen(prev => !prev),
-        },
-        {
-            key: 'filter',
-            label: t('map.filters'),
-            icon: Filter,
-            onPress: () => setIsFilterOpen(true),
-        },
-        {
-            key: 'zoomin',
-            label: 'Zoom In',
-            icon: ZoomIn,
-            closeOnPress: false,
-            onPress: async () => {
-                const currentZoom = (await mapRef.current?.getZoom?.()) ?? zoomLevel;
-                if (currentZoom < MAP_CONSTANTS.zoomLevels.max) {
-                    const newZoom = currentZoom + 1;
-                    setCameraSafe({zoomLevel: newZoom});
-                    setZoomLevel(newZoom);
-                }
-            },
-        },
-        {
-            key: 'zoomout',
-            label: 'Zoom Out',
-            icon: ZoomOut,
-            closeOnPress: false,
-            onPress: async () => {
-                const currentZoom = (await mapRef.current?.getZoom?.()) ?? zoomLevel;
-                if (currentZoom > MAP_CONSTANTS.zoomLevels.min) {
-                    const newZoom = currentZoom - 1;
-                    setCameraSafe({zoomLevel: newZoom});
-                    setZoomLevel(newZoom);
-                }
-            },
-        },
-        {
-            key: 'compass',
-            label: 'Reset View',
-            icon: Navigation,
-            closeOnPress: false,
-            onPress: () => {
-                setCameraSafe({heading: 0, pitch: 0});
-            },
-        },
-        {
-            key: 'home',
-            label: 'Go Home',
-            icon: Home,
-            closeOnPress: false,
-            onPress: () => {
-                flyTo(
-                    MAP_CONSTANTS.homeCoordinate[0],
-                    MAP_CONSTANTS.homeCoordinate[1],
-                    MAP_CONSTANTS.zoomLevels.default
-                );
-            },
-        },
-    ];
+    const handleZoomIn = async () => {
+        const currentZoom = (await mapRef.current?.getZoom?.()) ?? zoomLevel;
+        if (currentZoom < MAP_CONSTANTS.ZOOM_LEVELS.MAX) {
+            const newZoom = currentZoom + 1;
+            setCameraSafe({zoomLevel: newZoom});
+            setZoomLevel(newZoom);
+        }
+    };
+
+    const handleZoomOut = async () => {
+        const currentZoom = (await mapRef.current?.getZoom?.()) ?? zoomLevel;
+        if (currentZoom > MAP_CONSTANTS.ZOOM_LEVELS.MIN) {
+            const newZoom = currentZoom - 1;
+            setCameraSafe({zoomLevel: newZoom});
+            setZoomLevel(newZoom);
+        }
+    };
+
+    const handleResetView = () => {
+        setCameraSafe({heading: 0, pitch: 0});
+    };
+
+    const handleGoHome = () => {
+        flyTo(
+            MAP_CONSTANTS.HOME_COORDINATE[0],
+            MAP_CONSTANTS.HOME_COORDINATE[1],
+            MAP_CONSTANTS.ZOOM_LEVELS.DEFAULT
+        );
+    };
+
+    const speedDialActions = useMapSpeedDialActions({
+        setIsDrawerOpen,
+        setIsFilterOpen,
+        onZoomIn: handleZoomIn,
+        onZoomOut: handleZoomOut,
+        onResetView: handleResetView,
+        onGoHome: handleGoHome,
+    });
 
     // ========== RENDER ==========
 
@@ -326,8 +280,8 @@ export default function NativeMap(props: MapProps) {
                 <Camera
                     ref={cameraRef}
                     defaultSettings={{
-                        centerCoordinate: MAP_CONSTANTS.homeCoordinate,
-                        zoomLevel: MAP_CONSTANTS.zoomLevels.default,
+                        centerCoordinate: MAP_CONSTANTS.HOME_COORDINATE,
+                        zoomLevel: MAP_CONSTANTS.ZOOM_LEVELS.DEFAULT,
                         pitch: 0,
                         heading: 0,
                     }}
@@ -362,12 +316,8 @@ export default function NativeMap(props: MapProps) {
             </MapSensorBottomSheet>
 
             <MapFilterButton
-                module1Visible={module1Visible}
-                setModule1Visible={setModule1Visible}
-                module2Visible={module2Visible}
-                setModule2Visible={setModule2Visible}
-                module3Visible={module3Visible}
-                setModule3Visible={setModule3Visible}
+                filterState={filterState}
+                onFilterChange={handleFilterChange}
                 isOpen={isFilterOpen}
                 onOpenChange={setIsFilterOpen}
             />

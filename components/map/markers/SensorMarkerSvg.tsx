@@ -1,13 +1,5 @@
 import React, {useEffect} from 'react';
 import Svg, {
-    Defs,
-    RadialGradient,
-    LinearGradient,
-    Stop,
-    Filter,
-    FeGaussianBlur,
-    FeMerge,
-    FeMergeNode,
     G,
     Circle,
     Text as SvgText,
@@ -42,7 +34,7 @@ export const SensorMarkerSvg: React.FC<SensorMarkerSvgProps> = ({
                                                                     temperature,
                                                                     width = 96,
                                                                     height = 160,
-                                                                    accentColor = '#7db07d',
+                                                                    accentColor = '#1798db',
                                                                     backgroundColor = '#1c1c1c',
                                                                     textColor = 'white',
                                                                     indicatorColor = '#1976D2',
@@ -94,24 +86,6 @@ export const SensorMarkerSvg: React.FC<SensorMarkerSvgProps> = ({
 
     return (
         <Svg width={width} height={height} viewBox="0 0 96 20">
-            <Defs>
-                <RadialGradient id="g-accent" cx="50%" cy="45%" r="60%">
-                    <Stop offset="0%" stopColor="#7EE3FF" stopOpacity="1"/>
-                    <Stop offset="100%" stopColor={accentColor} stopOpacity="1"/>
-                </RadialGradient>
-                <LinearGradient id="g-dark" x1="0" y1="0" x2="0" y2="1">
-                    <Stop offset="0%" stopColor={backgroundColor}/>
-                    <Stop offset="100%" stopColor={backgroundColor}/>
-                </LinearGradient>
-                <Filter id="f-glow" x="-50%" y="-50%" width="200%" height="200%">
-                    <FeGaussianBlur stdDeviation="4" result="blur"/>
-                    <FeMerge>
-                        <FeMergeNode in="blur"/>
-                        <FeMergeNode in="SourceGraphic"/>
-                    </FeMerge>
-                </Filter>
-            </Defs>
-
             <G id="marker-minimal-badge">
                 <G id="logo-wrap" transform="translate(32.5,-63)">
                     <AnimatedPath
@@ -134,7 +108,7 @@ export const SensorMarkerSvg: React.FC<SensorMarkerSvgProps> = ({
                         fillRule="evenodd"
                         clipRule="evenodd"
                         d="M0.171017 21.1978C0.469016 20.1647 1.80008 18.7344 2.85301 18.3569C3.50861 18.1185 5.69394 18.0788 15.7862 18.1185L27.9247 18.1582L28.8783 18.7542C29.5935 19.1913 30.0107 19.6482 30.408 20.423L30.9643 21.4759V33.5349C30.9643 41.6405 30.8848 45.8323 30.7458 46.3687C30.4478 47.4812 28.918 48.9116 27.726 49.2096C27.1698 49.3487 25.1036 49.448 22.4415 49.448H18.051L18.0907 63.593L18 97H13C13 97 13.1042 49.9049 13.0843 49.6069C13.0843 49.5275 10.8791 49.448 8.17727 49.4083C3.82648 49.3487 3.17088 49.309 2.55501 48.9712C1.58155 48.4547 0.985549 47.8786 0.50875 46.9647C0.0723831 46.1713 0.0716847 46.0314 0.0123691 34.1484L0.0120839 34.0912C-0.0276494 25.7274 0.0319505 21.7739 0.171017 21.1978ZM18.9847 29.6609C18.4881 29.2239 17.7331 28.7471 17.2961 28.6279C14.8326 27.8928 12.2499 28.9855 11.0381 31.2701C10.4421 32.4025 10.4421 34.707 11.0381 35.8593C12.4486 38.5016 15.6074 39.4552 18.2298 38.0049C21.3886 36.2964 21.766 32.1045 18.9847 29.6609Z"
-                        fill="url(#g-dark)"
+                        fill={backgroundColor}
                         stroke="black"
                         strokeWidth="0.5"
                     />
@@ -147,10 +121,10 @@ export const SensorMarkerSvg: React.FC<SensorMarkerSvgProps> = ({
                     />
                 </G>
 
-                <Circle cx="48" cy="48" r="29" fill="url(#g-accent)" opacity="0.35"/>
-                <Circle cx="48" cy="48" r="26" fill="url(#g-dark)" stroke="black" strokeWidth="0.5"/>
-                <Circle cx="48" cy="48" r="23" fill="url(#g-accent)"/>
-                <Circle cx="48" cy="48" r="17" fill="url(#g-dark)" opacity="0.85"/>
+                <Circle cx="48" cy="48" r="29" fill={accentColor} opacity="0.35"/>
+                <Circle cx="48" cy="48" r="26" fill={backgroundColor} stroke="black" strokeWidth="0.5"/>
+                <Circle cx="48" cy="48" r="23" fill={accentColor}/>
+                <Circle cx="48" cy="48" r="17" fill={backgroundColor} opacity="0.85"/>
 
                 <SvgText
                     x="48"
@@ -178,3 +152,5 @@ export const SensorMarkerSvg: React.FC<SensorMarkerSvgProps> = ({
         </Svg>
     );
 };
+
+export default SensorMarkerSvg;

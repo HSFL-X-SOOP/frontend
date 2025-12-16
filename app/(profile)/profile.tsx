@@ -1,6 +1,6 @@
 import {useRouter} from 'expo-router';
-import {useState, useEffect} from 'react';
-import {ScrollView, SafeAreaView} from "react-native";
+import {useState, useEffect, use} from 'react';
+import {Platform, ScrollView} from "react-native";
 import {
     Button,
     Text,
@@ -12,81 +12,78 @@ import {
     Separator,
     Tabs
 } from "tamagui";
-import {User, Anchor, Home} from '@tamagui/lucide-icons';
+import {User, Anchor, Home, Bell} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
-import {useUser} from '@/hooks/useUser';
-import {AuthorityRole} from '@/api/models/profile';
-import {useTranslation} from '@/hooks/useTranslation';
+import {useTranslation, useToast} from '@/hooks/ui';
 import {ProfileTab} from '@/components/profile/ProfileTab';
 import {BoatsTab} from '@/components/profile/BoatsTab';
 import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
-import {useLocationStore} from '@/api/stores/locationStore';
-import { MyNotificationsTab } from '@/components/profile/MyNotificationsTab';
+import {MyNotificationsTab} from '@/components/profile/MyNotificationsTab';
+import {useLocationInfo, useUser} from '@/hooks/data';
+import {DetailedLocationDTO} from '@/api/models/location';
+import { SpeedDial } from '@/components/speeddial/SpeedDial';
+import { Menu, MessagesSquare, User2 } from '@tamagui/lucide-icons';
 
 export default function ProfileScreen() {
     const router = useRouter();
     const {t} = useTranslation();
+    const toast = useToast();
     const {session, updateProfile: updateSessionProfile} = useSession();
-    const {getProfile, getProfileStatus} = useUser();
-    const locationStore = useLocationStore();
+    const {getProfile, loading: isLoadingProfile} = useUser();
+    const {
+        isHarborMaster,
+        fetchLocationInfo
+    } = useLocationInfo();
 
     const [activeTab, setActiveTab] = useState("profile");
-    const [harborLocation, setHarborLocation] = useState<any>(null);
-    const [isLoadingHarbor, setIsLoadingHarbor] = useState(false);
+    const [harborLocation, setHarborLocation] = useState<DetailedLocationDTO | null>(null);
 
-    const isHarborMaster = session?.role === AuthorityRole.HARBOURMASTER;
-
- 
     useEffect(() => {
-        const loadHarborInfo = async () => {
-            if (isHarborMaster && !harborLocation) {
-                setIsLoadingHarbor(true);
-                try {
-                    const locationData = await locationStore.getHarborMasterLocation();
-                    if (locationData) {
-                        setHarborLocation(locationData);
-                    }
-                } catch (error) {
-                    console.error('Failed to load harbor info:', error);
-                } finally {
-                    setIsLoadingHarbor(false);
+        if (!session?.profile) {
+            void getProfile(
+                (profile) => {
+                    updateSessionProfile(profile);
+                },
+                (error) => {
+                    toast.error(t('harbor.errorLoading'), {
+                        message: t(error.onGetMessage())
+                    });
                 }
-            }
-        };
-
-        loadHarborInfo();
-    }, [isHarborMaster]);
-
-    useEffect(() => {
-        const loadProfile = async () => {
-            if (session?.profile) {
-                return;
-            }
-
-            const profile = await getProfile();
-            if (profile) {
-                updateSessionProfile(profile);
-            }
-        };
-
-        loadProfile();
+            );
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [session?.profile]); // getProfile is a hook function and changes on every render
 
-    if (!session?.profile && getProfileStatus.loading) {
+    // Fetch harbor location if user is harbor master
+    useEffect(() => {
+        if (isHarborMaster && !harborLocation) {
+            void fetchLocationInfo(
+                (locationData) => {
+                    setHarborLocation(locationData);
+                },
+                (error) => {
+                    // Silent fail - harbor name just won't show in tab
+                    console.error('Failed to fetch harbor location:', error);
+                }
+            );
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isHarborMaster, harborLocation]); // fetchLocationInfo is a hook function
+
+    if (!session?.profile && isLoadingProfile) {
         return (
-            <SafeAreaView style={{flex: 1}}>
+            <View style={{flex: 1}}>
                 <YStack flex={1} backgroundColor="$content3" alignItems="center" justifyContent="center" gap="$4">
                     <Spinner size="large" color="$accent7"/>
                     <Text color="$color" opacity={0.7}>{t('profile.loadingProfile')}</Text>
                 </YStack>
-            </SafeAreaView>
+            </View>
         );
     }
 
-    if (!session?.profile && !getProfileStatus.loading) {
+    if ((!session?.profile || session?.profile?.profileCreatedAt === null) && !isLoadingProfile) {
         return (
-            <SafeAreaView style={{flex: 1}}>
+            <View style={{flex: 1}}>
                 <YStack flex={1} backgroundColor="$content3" alignItems="center" justifyContent="center" gap="$5"
                         padding="$4">
                     <View
@@ -116,12 +113,69 @@ export default function ProfileScreen() {
                         {t('profile.createProfile')}
                     </Button>
                 </YStack>
-            </SafeAreaView>
+            </View>
         );
     }
 
+    interface SpeedDialAction {
+        key: string;
+        label: string;
+        closeOnPress: boolean;
+        icon: any;
+        onPress: () => void;
+    }
+
+    const [speedDialActions, setSpeedDialActions] = useState<SpeedDialAction[]>([]);
+
+    useEffect(() => {
+
+        let actions = [
+                        {
+                    key: 'notifications',
+                    label: t('profile.tabs.myNotifications'),
+                    closeOnPress: false,
+                    icon: MessagesSquare,
+                    onPress: () => {
+                            setActiveTab('myNotifications');
+                    },
+                },
+                {
+                    key: 'profile',
+                    label: t('profile.tabs.profile'),
+                    closeOnPress: false,
+                    icon: User2,
+                    onPress: () => {
+                            setActiveTab('profile');
+                    },
+                },
+            // {
+            //     key: 'boats',
+            //     label: t('profile.tabs.boats'),
+            //     closeOnPress: false,
+            //     icon: Home,
+            //     onPress: () => {
+            //          setActiveTab('boats');
+            //     },
+            // },
+                ]
+
+            if (isHarborMaster) {
+                actions.push(                {
+                    key: 'harborMaster',
+                    label: t('harbor.title'),
+                    closeOnPress: false,
+                    icon: Home,
+                    onPress: () => {
+                        setActiveTab('harbor');
+                    },
+                });
+            }
+
+        setSpeedDialActions(actions);
+    }, []);
+
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <YStack flex={1} backgroundColor="$content1">
                 <ScrollView>
                     <YStack padding="$4" gap="$4" paddingBottom="$8" paddingTop="$6">
@@ -135,6 +189,8 @@ export default function ProfileScreen() {
                             borderRadius="$4"
                             overflow="hidden"
                         >
+                            {Platform.OS === 'web' && (
+                                <View>
                             <Tabs.List
                                 separator={<Separator vertical borderColor="$borderColor" opacity={0.3}/>}
                                 disablePassBorderRadius="bottom"
@@ -149,8 +205,8 @@ export default function ProfileScreen() {
                                     flex={1}
                                     value="profile"
                                     borderRadius="$4"
-                                    paddingVertical="$3.5"
-                                    paddingHorizontal="$4"
+                                    paddingHorizontal="$3"
+                                    paddingVertical="$3"
                                     backgroundColor={activeTab === "profile" ? "$accent7" : "transparent"}
                                     borderWidth={activeTab === "profile" ? 2 : 0}
                                     borderColor={activeTab === "profile" ? "$accent8" : "transparent"}
@@ -162,26 +218,29 @@ export default function ProfileScreen() {
                                     hoverStyle={{backgroundColor: activeTab === "profile" ? "$accent5" : "$content2"}}
                                     animation="quick"
                                     scale={activeTab === "profile" ? 1 : 0.95}
+                                    minHeight={60}
                                 >
-                                    <XStack gap="$3" alignItems="center" justifyContent="center">
-                                        <User size={activeTab === "profile" ? 22 : 20}
+                                    <YStack gap="$1.5" alignItems="center" justifyContent="center" width="100%">
+                                        <User size={activeTab === "profile" ? 20 : 18}
                                               color={"$accent7"}/>
                                         <Text
-                                            fontSize={activeTab === "profile" ? "$5" : "$4"}
-                                            fontWeight={activeTab === "profile" ? "800" : "600"}
+                                            fontSize={activeTab === "profile" ? 13 : 12}
+                                            fontWeight={activeTab === "profile" ? "700" : "600"}
                                             color={"$accent7"}
-                                            letterSpacing={activeTab === "profile" ? 0.5 : 0}
+                                            textAlign="center"
+                                            width="100%"
+                                            paddingHorizontal="$1"
                                         >
                                             {t('profile.tabs.profile')}
                                         </Text>
-                                    </XStack>
+                                    </YStack>
                                 </Tabs.Tab>
-                                <Tabs.Tab
+                                {/* <Tabs.Tab
                                     flex={1}
                                     value="boats"
                                     borderRadius="$4"
-                                    paddingVertical="$3.5"
-                                    paddingHorizontal="$4"
+                                    paddingHorizontal="$3"
+                                    paddingVertical="$3"
                                     backgroundColor={activeTab === "boats" ? "$accent7" : "transparent"}
                                     borderWidth={activeTab === "boats" ? 2 : 0}
                                     borderColor={activeTab === "boats" ? "$accent8" : "transparent"}
@@ -193,26 +252,29 @@ export default function ProfileScreen() {
                                     hoverStyle={{backgroundColor: activeTab === "boats" ? "$accent5" : "$content2"}}
                                     animation="quick"
                                     scale={activeTab === "boats" ? 1 : 0.95}
+                                    minHeight={60}
                                 >
-                                    <XStack gap="$3" alignItems="center" justifyContent="center">
-                                        <Anchor size={activeTab === "boats" ? 22 : 20}
+                                    <YStack gap="$1.5" alignItems="center" justifyContent="center" width="100%">
+                                        <Anchor size={activeTab === "boats" ? 20 : 18}
                                                 color={"$accent7"}/>
                                         <Text
-                                            fontSize={activeTab === "boats" ? "$5" : "$4"}
-                                            fontWeight={activeTab === "boats" ? "800" : "600"}
+                                            fontSize={activeTab === "boats" ? 13 : 12}
+                                            fontWeight={activeTab === "boats" ? "700" : "600"}
                                             color={"$accent7"}
-                                            letterSpacing={activeTab === "boats" ? 0.5 : 0}
+                                            textAlign="center"
+                                            width="100%"
+                                            paddingHorizontal="$1"
                                         >
                                             {t('profile.tabs.boats')}
                                         </Text>
-                                    </XStack>
-                                </Tabs.Tab>
+                                    </YStack>
+                                </Tabs.Tab> */}
                                 <Tabs.Tab
-                                    flex={1}
+                                    flex={activeTab === "myNotifications" ? 1.5 : 1}
                                     value="myNotifications"
                                     borderRadius="$4"
-                                    paddingVertical="$3.5"
-                                    paddingHorizontal="$4"
+                                    paddingHorizontal="$3"
+                                    paddingVertical="$3"
                                     backgroundColor={activeTab === "myNotifications" ? "$accent7" : "transparent"}
                                     borderWidth={activeTab === "myNotifications" ? 2 : 0}
                                     borderColor={activeTab === "myNotifications" ? "$accent8" : "transparent"}
@@ -224,27 +286,31 @@ export default function ProfileScreen() {
                                     hoverStyle={{backgroundColor: activeTab === "myNotifications" ? "$accent5" : "$content2"}}
                                     animation="quick"
                                     scale={activeTab === "myNotifications" ? 1 : 0.95}
+                                    minHeight={60}
                                 >
-                                    <XStack gap="$3" alignItems="center" justifyContent="center">
-                                        <Anchor size={activeTab === "myNotifications" ? 22 : 20}
-                                                color={"$accent7"}/>
+                                    <YStack gap="$1.5" alignItems="center" justifyContent="center" width="100%">
+                                        <Bell size={activeTab === "myNotifications" ? 20 : 18}
+                                              color={"$accent7"}/>
                                         <Text
-                                            fontSize={activeTab === "myNotifications" ? "$5" : "$4"}
-                                            fontWeight={activeTab === "myNotifications" ? "800" : "600"}
+                                            fontSize={activeTab === "myNotifications" ? 12 : 9}
+                                            fontWeight={activeTab === "myNotifications" ? "700" : "600"}
                                             color={"$accent7"}
-                                            letterSpacing={activeTab === "myNotifications" ? 0.5 : 0}
+                                            textAlign="center"
+                                            width="100%"
+                                            paddingHorizontal="$1"
+                                            numberOfLines={1}
                                         >
                                             {t('profile.tabs.myNotifications')}
                                         </Text>
-                                    </XStack>
+                                    </YStack>
                                 </Tabs.Tab>
                                 {isHarborMaster && (
                                     <Tabs.Tab
                                         flex={1}
                                         value="harbor"
                                         borderRadius="$4"
-                                        paddingVertical="$3.5"
-                                        paddingHorizontal="$4"
+                                        paddingHorizontal="$3"
+                                        paddingVertical="$3"
                                         backgroundColor={activeTab === "harbor" ? "$accent7" : "transparent"}
                                         borderWidth={activeTab === "harbor" ? 2 : 0}
                                         borderColor={activeTab === "harbor" ? "$accent8" : "transparent"}
@@ -256,24 +322,29 @@ export default function ProfileScreen() {
                                         hoverStyle={{backgroundColor: activeTab === "harbor" ? "$accent5" : "$content2"}}
                                         animation="quick"
                                         scale={activeTab === "harbor" ? 1 : 0.95}
+                                        minHeight={60}
                                     >
-                                        <XStack gap="$3" alignItems="center" justifyContent="center">
-                                            <Home size={activeTab === "harbor" ? 22 : 20}
+                                        <YStack gap="$1.5" alignItems="center" justifyContent="center" width="100%">
+                                            <Home size={activeTab === "harbor" ? 20 : 18}
                                                   color={"$accent7"}/>
                                             <Text
-                                                fontSize={activeTab === "harbor" ? "$5" : "$4"}
-                                                fontWeight={activeTab === "harbor" ? "800" : "600"}
+                                                fontSize={activeTab === "harbor" ? 13 : 12}
+                                                fontWeight={activeTab === "harbor" ? "700" : "600"}
                                                 color={"$accent7"}
-                                                letterSpacing={activeTab === "harbor" ? 0.5 : 0}
+                                                textAlign="center"
+                                                width="100%"
+                                                paddingHorizontal="$1"
                                             >
-                                                {isLoadingHarbor ? '...' : (harborLocation?.name || t('harbor.title'))}
+                                                {harborLocation?.name || t('harbor.manageHarbor')}
                                             </Text>
-                                        </XStack>
+                                        </YStack>
                                     </Tabs.Tab>
                                 )}
                             </Tabs.List>
 
                             <Separator/>
+                                </View>
+                            )}
 
                             <Tabs.Content value="profile" padding="$0" marginTop="$4">
                                 <ProfileTab/>
@@ -284,21 +355,37 @@ export default function ProfileScreen() {
                             </Tabs.Content>
 
                             <Tabs.Content value="myNotifications" padding="$0" marginTop="$4">
-                                <MyNotificationsTab />
+                                <MyNotificationsTab/>
                             </Tabs.Content>
 
                             {isHarborMaster && (
                                 <Tabs.Content value="harbor" padding="$0" marginTop="$4">
-                                    <HarborMasterTab
-                                        initialLocationData={harborLocation}
-                                        isLoadingInitial={isLoadingHarbor}
-                                    />
+                                    <HarborMasterTab/>
                                 </Tabs.Content>
                             )}
                         </Tabs>
                     </YStack>
                 </ScrollView>
             </YStack>
-        </SafeAreaView>
+            {Platform.OS !== 'web' && (
+                    <XStack right={0} bottom={0}>
+
+                        {/* SpeedDial für Web (Mobile und Desktop) */}
+                        <SpeedDial
+                            placement="bottom-right"
+                            labelPlacement="left"
+                            portal={false}
+                            icon={Menu}
+                            closeOnActionPress={true}
+                            actions={[
+                                ...speedDialActions
+                            ]}
+                            fabSize="$6"
+                            gap="$2"
+
+                            />
+                    </XStack>
+                    )}
+        </View>
     );
 }

@@ -1,11 +1,16 @@
-import {BoxType, LocationWithBoxes} from '@/api/models/sensor';
-import {useTranslation} from '@/hooks/useTranslation';
+import {LocationWithBoxes} from '@/api/models/sensor';
+import {useTranslation} from '@/hooks/ui';
 import {AlertCircle, ArrowUpDown, Filter, Search} from '@tamagui/lucide-icons';
-import {useMemo, useState} from 'react';
+import {useMemo, useState, useCallback} from 'react';
 import {Button, H4, Input, ScrollView, Separator, Text, XStack, YStack} from 'tamagui';
 import SensorListItem from './SensorListItem';
 import {SelectWithSheet} from '@/components/ui/SelectWithSheet';
 import {SelectItem} from '@/types/select';
+import {fuzzyMatch} from '@/utils/searchUtils';
+import {PrimaryButton, PrimaryButtonText} from '@/types/button';
+import {calculateDistance, filterSensorsByType, getLatestMeasurementTime} from '@/utils/sensorUtils';
+import { ActionSheetSelect } from '@/components/ui/ActionSheetSelect';
+import { Platform } from 'react-native';
 
 interface SensorListProps {
     sensors: LocationWithBoxes[];
@@ -40,90 +45,20 @@ export default function SensorList({
 
     // Select items for filter type
     const filterTypeItems: SelectItem<FilterType>[] = [
-        { value: 'all', label: t('sensor.allTypes') },
-        { value: 'water', label: t('sensor.waterSensors') },
-        { value: 'air', label: t('sensor.airSensors') },
+        {value: 'all', label: t('sensor.allTypes')},
+        {value: 'water', label: t('sensor.waterSensors')},
+        {value: 'air', label: t('sensor.airSensors')},
     ];
 
     // Select items for sort by
     const sortByItems: SelectItem<SortOption>[] = [
-        { value: 'distance', label: t('sensor.sortByDistance') },
-        { value: 'name', label: t('sensor.sortByName') },
-        { value: 'recent', label: t('sensor.sortByRecent') },
+        {value: 'distance', label: t('sensor.sortByDistance')},
+        {value: 'name', label: t('sensor.sortByName')},
+        {value: 'recent', label: t('sensor.sortByRecent')},
     ];
 
-    const normalize = (s: string) =>
-        s
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]+/g, '')
-            .trim();
-
-    const isSubsequence = (q: string, t: string) => {
-        let qi = 0;
-        for (let i = 0; i < t.length && qi < q.length; i++) {
-            if (t[i] === q[qi]) qi++;
-        }
-        return qi === q.length;
-    };
-
-    const levenshtein = (a: string, b: string) => {
-        if (a === b) return 0;
-        const m = a.length, n = b.length;
-        if (m === 0) return n;
-        if (n === 0) return m;
-        const dp = new Array(n + 1);
-        for (let j = 0; j <= n; j++) dp[j] = j;
-        for (let i = 1; i <= m; i++) {
-            let prev = i - 1;
-            dp[0] = i;
-            for (let j = 1; j <= n; j++) {
-                const tmp = dp[j];
-                const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-                dp[j] = Math.min(
-                    dp[j] + 1,
-                    dp[j - 1] + 1,
-                    prev + cost
-                );
-                prev = tmp;
-            }
-        }
-        return dp[n];
-    };
-
-    const fuzzyMatch = (queryRaw: string, candidates: string[]) => {
-        const q = normalize(queryRaw);
-        if (!q) return true;
-        return candidates.some((raw) => {
-            const t = normalize(raw);
-            if (t.includes(q)) return true;
-            if (isSubsequence(q, t)) return true;
-            const dist = levenshtein(q, t);
-            const maxLen = Math.max(q.length, t.length) || 1;
-            const similarity = 1 - dist / maxLen;
-            return similarity >= 0.6;
-        });
-    };
-
-    const calculateDistance = (sensor: LocationWithBoxes) => {
-        if (!mapCenter) return 0;
-
-        const [mapLon, mapLat] = mapCenter;
-        const sensorLat = sensor.location.coordinates.lat;
-        const sensorLon = sensor.location.coordinates.lon;
-
-        const R = 6371;
-        const dLat = ((sensorLat - mapLat) * Math.PI) / 180;
-        const dLon = ((sensorLon - mapLon) * Math.PI) / 180;
-        const a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos((mapLat * Math.PI) / 180) *
-            Math.cos((sensorLat * Math.PI) / 180) *
-            Math.sin(dLon / 2) *
-            Math.sin(dLon / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    };
+    const getDistance = useCallback((sensor: LocationWithBoxes) =>
+        calculateDistance(mapCenter, sensor), [mapCenter]);
 
     const processedSensors = useMemo(() => {
         let filtered = sensorsToDisplay;
@@ -131,50 +66,29 @@ export default function SensorList({
         if (searchQuery) {
             filtered = filtered.filter((sensor) =>
                 fuzzyMatch(searchQuery, [
-                    sensor.location.name,
+                    sensor.location?.name || '',
                     ...sensor.boxes.map((b) => b.name),
                 ])
             );
         }
 
         if (filterType !== 'all') {
-            filtered = filtered.filter((sensor) => {
-                if (filterType === 'water') {
-                    return sensor.boxes.some(
-                        (box) =>
-                            box.type === BoxType.WaterBox ||
-                            box.type === BoxType.WaterTemperatureOnlyBox
-                    );
-                } else if (filterType === 'air') {
-                    return sensor.boxes.some((box) => box.type === BoxType.AirBox);
-                }
-                return true;
-            });
+            filtered = filterSensorsByType(filtered, filterType);
         }
 
         return [...filtered].sort((a, b) => {
             if (sortBy === 'distance') {
-                const distA = calculateDistance(a);
-                const distB = calculateDistance(b);
+                const distA = getDistance(a);
+                const distB = getDistance(b);
                 return distA - distB;
             } else if (sortBy === 'name') {
-                return a.location.name.localeCompare(b.location.name);
+                return (a.location?.name || '').localeCompare(b.location?.name || '');
             } else if (sortBy === 'recent') {
-                const getLatestTime = (sensor: LocationWithBoxes) => {
-                    let latest = 0;
-                    for (const box of sensor.boxes) {
-                        if (box.measurementTimes[0]) {
-                            const time = new Date(box.measurementTimes[0].time + 'Z').getTime();
-                            if (time > latest) latest = time;
-                        }
-                    }
-                    return latest;
-                };
-                return getLatestTime(b) - getLatestTime(a);
+                return getLatestMeasurementTime(b) - getLatestMeasurementTime(a);
             }
             return 0;
         });
-    }, [sensorsToDisplay, searchQuery, filterType, sortBy, mapCenter, calculateDistance]);
+    }, [sensorsToDisplay, searchQuery, filterType, sortBy, getDistance]);
 
     if (loading) {
         return (
@@ -194,13 +108,56 @@ export default function SensorList({
         );
     }
 
+    const setFilterTypeDropdownWeb = (
+        <SelectWithSheet
+            id="filter-type-select"
+            name="filterType"
+            items={filterTypeItems}
+            value={filterType}
+            onValueChange={setFilterType}
+            placeholder={t('sensor.filterType')}
+        />
+    )
+
+    const sortByDropdownWeb = (
+        <SelectWithSheet
+            id="sort-by-select"
+            name="sortBy"
+            items={sortByItems}
+            value={sortBy}
+            onValueChange={setSortBy}
+            placeholder={t('sensor.sortBy')}
+        />
+    )
+
+    const sortByDropdownMobile = (
+        <ActionSheetSelect
+            items={sortByItems}
+            value={sortBy}  
+            placeholder={t('sensor.sortBy')}
+            onChange={setSortBy}
+        />
+    )
+
+    const setFilterTypeDropdownMobile = (        
+        <ActionSheetSelect
+            items={filterTypeItems}
+            value={filterType}
+            placeholder={t('sensor.filterType')}
+            onChange={setFilterType}
+        />
+    )
+
+    const setFilterTypeDropdown = Platform.OS === 'web' ? setFilterTypeDropdownWeb : setFilterTypeDropdownMobile;
+    const sortByDropdown = Platform.OS === 'web' ? sortByDropdownWeb : sortByDropdownMobile;
+
     return (
         <YStack flex={1}>
             {/* Fixed Header Section - NOT scrollable */}
             <YStack backgroundColor="$background" zIndex={1}>
                 {/* Header with count and toggle */}
-                <YStack padding="$3" paddingBottom="$2">
-                    <XStack justifyContent="space-between" alignItems="center" marginBottom="$2">
+                <YStack padding="$2.5" paddingBottom="$1">
+                    <XStack justifyContent="space-between" alignItems="center" marginBottom="$1.5">
                         <H4 fontSize="$5" fontWeight="700" color="$color">
                             {showAllSensors ? t('sensor.allSensors') : t('sensor.sensorsInView')}
                         </H4>
@@ -208,9 +165,9 @@ export default function SensorList({
                             paddingHorizontal="$2.5"
                             paddingVertical="$1.5"
                             borderRadius="$3"
-                            backgroundColor="$accent3"
+                            backgroundColor="$accent6"
                         >
-                            <Text fontSize="$3" fontWeight="700" color="$color12">
+                            <Text fontSize="$3" fontWeight="700" color="$color.black12">
                                 {processedSensors.length}
                             </Text>
                         </XStack>
@@ -222,7 +179,7 @@ export default function SensorList({
                             size="$2"
                             flex={1}
                             variant={!showAllSensors ? "outlined" : undefined}
-                            backgroundColor={!showAllSensors ? "$accent5" : "$content2"}
+                            backgroundColor={!showAllSensors ? "$accent6" : "$content2"}
                             color={!showAllSensors ? "white" : "$color"}
                             onPress={() => setShowAllSensors(false)}
                             borderWidth={!showAllSensors ? 0 : 1}
@@ -243,7 +200,7 @@ export default function SensorList({
                             size="$2"
                             flex={1}
                             variant={showAllSensors ? "outlined" : undefined}
-                            backgroundColor={showAllSensors ? "$accent5" : "$content2"}
+                            backgroundColor={showAllSensors ? "$accent6" : "$content2"}
                             color={showAllSensors ? "white" : "$color"}
                             onPress={() => setShowAllSensors(true)}
                             borderWidth={showAllSensors ? 0 : 1}
@@ -264,83 +221,38 @@ export default function SensorList({
                 </YStack>
 
                 {/* Search Bar */}
-                <YStack paddingHorizontal="$3" paddingBottom="$2">
+                <YStack paddingHorizontal="$3" paddingVertical="$1">
                     <XStack alignItems="center" gap="$2" position="relative">
                         <XStack position="absolute" left="$3" zIndex={1} pointerEvents="none">
-                            <Search size={16} color="$gray10"/>
+                            <Search size={16}/>
                         </XStack>
                         <Input
                             placeholder={t('sensor.searchSensors')}
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                             size="$3"
+                            placeholderTextColor={"$color"}
                             flex={1}
                             paddingLeft="$8"
                             borderColor="$borderColor"
-                            backgroundColor="$content2"
+                            backgroundColor="$content3"
                         />
                     </XStack>
                 </YStack>
 
                 {/* Filter and Sort Controls */}
-                <YStack paddingHorizontal="$3" paddingBottom="$2">
+                <YStack paddingHorizontal="$3" paddingVertical="$1">
                     <XStack gap="$2" flexWrap="wrap">
                         {/* Filter Type */}
                         <XStack flex={1} minWidth="45%" gap="$2" alignItems="center">
                             <Filter size={16} color="$color"/>
-                            <SelectWithSheet
-                                id="filter-type-select"
-                                name="filterType"
-                                items={filterTypeItems}
-                                value={filterType}
-                                onValueChange={setFilterType}
-                                placeholder={t('sensor.filterType')}
-                                triggerProps={{
-                                    flex: 1,
-                                    size: "$3",
-                                    iconAfter: null,
-                                    backgroundColor: "$content2",
-                                    borderColor: "$borderColor",
-                                    borderWidth: 1,
-                                    hoverStyle: {
-                                        backgroundColor: "$content3",
-                                        borderColor: "$accent6"
-                                    },
-                                    pressStyle: {
-                                        backgroundColor: "$content3",
-                                        borderColor: "$accent7"
-                                    }
-                                }}
-                            />
+                            {setFilterTypeDropdown}
                         </XStack>
 
                         {/* Sort By */}
                         <XStack flex={1} minWidth="45%" gap="$2" alignItems="center">
                             <ArrowUpDown size={16} color="$color"/>
-                            <SelectWithSheet
-                                id="sort-by-select"
-                                name="sortBy"
-                                items={sortByItems}
-                                value={sortBy}
-                                onValueChange={setSortBy}
-                                placeholder={t('sensor.sortBy')}
-                                triggerProps={{
-                                    flex: 1,
-                                    size: "$3",
-                                    iconAfter: null,
-                                    backgroundColor: "$content2",
-                                    borderColor: "$borderColor",
-                                    borderWidth: 1,
-                                    hoverStyle: {
-                                        backgroundColor: "$content3",
-                                        borderColor: "$accent6"
-                                    },
-                                    pressStyle: {
-                                        backgroundColor: "$content3",
-                                        borderColor: "$accent7"
-                                    }
-                                }}
-                            />
+                            {sortByDropdown}
                         </XStack>
                     </XStack>
                 </YStack>
@@ -354,37 +266,66 @@ export default function SensorList({
                     // Horizontal scrolling for mobile bottom sheet
                     processedSensors.length === 0 ? (
                         // No horizontal scroll when no sensors
-                        <YStack padding="$4" alignItems="center" gap="$3" flex={1} justifyContent="center">
-                            <AlertCircle size={48} color="$gray10"/>
-                            <Text fontSize="$5" fontWeight="600" color="$color" textAlign="center">
+                        <YStack
+                            padding="$4"
+                            paddingTop="$6"
+                            alignItems="center"
+                            gap="$3"
+                            flex={1}
+                            justifyContent="center"
+                        >
+                            <YStack
+                                width={80}
+                                height={80}
+                                borderRadius="$12"
+                                backgroundColor="$accent2"
+                                alignItems="center"
+                                justifyContent="center"
+                                marginBottom="$2"
+                            >
+                                <AlertCircle size={40} color="$accent8"/>
+                            </YStack>
+                            <Text
+                                fontSize="$6"
+                                fontWeight="700"
+                                color="$accent8"
+                                textAlign="center"
+                            >
                                 {searchQuery
                                     ? t('sensor.noSearchResults')
                                     : t('sensor.noSensorsInView')}
                             </Text>
-                            <Text fontSize="$3" color="$gray11" textAlign="center">
+                            <Text
+                                fontSize="$3"
+                                color="$gray11"
+                                textAlign="center"
+                                maxWidth={280}
+                            >
                                 {t('sensor.noSensorsHint')}
                             </Text>
                             {(searchQuery || filterType !== 'all') && (
-                                <Button
-                                    size="$3"
+                                <PrimaryButton
+                                    marginTop="$2"
                                     onPress={() => {
                                         setSearchQuery('');
                                         setFilterType('all');
                                     }}
                                 >
-                                    {t('sensor.clearFilters')}
-                                </Button>
+                                    <PrimaryButtonText>
+                                        {t('sensor.clearFilters')}
+                                    </PrimaryButtonText>
+                                </PrimaryButton>
                             )}
                         </YStack>
                     ) : (
                         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            <XStack gap="$3" paddingHorizontal="$3" paddingVertical="$2">
+                            <XStack gap="$3" paddingHorizontal="$3" paddingVertical="$3">
                                 {processedSensors.map((sensor) => (
-                                    <YStack key={sensor.location.id} width={280}>
+                                    <YStack key={sensor.location?.id} width={280}>
                                         <SensorListItem
                                             locationWithBoxes={sensor}
                                             onPress={() => onSensorSelect(sensor)}
-                                            isHighlighted={sensor.location.id === highlightedSensorId}
+                                            isHighlighted={sensor.location?.id === highlightedSensorId}
                                         />
                                     </YStack>
                                 ))}
@@ -395,36 +336,63 @@ export default function SensorList({
                     // Vertical scrolling for drawer
                     <ScrollView>
                         {processedSensors.length === 0 ? (
-                            <YStack padding="$4" alignItems="center" gap="$3">
-                                <AlertCircle size={48} color="$gray10"/>
-                                <Text fontSize="$5" fontWeight="600" color="$color" textAlign="center">
+                            <YStack
+                                padding="$4"
+                                paddingTop="$6"
+                                alignItems="center"
+                                gap="$3"
+                            >
+                                <YStack
+                                    width={80}
+                                    height={80}
+                                    borderRadius="$12"
+                                    backgroundColor="$accent6"
+                                    alignItems="center"
+                                    justifyContent="center"
+                                    marginBottom="$2"
+                                >
+                                    <AlertCircle size={40} color="$color.black12"/>
+                                </YStack>
+                                <Text
+                                    fontSize="$6"
+                                    fontWeight="700"
+                                    color="$accent8"
+                                    textAlign="center"
+                                >
                                     {searchQuery
                                         ? t('sensor.noSearchResults')
                                         : t('sensor.noSensorsInView')}
                                 </Text>
-                                <Text fontSize="$3" color="$gray11" textAlign="center">
+                                <Text
+                                    fontSize="$3"
+                                    color="$gray11"
+                                    textAlign="center"
+                                    maxWidth={280}
+                                >
                                     {t('sensor.noSensorsHint')}
                                 </Text>
                                 {(searchQuery || filterType !== 'all') && (
-                                    <Button
-                                        size="$3"
+                                    <PrimaryButton
+                                        marginTop="$2"
                                         onPress={() => {
                                             setSearchQuery('');
                                             setFilterType('all');
                                         }}
                                     >
-                                        {t('sensor.clearFilters')}
-                                    </Button>
+                                        <PrimaryButtonText>
+                                            {t('sensor.clearFilters')}
+                                        </PrimaryButtonText>
+                                    </PrimaryButton>
                                 )}
                             </YStack>
                         ) : (
-                            <YStack paddingBottom="$4">
+                            <YStack paddingBottom="$4" gap="$2">
                                 {processedSensors.map((sensor) => (
                                     <SensorListItem
-                                        key={sensor.location.id}
+                                        key={sensor.location?.id}
                                         locationWithBoxes={sensor}
                                         onPress={() => onSensorSelect(sensor)}
-                                        isHighlighted={sensor.location.id === highlightedSensorId}
+                                        isHighlighted={sensor.location?.id === highlightedSensorId}
                                     />
                                 ))}
                             </YStack>

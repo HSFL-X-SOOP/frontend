@@ -1,5 +1,7 @@
 import {useHttpClient} from '@/api/client';
-import { RegisterUserDeviceRequest, RegisterUserDeviceResponse } from '../models/auth';
+import {RegisterUserDeviceRequest, RegisterUserDeviceResponse} from '../models/auth';
+import {Result} from '@/utils/errors';
+import {api} from '@/utils/api';
 
 export function useUserDeviceStore() {
     const httpClient = useHttpClient();
@@ -7,15 +9,13 @@ export function useUserDeviceStore() {
     return {
         /**
          * Register user device
+         * Returns Result - non-critical operation
          */
-        registerUserDevice: async (body: RegisterUserDeviceRequest): Promise<RegisterUserDeviceResponse | null> => {
-            try {
-                const response = await httpClient.post<RegisterUserDeviceResponse>('/user-device', body);
-                return response.data;
-            } catch (error) {
-                console.error('Failed to register user device:', error);
-                return null;
-            }
+        registerUserDevice: (body: RegisterUserDeviceRequest): Promise<Result<RegisterUserDeviceResponse>> => {
+            return api.requestSafe(
+                httpClient.post<RegisterUserDeviceResponse>('/user-device', body),
+                'UserDeviceStore:registerUserDevice'
+            );
         },
     };
 }

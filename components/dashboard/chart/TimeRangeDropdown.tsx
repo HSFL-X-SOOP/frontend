@@ -1,8 +1,9 @@
-import {useTranslation} from "@/hooks/useTranslation";
-import {ChevronDown} from "@tamagui/lucide-icons";
+import {useTranslation} from "@/hooks/ui";
 import {useMemo} from "react";
 import {SelectWithSheet} from "@/components/ui/SelectWithSheet";
 import type {SelectItem} from "@/types/select";
+import { ActionSheetSelect } from "@/components/ui/ActionSheetSelect";
+import { Platform } from "react-native";
 
 export type ChartTimeRange =
     "today"
@@ -16,11 +17,10 @@ export type ChartTimeRange =
 interface TimeRangeDropdownProps {
     selectedTimeRange: ChartTimeRange;
     setTimeRange: (range: ChartTimeRange) => void;
-    isDark?: boolean;
 }
 
 export function TimeRangeDropdown(props: TimeRangeDropdownProps) {
-    const {selectedTimeRange, setTimeRange, isDark} = props;
+    const {selectedTimeRange, setTimeRange} = props;
     const {t} = useTranslation();
 
     const timeRangeOptions: SelectItem<ChartTimeRange>[] = useMemo(() => [
@@ -33,7 +33,16 @@ export function TimeRangeDropdown(props: TimeRangeDropdownProps) {
         {value: "last1year", label: t('dashboard.timeRange.last1yearButton')},
     ], [t]);
 
-    return (
+    const mobileDropdown = (
+        <ActionSheetSelect
+            items={timeRangeOptions}
+            value={selectedTimeRange}
+            placeholder={t('dashboard.timeRange.selectRange')}
+            onChange={setTimeRange}
+            />
+    )
+
+    const webDropdown = (
         <SelectWithSheet
             id="time-range-select"
             name="timeRange"
@@ -41,12 +50,8 @@ export function TimeRangeDropdown(props: TimeRangeDropdownProps) {
             value={selectedTimeRange}
             onValueChange={setTimeRange}
             placeholder={t('dashboard.timeRange.selectRange')}
-            triggerProps={{
-                width: 180,
-                iconAfter: ChevronDown,
-                backgroundColor: isDark ? '$gray8' : '$gray2',
-                borderColor: isDark ? '$gray7' : '$gray4',
-            }}
         />
-    );
+    )
+
+    return Platform.OS === 'web' ? webDropdown : mobileDropdown;
 }

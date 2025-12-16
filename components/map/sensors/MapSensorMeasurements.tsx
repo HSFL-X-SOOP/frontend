@@ -1,6 +1,7 @@
 import {BoxType, LocationWithBoxes} from "@/api/models/sensor";
-import {useTranslation} from "@/hooks/useTranslation";
+import {useTranslation} from "@/hooks/ui";
 import {formatTimeToLocal} from "@/utils/time";
+import type {TFunction} from 'i18next';
 import {
     Activity,
     ArrowRight,
@@ -17,7 +18,8 @@ import {
 import {LinearGradient} from "expo-linear-gradient";
 import {useRouter} from "expo-router";
 import {useState} from "react";
-import {Button, Card, H3, H4, Separator, Text, XStack, YStack, useTheme} from "tamagui";
+import {Card, H3, H4, Separator, Text, XStack, YStack, useTheme} from "tamagui";
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from "@/types/button";
 
 type SensorPopupProps = {
     locationWithBoxes: LocationWithBoxes,
@@ -38,10 +40,17 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
     const cardWidth = 350;
 
     const handleNavigateToDashboard = () => {
-        router.push(`/marina/${locationWithBoxes.location.name}`);
-        setTimeout(() => {
-            closeOverlay?.();
-        }, 100);
+        const name = locationWithBoxes.location?.name;
+        if (!name) return;
+
+        // Use typed navigation to ensure correct route on native/web and auto-encode the param
+        router.push({
+            pathname: '/(dashboard)/marina/[name]',
+            params: {name},
+        });
+
+        // Close the popover after triggering navigation
+        closeOverlay?.();
     };
 
     return (
@@ -81,7 +90,7 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
                                 {t('sensor.location')}
                             </Text>
                             <H3 fontSize="$7" fontWeight="700" color="white" numberOfLines={1}>
-                                {locationWithBoxes.location.name}
+                                {locationWithBoxes.location?.name}
                             </H3>
                         </YStack>
                     </XStack>
@@ -92,31 +101,18 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
                 {hasMultipleBoxes && (
                     <XStack gap="$2" flexWrap="wrap">
                         {locationWithBoxes.boxes.map((box, index) => (
-                            <Button
+                            <SecondaryButton
                                 key={index}
-                                size="$3"
+                                size="$2"
                                 flex={1}
                                 minWidth={80}
-                                variant={"outlined"}
-                                backgroundColor="$content2"
-                                color="$color"
                                 onPress={() => setSelectedBoxIndex(index)}
-                                borderWidth={selectedBoxIndex === index ? 1 : 0}
-                                borderColor="$gray10"
-                                pressStyle={{
-                                    backgroundColor: '$gray5',
-                                    scale: 0.97
-                                }}
-                                hoverStyle={{
-                                    backgroundColor: '$gray5',
-                                    borderColor: selectedBoxIndex === index ? '$blue10' : '$gray6'
-                                }}
-                                borderRadius="$3"
-                                fontWeight={selectedBoxIndex === index ? '700' : '500'}
-                                fontSize="$3"
+                                opacity={selectedBoxIndex === index ? 1 : 0.7}
                             >
-                                {getBoxTypeName(box.type, t)}
-                            </Button>
+                                <SecondaryButtonText>
+                                    {getBoxTypeName(box.type, t)}
+                                </SecondaryButtonText>
+                            </SecondaryButton>
                         ))}
                     </XStack>
                 )}
@@ -132,28 +128,15 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
 
             {/* Footer - Dashboard Button */}
             <YStack padding="$3" paddingTop="$2.5" backgroundColor="$background">
-                <Button
-                    size="$3"
-                    backgroundColor="$accent5"
-                    color="white"
+                <PrimaryButton
                     width="100%"
                     onPress={handleNavigateToDashboard}
-                    iconAfter={<ArrowRight size={18}/>}
-                    pressStyle={{
-                        backgroundColor: '$accent3',
-                        scale: 0.98
-                    }}
-                    hoverStyle={{
-                        backgroundColor: '$accent3',
-                        scale: 1.01
-                    }}
-                    borderRadius="$3"
-                    fontWeight="600"
-                    userSelect="none"
-                    fontSize="$4"
+                    iconAfter={<ArrowRight size={18} color="white"/>}
                 >
-                    {t('sensor.viewDashboard')}
-                </Button>
+                    <PrimaryButtonText>
+                        {t('sensor.viewDashboard')}
+                    </PrimaryButtonText>
+                </PrimaryButton>
             </YStack>
         </Card>
     );
@@ -174,7 +157,10 @@ function BoxMeasurements({box}: BoxMeasurementsProps) {
                 alignItems="center"
                 gap="$2"
                 padding="$2"
-                backgroundColor="$content2"
+                borderRadius={"$3"}
+                borderWidth={1}
+                borderColor={"$borderColor"}
+                backgroundColor="$content1"
             >
                 <YStack
                     width={26}
@@ -190,6 +176,8 @@ function BoxMeasurements({box}: BoxMeasurementsProps) {
                     {getBoxTypeName(box.type, t)}
                 </H4>
             </XStack>
+
+            <Separator backgroundColor={"$accent6"}/>
 
             <XStack flexWrap="wrap" gap="$2.5" justifyContent="space-between">
                 {box.type === BoxType.WaterBox && (
@@ -242,7 +230,9 @@ function BoxMeasurements({box}: BoxMeasurementsProps) {
                 alignItems="center"
                 gap="$1.5"
                 padding="$2"
-                backgroundColor="$content3"
+                backgroundColor="$content2"
+                borderWidth={1}
+                borderColor={"$borderColor"}
                 borderRadius="$2"
             >
                 <Activity size={16} color="$green10"/>
@@ -252,7 +242,7 @@ function BoxMeasurements({box}: BoxMeasurementsProps) {
                 </Text>
                 </Text>
             </XStack>
-            <Separator/>
+            <Separator backgroundColor={"$accent6"}/>
         </YStack>
     );
 }
@@ -270,7 +260,7 @@ function MeasurementCard({measurementType, value}: MeasurementCardProps) {
     return (
         <Card
             width="100%"
-            backgroundColor="$content2"
+            backgroundColor="$content1"
             padding="$2.5"
             borderRadius="$3"
             borderWidth={1}
@@ -306,7 +296,7 @@ function MeasurementCard({measurementType, value}: MeasurementCardProps) {
                     <Text fontSize="$7" fontWeight="800" color={color} letterSpacing={-0.5}>
                         {Math.round(value * 10) / 10}
                     </Text>
-                    <Text fontSize="$3" color="$gray10" fontWeight="700">
+                    <Text fontSize="$3" color={color} fontWeight="700">
                         {getMeasurementUnit(measurementType, t)}
                     </Text>
                 </XStack>
@@ -329,7 +319,7 @@ function getBoxTypeIcon(boxType: BoxType) {
     }
 }
 
-function getBoxTypeName(boxType: BoxType, t: any): string {
+function getBoxTypeName(boxType: BoxType, t: TFunction): string {
     switch (boxType) {
         case BoxType.WaterBox:
             return t('sensor.waterBox');
@@ -409,7 +399,7 @@ function getMeasurementIcon(measurementType: string): { icon: React.ReactNode; c
     }
 }
 
-function getMeasurementLabel(measurementType: string, t: any): string {
+function getMeasurementLabel(measurementType: string, t: TFunction): string {
     switch (measurementType) {
         case "waterTemperature":
             return t('sensor.waterTemperature');
@@ -434,7 +424,7 @@ function getMeasurementLabel(measurementType: string, t: any): string {
     }
 }
 
-function getMeasurementUnit(measurementType: string, t: any): string {
+function getMeasurementUnit(measurementType: string, t: TFunction): string {
     switch (measurementType) {
         case "waterTemperature":
         case "airTemperature":

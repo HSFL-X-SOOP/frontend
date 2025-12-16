@@ -1,16 +1,17 @@
 import {Link, useRouter, useLocalSearchParams, Href} from 'expo-router';
 import {useState, useEffect, useRef} from 'react';
-import {SafeAreaView} from 'react-native';
-import {Button, Text, YStack, XStack, Spinner, ScrollView} from 'tamagui';
+import {Text, YStack, XStack, Spinner, ScrollView, View} from 'tamagui';
 import {Sparkles, CheckCircle, AlertCircle} from '@tamagui/lucide-icons';
-import {useAuth} from '@/hooks/useAuth';
+import {useAuth} from '@/hooks/auth';
 import {useSession} from '@/context/SessionContext';
 import {AuthorityRole} from '@/api/models/profile';
 import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
-import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/components/useToast';
+import {useTranslation,useToast} from '@/hooks/ui';
+
 import {createLogger} from '@/utils/logger';
+import {UI_CONSTANTS} from '@/config/constants';
+import {PrimaryButton, PrimaryButtonText} from '@/types/button';
 
 const logger = createLogger('Auth:MagicLink');
 
@@ -19,7 +20,10 @@ export default function MagicLinkScreen() {
     const {token} = useLocalSearchParams<{ token?: string }>();
     const [email, setEmail] = useState("");
     const [sent, setSent] = useState(false);
-    const {requestMagicLink, requestMagicLinkStatus, magicLinkLogin, magicLinkLoginStatus} = useAuth();
+    const [isLoading, setIsLoading] = useState(false);
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [verificationError, setVerificationError] = useState<string | null>(null);
+    const {requestMagicLink, magicLinkLogin} = useAuth();
     const {login: logUserIn} = useSession();
     const {t} = useTranslation();
     const toast = useToast();
@@ -31,21 +35,26 @@ export default function MagicLinkScreen() {
 
     const handleSendMagicLink = async () => {
         logger.info('Requesting magic link', {email});
-        const result = await requestMagicLink({email});
-        if (result !== undefined) {
-            logger.info('Magic link sent successfully');
-            toast.success(t('auth.magicLink.linkSentSuccess'), {
-                message: t('auth.magicLink.checkYourEmail'),
-                duration: 4000
-            });
-            setSent(true);
-        } else {
-            logger.error('Magic link request failed', requestMagicLinkStatus.error);
-            toast.error(t('auth.magicLink.linkSentError'), {
-                message: requestMagicLinkStatus.error?.message || t('auth.magicLink.linkSentErrorGeneric'),
-                duration: 5000
-            });
-        }
+        setIsLoading(true);
+
+        await requestMagicLink(
+            {email},
+            () => {
+                logger.info('Magic link sent successfully');
+                toast.success(t('auth.magicLink.linkSentSuccess'), {
+                    message: t('auth.magicLink.checkYourEmail'),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG  // Keep LONG for this one
+                });
+                setSent(true);
+            },
+            (error) => {
+                toast.error(t('auth.magicLink.linkSentError'), {
+                    message: t(error.onGetMessage()),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                });
+            }
+        );
+        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -56,9 +65,12 @@ export default function MagicLinkScreen() {
         loginAttemptedRef.current = true;
         logger.info('Processing magic link token');
 
-        (async () => {
-            const result = await magicLinkLogin({token});
-            if (result) {
+        setIsVerifying(true);
+        setVerificationError(null);
+
+        void magicLinkLogin(
+            {token},
+            (result) => {
                 logger.info('Magic link login successful');
                 logUserIn({
                     accessToken: result.accessToken,
@@ -69,23 +81,21 @@ export default function MagicLinkScreen() {
                     profile: result.profile
                 });
                 toast.success(t('auth.magicLink.loginSuccess'), {
-                    message: t('auth.welcomeBack'),
-                    duration: 3000
+                    message: t('auth.welcomeBack')
                 });
                 router.replace("/map");
-            } else {
-                logger.error('Magic link login failed', magicLinkLoginStatus.error);
-                toast.error(t('auth.magicLink.loginError'), {
-                    message: magicLinkLoginStatus.error?.message || t('auth.magicLink.invalidOrExpired'),
-                    duration: 5000
-                });
+            },
+            (error) => {
+                logger.error('Magic link login failed', error);
+                setVerificationError(error.onGetMessage());
+                setIsVerifying(false);
             }
-        })();
-    }, [token]);
+        );
+    }, [token, magicLinkLogin, logUserIn, router, t, toast]);
 
-    if (token && magicLinkLoginStatus.loading) {
+    if (token && isVerifying) {
         return (
-            <SafeAreaView style={{flex: 1}}>
+            <View style={{flex: 1}}>
                 <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
                     <AuthCard title={t('auth.magicLink.verifying')} subtitle={t('auth.magicLink.verifyingMessage')} icon={Sparkles}>
                         <YStack gap="$4" alignItems="center">
@@ -93,15 +103,15 @@ export default function MagicLinkScreen() {
                         </YStack>
                     </AuthCard>
                 </ScrollView>
-            </SafeAreaView>
+            </View>
         );
     }
 
-    if (token && magicLinkLoginStatus.error) {
+    if (token && verificationError) {
         return (
-            <SafeAreaView style={{flex: 1}}>
+            <View style={{flex: 1}}>
                 <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
-                    <AuthCard title={t('auth.magicLink.invalidOrExpired')} subtitle={magicLinkLoginStatus.error.message}
+                    <AuthCard title={t('auth.magicLink.invalidOrExpired')} subtitle={verificationError}
                               icon={AlertCircle}>
                         <Link href={"/(auth)/magic-link" as Href}>
                             <Text color="$accent7" textDecorationLine="underline" fontWeight="600">
@@ -110,13 +120,13 @@ export default function MagicLinkScreen() {
                         </Link>
                     </AuthCard>
                 </ScrollView>
-            </SafeAreaView>
+            </View>
         );
     }
 
     if (sent) {
         return (
-            <SafeAreaView style={{flex: 1}}>
+            <View style={{flex: 1}}>
                 <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
                     <AuthCard title={t('auth.magicLink.checkYourEmail')} subtitle={t('auth.magicLink.emailSent', {email})}
                               icon={CheckCircle}>
@@ -127,12 +137,12 @@ export default function MagicLinkScreen() {
                         </Link>
                     </AuthCard>
                 </ScrollView>
-            </SafeAreaView>
+            </View>
         );
     }
 
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1}}>
             <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
                 <AuthCard
                     title={t('auth.magicLink.title')}
@@ -150,34 +160,29 @@ export default function MagicLinkScreen() {
                                 hasError={hasErrors()}
                                 errorMessage={t('auth.invalidEmail')}
                             />
-                            {requestMagicLinkStatus.error && (
-                                <Text color="$red10" fontSize={14}>{requestMagicLinkStatus.error.message}</Text>
-                            )}
                         </YStack>
 
-                        <Button
-                            backgroundColor="$accent7"
-                            color="white"
+                        <PrimaryButton
                             size="$4"
                             onPress={handleSendMagicLink}
-                            borderRadius="$6"
-                            hoverStyle={{backgroundColor: "$accent4"}}
-                            pressStyle={{backgroundColor: "$accent6"}}
-                            disabled={!email || hasErrors() || requestMagicLinkStatus.loading}
-                            opacity={!email || hasErrors() || requestMagicLinkStatus.loading ? 0.6 : 1}
+                            disabled={!email || hasErrors() || isLoading}
                         >
-                            {requestMagicLinkStatus.loading ? (
+                            {isLoading ? (
                                 <XStack alignItems="center" gap="$2">
                                     <Spinner size="small" color="white"/>
-                                    <Text color="white" fontWeight="600">{t('auth.magicLink.sending')}</Text>
+                                    <PrimaryButtonText>
+                                        {t('auth.magicLink.sending')}
+                                    </PrimaryButtonText>
                                 </XStack>
                             ) : (
                                 <XStack alignItems="center" gap="$2">
                                     <Sparkles size={16} color="white"/>
-                                    <Text color="white" fontWeight="600">{t('auth.magicLink.sendMagicLink')}</Text>
+                                    <PrimaryButtonText>
+                                        {t('auth.magicLink.sendMagicLink')}
+                                    </PrimaryButtonText>
                                 </XStack>
                             )}
-                        </Button>
+                        </PrimaryButton>
                     </YStack>
 
                     <YStack gap="$2" alignItems="center">
@@ -198,6 +203,6 @@ export default function MagicLinkScreen() {
                     </YStack>
                 </AuthCard>
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 }

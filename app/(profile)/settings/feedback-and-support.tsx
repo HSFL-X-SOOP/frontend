@@ -16,8 +16,8 @@ export default function ProfileSettingsFeedbackAndSupportScreen() {
           numberOfLines={4}
           width="95%"
         />
-        <Button variant="outlined" onPress={() => console.log("")}>
-          <Text>Absenden</Text>
+        <Button variant="outlined" disabled>
+          <Text>Absenden (Coming Soon)</Text>
         </Button>
       </YStack>
     </View>

@@ -1,32 +1,31 @@
 import {UpdateProfileRequest, UserProfile} from '@/api/models/profile';
 import {useHttpClient} from '@/api/client';
+import {Result} from '@/utils/errors';
+import {api} from '@/utils/api';
 
 export function useUserStore() {
     const httpClient = useHttpClient();
 
     return {
-        getProfile: async (): Promise<UserProfile | null> => {
-            try {
-                const response = await httpClient.get<UserProfile>('/user-profile');
-                return response.data;
-            } catch (error: any) {
-                if (error.response?.status === 404) {
-                    return null;
-                }
-                throw error;
-            }
+        getProfile: (): Promise<Result<UserProfile>> => {
+            return api.requestSafe(
+                httpClient.get<UserProfile>('/user-profile'),
+                'UserStore:getProfile'
+            );
         },
 
-        createProfile: async (body: UpdateProfileRequest) => {
-            try {
-                const response = await httpClient.post<UserProfile>('/user-profile', body);
-                return response.data;
-            } catch (error: any) {
-                throw error;
-            }
+        createProfile: (body: UpdateProfileRequest): Promise<Result<UserProfile>> => {
+            return api.requestSafe(
+                httpClient.post<UserProfile>('/user-profile', body),
+                'UserStore:createProfile'
+            );
         },
 
-        updateProfile: (body: UpdateProfileRequest) =>
-            httpClient.put<UserProfile>('/user-profile', body).then(r => r.data),
+        updateProfile: (body: UpdateProfileRequest): Promise<Result<UserProfile>> => {
+            return api.requestSafe(
+                httpClient.put<UserProfile>('/user-profile', body),
+                'UserStore:updateProfile'
+            );
+        },
     };
 }

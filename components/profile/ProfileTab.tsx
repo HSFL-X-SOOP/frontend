@@ -5,7 +5,6 @@ import {
     Card,
     H5,
     Text,
-    Button,
     Spinner,
     View,
     Separator,
@@ -13,28 +12,31 @@ import {
     Label
 } from 'tamagui';
 import {Globe, Activity, Ruler, Check} from '@tamagui/lucide-icons';
-import {useTranslation} from '@/hooks/useTranslation';
-import {useToast} from '@/components/useToast';
+import {useTranslation,useToast} from '@/hooks/ui';
+
 import {useSession} from '@/context/SessionContext';
-import {useUser} from '@/hooks/useUser';
+import {useUser} from '@/hooks/data';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
+import {UI_CONSTANTS} from '@/config/constants';
+import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
 export const ProfileTab: React.FC = () => {
     const {t, changeLanguage} = useTranslation();
     const {session, updateProfile: updateSessionProfile} = useSession();
-    const {updateProfile, updateProfileStatus} = useUser();
+    const {updateProfile} = useUser();
     const toast = useToast();
 
     const [isEditing, setIsEditing] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState<Language>(Language.DE);
     const [selectedRoles, setSelectedRoles] = useState<ActivityRole[]>([]);
     const [selectedMeasurement, setSelectedMeasurement] = useState<MeasurementSystem>(MeasurementSystem.METRIC);
 
     useEffect(() => {
         if (session?.profile) {
-            setSelectedLanguage(session.profile.language);
-            setSelectedRoles(session.profile.roles || []);
-            setSelectedMeasurement(session.profile.measurementSystem);
+            setSelectedLanguage(session.profile.language ?? Language.DE);
+            setSelectedRoles(session.profile.activityRoles || []);
+            setSelectedMeasurement(session.profile.measurementSystem ?? MeasurementSystem.METRIC);
         }
     }, [session?.profile]);
 
@@ -47,38 +49,41 @@ export const ProfileTab: React.FC = () => {
     };
 
     const handleSave = async () => {
-        try {
-            const updatedProfile = await updateProfile({
+        setIsLoading(true);
+
+        await updateProfile(
+            {
                 language: selectedLanguage,
                 roles: selectedRoles,
                 measurementSystem: selectedMeasurement
-            });
+            },
+            (updatedProfile) => {
+                updateSessionProfile(updatedProfile);
 
-            updateSessionProfile(updatedProfile);
+                const langCode = selectedLanguage === Language.DE ? 'de' : 'en';
+                changeLanguage(langCode);
 
-            const langCode = selectedLanguage === Language.DE ? 'de' : 'en';
-            changeLanguage(langCode);
+                toast.success(t('profile.saveSuccess'), {
+                    message: t('profile.settingsUpdated')
+                });
 
-            toast.success(t('profile.saveSuccess'), {
-                message: t('profile.settingsUpdated'),
-                duration: 3000
-            });
-
-            setIsEditing(false);
-        } catch (error) {
-            console.error('Failed to update profile:', error);
-            toast.error(t('profile.saveError'), {
-                message: error instanceof Error ? error.message : t('profile.saveErrorGeneric'),
-                duration: 5000
-            });
-        }
+                setIsEditing(false);
+            },
+            (error) => {
+                toast.error(t('profile.saveError'), {
+                    message: t(error.onGetMessage()),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                });
+            }
+        );
+        setIsLoading(false);
     };
 
     const handleCancel = () => {
         if (session?.profile) {
-            setSelectedLanguage(session.profile.language);
-            setSelectedRoles(session.profile.roles || []);
-            setSelectedMeasurement(session.profile.measurementSystem);
+            setSelectedLanguage(session.profile.language ?? Language.DE);
+            setSelectedRoles(session.profile.activityRoles || []);
+            setSelectedMeasurement(session.profile.measurementSystem ?? MeasurementSystem.METRIC);
         }
         setIsEditing(false);
     };
@@ -87,16 +92,14 @@ export const ProfileTab: React.FC = () => {
         <YStack gap="$4">
             <XStack justifyContent="flex-end" alignItems="center">
                 {!isEditing && (
-                    <Button
+                    <PrimaryButton
                         size="$3"
-                        backgroundColor="$accent7"
-                        color="white"
-                        pressStyle={{backgroundColor: "$accent6"}}
-                        hoverStyle={{backgroundColor: "$accent4"}}
                         onPress={() => setIsEditing(true)}
                     >
-                        {t('profile.edit')}
-                    </Button>
+                        <PrimaryButtonText>
+                            {t('profile.edit')}
+                        </PrimaryButtonText>
+                    </PrimaryButton>
                 )}
             </XStack>
 
@@ -107,7 +110,7 @@ export const ProfileTab: React.FC = () => {
                         <View
                             width={40}
                             height={40}
-                            backgroundColor="$accent2"
+                            backgroundColor="$content2"
                             borderRadius="$8"
                             alignItems="center"
                             justifyContent="center"
@@ -124,8 +127,8 @@ export const ProfileTab: React.FC = () => {
                                     onValueChange={(val) => setSelectedLanguage(val as Language)}
                                     gap="$3">
                             <XStack alignItems="center" gap="$3" padding="$3"
-                                    backgroundColor={selectedLanguage === Language.DE ? "$accent2" : "transparent"}
-                                    borderRadius="$4">
+                                    backgroundColor={selectedLanguage === Language.DE ? "$content2" : "transparent"}
+                                    borderRadius="$6">
                                 <RadioGroup.Item value={Language.DE} id="lang-de" size="$4">
                                     <RadioGroup.Indicator/>
                                 </RadioGroup.Item>
@@ -135,8 +138,8 @@ export const ProfileTab: React.FC = () => {
                                     <Check size={20} color="$accent7"/>}
                             </XStack>
                             <XStack alignItems="center" gap="$3" padding="$3"
-                                    backgroundColor={selectedLanguage === Language.EN ? "$accent2" : "transparent"}
-                                    borderRadius="$4">
+                                    backgroundColor={selectedLanguage === Language.EN ? "$content2" : "transparent"}
+                                    borderRadius="$6">
                                 <RadioGroup.Item value={Language.EN} id="lang-en" size="$4">
                                     <RadioGroup.Indicator/>
                                 </RadioGroup.Item>
@@ -161,7 +164,7 @@ export const ProfileTab: React.FC = () => {
                         <View
                             width={40}
                             height={40}
-                            backgroundColor="$accent2"
+                            backgroundColor="$content2"
                             borderRadius="$8"
                             alignItems="center"
                             justifyContent="center"
@@ -181,7 +184,7 @@ export const ProfileTab: React.FC = () => {
                                     gap="$3"
                                     alignItems="center"
                                     padding="$3"
-                                    backgroundColor={selectedRoles.includes(role) ? "$accent2" : "transparent"}
+                                    backgroundColor={selectedRoles.includes(role) ? "$content2" : "transparent"}
                                     borderRadius="$4"
                                     pressStyle={{opacity: 0.7}}
                                     onPress={() => handleRoleToggle(role)}
@@ -232,7 +235,7 @@ export const ProfileTab: React.FC = () => {
                         <View
                             width={40}
                             height={40}
-                            backgroundColor="$accent2"
+                            backgroundColor="$content2"
                             borderRadius="$8"
                             alignItems="center"
                             justifyContent="center"
@@ -249,8 +252,8 @@ export const ProfileTab: React.FC = () => {
                                     onValueChange={(val) => setSelectedMeasurement(val as MeasurementSystem)}
                                     gap="$3">
                             <XStack alignItems="center" gap="$3" padding="$3"
-                                    backgroundColor={selectedMeasurement === MeasurementSystem.METRIC ? "$accent2" : "transparent"}
-                                    borderRadius="$4">
+                                    backgroundColor={selectedMeasurement === MeasurementSystem.METRIC ? "$content2" : "transparent"}
+                                    borderRadius="$6">
                                 <RadioGroup.Item value={MeasurementSystem.METRIC}
                                                  id="measure-metric" size="$4">
                                     <RadioGroup.Indicator/>
@@ -261,8 +264,8 @@ export const ProfileTab: React.FC = () => {
                                     <Check size={20} color="$accent7"/>}
                             </XStack>
                             <XStack alignItems="center" gap="$3" padding="$3"
-                                    backgroundColor={selectedMeasurement === MeasurementSystem.IMPERIAL ? "$accent2" : "transparent"}
-                                    borderRadius="$4">
+                                    backgroundColor={selectedMeasurement === MeasurementSystem.IMPERIAL ? "$content2" : "transparent"}
+                                    borderRadius="$6">
                                 <RadioGroup.Item value={MeasurementSystem.IMPERIAL}
                                                  id="measure-imperial" size="$4">
                                     <RadioGroup.Indicator/>
@@ -294,35 +297,28 @@ export const ProfileTab: React.FC = () => {
                         </Card>
                     )}
                     <XStack gap="$3" justifyContent="flex-end">
-                        <Button
+                        <SecondaryButton
                             flex={1}
                             size="$4"
-                            backgroundColor="$content2"
-                            color="$color"
-                            borderWidth={1}
-                            borderColor="$borderColor"
-                            pressStyle={{backgroundColor: "$content3"}}
-                            hoverStyle={{backgroundColor: "$content1"}}
                             onPress={handleCancel}
-                            disabled={updateProfileStatus.loading}
+                            disabled={isLoading}
                         >
-                            {t('profile.actions.cancel')}
-                        </Button>
-                        <Button
+                            <SecondaryButtonText>
+                                {t('profile.actions.cancel')}
+                            </SecondaryButtonText>
+                        </SecondaryButton>
+                        <PrimaryButton
                             flex={1}
                             size="$4"
-                            backgroundColor="$accent7"
-                            color="white"
-                            pressStyle={{backgroundColor: "$accent6"}}
-                            hoverStyle={{backgroundColor: "$accent2"}}
-                            disabled={updateProfileStatus.loading || selectedRoles.length === 0}
-                            opacity={updateProfileStatus.loading || selectedRoles.length === 0 ? 0.6 : 1}
+                            disabled={isLoading || selectedRoles.length === 0}
                             onPress={handleSave}
-                            icon={updateProfileStatus.loading ?
+                            icon={isLoading ?
                                 <Spinner color="white"/> : undefined}
                         >
-                            {updateProfileStatus.loading ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
-                        </Button>
+                            <PrimaryButtonText>
+                                {isLoading ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
+                            </PrimaryButtonText>
+                        </PrimaryButton>
                     </XStack>
                 </YStack>
             )}

@@ -4,13 +4,20 @@ import {
     Oswald_500Medium,
     Oswald_600SemiBold,
     Oswald_700Bold,
-    useFonts
 } from '@expo-google-fonts/oswald'
+import {
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    useFonts
+} from '@expo-google-fonts/inter'
 import {StatusBar} from 'expo-status-bar'
-import {Platform, View, LogBox, PermissionsAndroid} from 'react-native'
-import {useEffect} from 'react'
+import {Platform, View, LogBox} from 'react-native'
+import {useEffect, useMemo} from 'react'
 import 'react-native-reanimated'
 import '../global.css'
+import {createLogger} from '@/utils/logger'
 
 import tamaguiConfig from '@/tamagui.config'
 import {PortalProvider} from '@tamagui/portal'
@@ -18,15 +25,14 @@ import {TamaguiProvider, Theme, XStack, YStack} from 'tamagui'
 import {Toast, ToastProvider, ToastViewport, useToastState} from '@tamagui/toast'
 import {CheckCircle, XCircle, AlertTriangle, Info} from '@tamagui/lucide-icons'
 
-import {TabBarNative} from "@/components/navigation/native/tabbar.tsx"
 import {NavbarWeb} from '@/components/navigation/web/navbar'
 import {Footer} from '@/components/navigation/web/Footer'
 import {AuthProvider} from '@/context/SessionContext'
 import {ThemeProvider, useThemeContext} from '@/context/ThemeSwitch.tsx'
-import {usePathname, Slot} from 'expo-router'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
-import type {ToastType} from '@/components/useToast'
-
+import {Slot, usePathname, Stack} from 'expo-router'
+import {SafeAreaProvider, useSafeAreaInsets} from 'react-native-safe-area-context'
+import type {ToastType} from '@/hooks/ui'
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 
 function CurrentToast() {
     const currentToast = useToastState()
@@ -122,9 +128,11 @@ function SafeToastViewport() {
 
 function RootContent() {
     const {currentTheme} = useThemeContext()
+    const logger = useMemo(() => createLogger('RootContent'), [])
     const pathname = usePathname()
 
-    const shouldShowFooter = Platform.OS === 'web' && pathname !== '/map'
+    const isWeb = Platform.OS === 'web'
+    const shouldShowFooter = isWeb && pathname !== '/map'
 
     useEffect(() => {
         if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -136,29 +144,83 @@ function RootContent() {
                 'Request failed due to a permanent error: Canceled',
                 'Mbgl-HttpRequest',
                 'MapLibre info',
+                'IndexOutOfBoundsException', // MapLibre Fabric renderer race condition
+                'getFeatureAt', // MapLibre marker removal race condition
             ])
         }
-    }, [])
+
+        // Global unhandled promise rejection handler
+        const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+            logger.error('Unhandled Promise Rejection', event.reason as Error | string);
+            // Prevent app crash
+            event.preventDefault?.();
+        };
+
+        // Global error handler
+        const handleError = (event: ErrorEvent) => {
+            logger.error('Uncaught Error', event.error as Error);
+            // Prevent app crash
+            event.preventDefault?.();
+        };
+
+        // Register handlers
+        if (Platform.OS === 'web') {
+            window.addEventListener('unhandledrejection', handleUnhandledRejection);
+            window.addEventListener('error', handleError);
+
+            // Cleanup
+            return () => {
+                window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+                window.removeEventListener('error', handleError);
+            };
+        } else {
+            // For React Native, handle unhandled errors at app level
+            const originalErrorHandler = ErrorUtils?.getGlobalHandler?.();
+            if (ErrorUtils?.setGlobalHandler) {
+                ErrorUtils.setGlobalHandler((error: Error, isFatal?: boolean) => {
+                    logger.error('Uncaught Error (React Native)', error);
+                    // Still call original handler if needed
+                    originalErrorHandler?.(error, isFatal);
+                });
+            }
+        }
+    }, [logger])
 
     return (
-        <Theme name={currentTheme}>
-            <ToastProvider>
-                <AuthProvider>
-                    <CurrentToast/>
-                    <View style={{flex: 1}}>
-                        {Platform.OS === 'web' ? <NavbarWeb/> : <TabBarNative/>}
-                        <View style={{flex: 1}}>
-                            <Slot/>
-                        </View>
-                        {shouldShowFooter && <Footer/>}
-                        <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
-                    </View>
-                </AuthProvider>
-                <SafeToastViewport/>
-            </ToastProvider>
-        </Theme>
-    )
+         <ActionSheetProvider>
+            <Theme name={currentTheme}>
+                <ToastProvider>
+                    <AuthProvider>
+                        <CurrentToast/>
+                        {isWeb ? (
+                            <View style={{flex: 1}}>
+                                <NavbarWeb/>
+                                <View style={{flex: 1}}>
+                                    <Slot/>
+                                </View>
+                                {shouldShowFooter && <Footer/>}
+                                <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
+                            </View>
+                        ) : (
+                            <Stack screenOptions={{headerShown: false}}>
+                                <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+                                <Stack.Screen name="(auth)" options={{headerShown: false}}/>
+                                <Stack.Screen name="(profile)" options={{headerShown: false}}/>
+                                <Stack.Screen name="(about)" options={{headerShown: false}}/>
+                                <Stack.Screen name="(other)" options={{headerShown: false}}/>
+                            </Stack>
+                        )}
+                    </AuthProvider>
+                    <SafeToastViewport/>
+                </ToastProvider>
+            </Theme>
+         </ActionSheetProvider>
+    );
 }
+
+export const unstable_settings = {
+    anchor: '(tabs)',
+};
 
 export default function RootLayout() {
     const [loaded] = useFonts({
@@ -166,17 +228,23 @@ export default function RootLayout() {
         Oswald_500Medium,
         Oswald_600SemiBold,
         Oswald_700Bold,
+        Inter_400Regular,
+        Inter_500Medium,
+        Inter_600SemiBold,
+        Inter_700Bold,
     })
 
     if (!loaded) return null
 
     return (
-        <TamaguiProvider config={tamaguiConfig}>
-            <PortalProvider shouldAddRootHost>
-                <ThemeProvider>
-                    <RootContent/>
-                </ThemeProvider>
-            </PortalProvider>
-        </TamaguiProvider>
+        <SafeAreaProvider>
+            <TamaguiProvider config={tamaguiConfig}>
+                <PortalProvider shouldAddRootHost>
+                    <ThemeProvider>
+                        <RootContent/>
+                    </ThemeProvider>
+                </PortalProvider>
+            </TamaguiProvider>
+        </SafeAreaProvider>
     )
 }
