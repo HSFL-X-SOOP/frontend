@@ -12,7 +12,7 @@ import {
     Separator,
     Tabs
 } from "tamagui";
-import {User, Anchor, Home} from '@tamagui/lucide-icons';
+import {User, Anchor, Home, Bell} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
 import {useTranslation, useToast} from '@/hooks/ui';
 import {ProfileTab} from '@/components/profile/ProfileTab';
@@ -20,6 +20,7 @@ import {BoatsTab} from '@/components/profile/BoatsTab';
 import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
 import {MyNotificationsTab} from '@/components/profile/MyNotificationsTab';
 import {useLocationInfo, useUser} from '@/hooks/data';
+import {DetailedLocationDTO} from '@/api/models/location';
 
 export default function ProfileScreen() {
     const router = useRouter();
@@ -28,10 +29,12 @@ export default function ProfileScreen() {
     const {session, updateProfile: updateSessionProfile} = useSession();
     const {getProfile, loading: isLoadingProfile} = useUser();
     const {
-        isHarborMaster
+        isHarborMaster,
+        fetchLocationInfo
     } = useLocationInfo();
 
     const [activeTab, setActiveTab] = useState("profile");
+    const [harborLocation, setHarborLocation] = useState<DetailedLocationDTO | null>(null);
 
     useEffect(() => {
         if (!session?.profile) {
@@ -49,6 +52,22 @@ export default function ProfileScreen() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [session?.profile]); // getProfile is a hook function and changes on every render
 
+    // Fetch harbor location if user is harbor master
+    useEffect(() => {
+        if (isHarborMaster && !harborLocation) {
+            void fetchLocationInfo(
+                (locationData) => {
+                    setHarborLocation(locationData);
+                },
+                (error) => {
+                    // Silent fail - harbor name just won't show in tab
+                    console.error('Failed to fetch harbor location:', error);
+                }
+            );
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isHarborMaster, harborLocation]); // fetchLocationInfo is a hook function
+
     if (!session?.profile && isLoadingProfile) {
         return (
             <View style={{flex: 1}}>
@@ -60,7 +79,7 @@ export default function ProfileScreen() {
         );
     }
 
-    if (!session?.profile && !isLoadingProfile) {
+    if ((!session?.profile || session?.profile?.profileCreatedAt === null) && !isLoadingProfile) {
         return (
             <View style={{flex: 1}}>
                 <YStack flex={1} backgroundColor="$content3" alignItems="center" justifyContent="center" gap="$5"
@@ -122,10 +141,11 @@ export default function ProfileScreen() {
                                 elevation="$3"
                             >
                                 <Tabs.Tab
-                                    flex={0.5}
+                                    flex={1}
                                     value="profile"
                                     borderRadius="$4"
-                                    paddingHorizontal="$4"
+                                    paddingHorizontal="$3"
+                                    paddingVertical="$3"
                                     backgroundColor={activeTab === "profile" ? "$accent7" : "transparent"}
                                     borderWidth={activeTab === "profile" ? 2 : 0}
                                     borderColor={activeTab === "profile" ? "$accent8" : "transparent"}
@@ -137,25 +157,29 @@ export default function ProfileScreen() {
                                     hoverStyle={{backgroundColor: activeTab === "profile" ? "$accent5" : "$content2"}}
                                     animation="quick"
                                     scale={activeTab === "profile" ? 1 : 0.95}
+                                    minHeight={60}
                                 >
-                                    <XStack gap="$3" alignItems="center" justifyContent="center">
-                                        <User size={activeTab === "profile" ? 22 : 20}
+                                    <YStack gap="$1.5" alignItems="center" justifyContent="center" width="100%">
+                                        <User size={activeTab === "profile" ? 20 : 18}
                                               color={"$accent7"}/>
                                         <Text
-                                            fontSize={activeTab === "profile" ? "$5" : "$4"}
-                                            fontWeight={activeTab === "profile" ? "800" : "600"}
+                                            fontSize={activeTab === "profile" ? 13 : 12}
+                                            fontWeight={activeTab === "profile" ? "700" : "600"}
                                             color={"$accent7"}
-                                            letterSpacing={activeTab === "profile" ? 0.5 : 0}
+                                            textAlign="center"
+                                            width="100%"
+                                            paddingHorizontal="$1"
                                         >
                                             {t('profile.tabs.profile')}
                                         </Text>
-                                    </XStack>
+                                    </YStack>
                                 </Tabs.Tab>
                                 {/* <Tabs.Tab
                                     flex={1}
                                     value="boats"
                                     borderRadius="$4"
-                                    paddingHorizontal="$4"
+                                    paddingHorizontal="$3"
+                                    paddingVertical="$3"
                                     backgroundColor={activeTab === "boats" ? "$accent7" : "transparent"}
                                     borderWidth={activeTab === "boats" ? 2 : 0}
                                     borderColor={activeTab === "boats" ? "$accent8" : "transparent"}
@@ -167,26 +191,29 @@ export default function ProfileScreen() {
                                     hoverStyle={{backgroundColor: activeTab === "boats" ? "$accent5" : "$content2"}}
                                     animation="quick"
                                     scale={activeTab === "boats" ? 1 : 0.95}
+                                    minHeight={60}
                                 >
-                                    <XStack gap="$3" alignItems="center" justifyContent="center" >
-                                        <Anchor size={activeTab === "boats" ? 22 : 20}
+                                    <YStack gap="$1.5" alignItems="center" justifyContent="center" width="100%">
+                                        <Anchor size={activeTab === "boats" ? 20 : 18}
                                                 color={"$accent7"}/>
                                         <Text
-                                            fontSize={activeTab === "boats" ? "$5" : "$4"}
-                                            fontWeight={activeTab === "boats" ? "800" : "600"}
+                                            fontSize={activeTab === "boats" ? 13 : 12}
+                                            fontWeight={activeTab === "boats" ? "700" : "600"}
                                             color={"$accent7"}
-                                            letterSpacing={activeTab === "boats" ? 0.5 : 0}
-                                            
+                                            textAlign="center"
+                                            width="100%"
+                                            paddingHorizontal="$1"
                                         >
                                             {t('profile.tabs.boats')}
                                         </Text>
-                                    </XStack>
+                                    </YStack>
                                 </Tabs.Tab> */}
                                 <Tabs.Tab
-                                    flex={1}
+                                    flex={activeTab === "myNotifications" ? 1.5 : 1}
                                     value="myNotifications"
                                     borderRadius="$4"
-                                    paddingHorizontal="$4"
+                                    paddingHorizontal="$3"
+                                    paddingVertical="$3"
                                     backgroundColor={activeTab === "myNotifications" ? "$accent7" : "transparent"}
                                     borderWidth={activeTab === "myNotifications" ? 2 : 0}
                                     borderColor={activeTab === "myNotifications" ? "$accent8" : "transparent"}
@@ -198,25 +225,31 @@ export default function ProfileScreen() {
                                     hoverStyle={{backgroundColor: activeTab === "myNotifications" ? "$accent5" : "$content2"}}
                                     animation="quick"
                                     scale={activeTab === "myNotifications" ? 1 : 0.95}
+                                    minHeight={60}
                                 >
-                                    <XStack gap="$3" alignItems="center" justifyContent="center">
+                                    <YStack gap="$1.5" alignItems="center" justifyContent="center" width="100%">
+                                        <Bell size={activeTab === "myNotifications" ? 20 : 18}
+                                              color={"$accent7"}/>
                                         <Text
-                                            fontSize={activeTab === "myNotifications" ? "$5" : "$4"}
-                                            fontWeight={activeTab === "myNotifications" ? "800" : "600"}
+                                            fontSize={activeTab === "myNotifications" ? 12 : 9}
+                                            fontWeight={activeTab === "myNotifications" ? "700" : "600"}
                                             color={"$accent7"}
-                                            letterSpacing={activeTab === "myNotifications" ? 0.5 : 0}
+                                            textAlign="center"
+                                            width="100%"
+                                            paddingHorizontal="$1"
+                                            numberOfLines={1}
                                         >
                                             {t('profile.tabs.myNotifications')}
                                         </Text>
-                                    </XStack>
+                                    </YStack>
                                 </Tabs.Tab>
                                 {isHarborMaster && (
                                     <Tabs.Tab
                                         flex={1}
                                         value="harbor"
                                         borderRadius="$4"
-                                        paddingVertical="$3.5"
-                                        paddingHorizontal="$4"
+                                        paddingHorizontal="$3"
+                                        paddingVertical="$3"
                                         backgroundColor={activeTab === "harbor" ? "$accent7" : "transparent"}
                                         borderWidth={activeTab === "harbor" ? 2 : 0}
                                         borderColor={activeTab === "harbor" ? "$accent8" : "transparent"}
@@ -228,19 +261,22 @@ export default function ProfileScreen() {
                                         hoverStyle={{backgroundColor: activeTab === "harbor" ? "$accent5" : "$content2"}}
                                         animation="quick"
                                         scale={activeTab === "harbor" ? 1 : 0.95}
+                                        minHeight={60}
                                     >
-                                        <XStack gap="$3" alignItems="center" justifyContent="center">
-                                            <Home size={activeTab === "harbor" ? 22 : 20}
+                                        <YStack gap="$1.5" alignItems="center" justifyContent="center" width="100%">
+                                            <Home size={activeTab === "harbor" ? 20 : 18}
                                                   color={"$accent7"}/>
                                             <Text
-                                                fontSize={activeTab === "harbor" ? "$5" : "$4"}
-                                                fontWeight={activeTab === "harbor" ? "800" : "600"}
+                                                fontSize={activeTab === "harbor" ? 13 : 12}
+                                                fontWeight={activeTab === "harbor" ? "700" : "600"}
                                                 color={"$accent7"}
-                                                letterSpacing={activeTab === "harbor" ? 0.5 : 0}
+                                                textAlign="center"
+                                                width="100%"
+                                                paddingHorizontal="$1"
                                             >
-                                                {t('harbor.title')}
+                                                {harborLocation?.name || t('harbor.manageHarbor')}
                                             </Text>
-                                        </XStack>
+                                        </YStack>
                                     </Tabs.Tab>
                                 )}
                             </Tabs.List>
