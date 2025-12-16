@@ -32,6 +32,7 @@ import {ThemeProvider, useThemeContext} from '@/context/ThemeSwitch.tsx'
 import {Slot, usePathname, Stack} from 'expo-router'
 import {SafeAreaProvider, useSafeAreaInsets} from 'react-native-safe-area-context'
 import type {ToastType} from '@/hooks/ui'
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 
 function CurrentToast() {
     const currentToast = useToastState()
@@ -184,34 +185,36 @@ function RootContent() {
     }, [logger])
 
     return (
-        <Theme name={currentTheme}>
-            <ToastProvider>
-                <AuthProvider>
-                    <CurrentToast/>
-                    {isWeb ? (
-                        <View style={{flex: 1}}>
-                            <NavbarWeb/>
+         <ActionSheetProvider>
+            <Theme name={currentTheme}>
+                <ToastProvider>
+                    <AuthProvider>
+                        <CurrentToast/>
+                        {isWeb ? (
                             <View style={{flex: 1}}>
-                                <Slot/>
+                                <NavbarWeb/>
+                                <View style={{flex: 1}}>
+                                    <Slot/>
+                                </View>
+                                {shouldShowFooter && <Footer/>}
+                                <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
                             </View>
-                            {shouldShowFooter && <Footer/>}
-                            <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
-                        </View>
-                    ) : (
-                        <Stack screenOptions={{headerShown: false}}>
-                            <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-                            <Stack.Screen name="(auth)" options={{headerShown: false}}/>
-                            <Stack.Screen name="(map)" options={{headerShown: false}}/>
-                            <Stack.Screen name="(dashboard)" options={{headerShown: false}}/>
-                            <Stack.Screen name="(profile)" options={{headerShown: false}}/>
-                            <Stack.Screen name="(about)" options={{headerShown: false}}/>
-                            <Stack.Screen name="(other)" options={{headerShown: false}}/>
-                        </Stack>
-                    )}
-                </AuthProvider>
-                <SafeToastViewport/>
-            </ToastProvider>
-        </Theme>
+                        ) : (
+                            <Stack screenOptions={{headerShown: false}}>
+                                <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+                                <Stack.Screen name="(auth)" options={{headerShown: false}}/>
+                                <Stack.Screen name="(map)" options={{headerShown: false}}/>
+                                <Stack.Screen name="(dashboard)" options={{headerShown: false}}/>
+                                <Stack.Screen name="(profile)" options={{headerShown: false}}/>
+                                <Stack.Screen name="(about)" options={{headerShown: false}}/>
+                                <Stack.Screen name="(other)" options={{headerShown: false}}/>
+                            </Stack>
+                        )}
+                    </AuthProvider>
+                    <SafeToastViewport/>
+                </ToastProvider>
+            </Theme>
+         </ActionSheetProvider>
     );
 }
 

@@ -1,9 +1,9 @@
 import { MarinaNameWithId } from '@/types/marina';
-import { ChevronDown } from '@tamagui/lucide-icons';
 import { Router } from 'expo-router';
 import { useMemo } from 'react';
 import { SelectWithSheet } from '@/components/ui/SelectWithSheet';
-import { SelectItem } from '@/types/select';
+import { Platform } from 'react-native';
+import { ActionSheetSelect } from '@/components/ui/ActionSheetSelect';
 
 interface NavigateDashboardDropdownMenuProps {
     router: Router;
@@ -17,6 +17,7 @@ export function NavigateDashboardDropdownMenu(props: NavigateDashboardDropdownMe
     const {router, isDark, sensorLocations, selectedMarina, onSelectMarina} = props;
 
     const handleValueChange = (value: string) => {
+        console.log('Selected marina:', value);
         if (onSelectMarina) {
             onSelectMarina(value);
         } else {
@@ -24,15 +25,23 @@ export function NavigateDashboardDropdownMenu(props: NavigateDashboardDropdownMe
         }
     };
 
-    const locationOptions: SelectItem<string>[] = useMemo(() =>
+    const locationOptions = useMemo(() =>
             sensorLocations.map(item => ({
-                value: item.name,
-                label: item.name
+                label: item.name,
+                value: item.name
             })),
         [sensorLocations]
     );
 
-    return (
+    const mobileDropdown = (        
+        <ActionSheetSelect
+            items={locationOptions}
+            value={selectedMarina}
+            placeholder="Select Location"
+            onChange={handleValueChange}
+            />
+        )
+    const webDropdown = (
         <SelectWithSheet
             id="location-select"
             name="location"
@@ -41,5 +50,10 @@ export function NavigateDashboardDropdownMenu(props: NavigateDashboardDropdownMe
             onValueChange={handleValueChange}
             placeholder="Select Location"
         />
-    );
+    )
+
+
+
+    return Platform.OS === 'web' ? webDropdown : mobileDropdown;
 }
+
