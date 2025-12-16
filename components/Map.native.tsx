@@ -1,16 +1,8 @@
 import {useSensorDataNew} from "@/hooks/data";
-import {
-    useSupercluster,
-    useMapFilters,
-    useMapCamera,
-    useMapState,
-    useMapStyle,
-    useMapSpeedDialActions
-} from "@/hooks/map";
+import {useSupercluster, useMapFilters, useMapCamera, useMapState, useMapStyle,useMapSpeedDialActions} from "@/hooks/map";
 import {MapView, Camera, type CameraRef, type MapViewRef} from "@maplibre/maplibre-react-native";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {View} from "react-native";
-import type {LocationWithBoxes} from "@/api/models/sensor";
 import SensorMarker from "./map/markers/NativeSensorMarker";
 import ClusterMarker from "./map/markers/NativeClusterMarker";
 import MapSensorBottomSheet, {MapSensorBottomSheetRef} from "./map/controls/MapSensorBottomSheet";
@@ -19,6 +11,7 @@ import {SpeedDial} from "@/components/speeddial";
 import {Plus} from "@tamagui/lucide-icons";
 import MapFilterButton, {MapFilterState} from "./map/controls/MapFilterButton";
 import {MAP_CONSTANTS} from '@/config/constants';
+import {LocationWithBoxes} from "@/api/models/sensor.ts";
 
 interface MapProps {
     module1Visible?: boolean;
@@ -35,13 +28,8 @@ export default function NativeMap(props: MapProps) {
     const cameraRef = useRef<CameraRef>(null);
     const bottomSheetRef = useRef<MapSensorBottomSheetRef>(null);
     const hasSnappedForGestureRef = useRef(false);
-
-    // DATA
-    const {loading, fetchData} = useSensorDataNew();
     const [content, setContent] = useState<LocationWithBoxes[]>([]);
-    const [mapReady, setMapReady] = useState(false);
-    const [markersReady, setMarkersReady] = useState(false);
-    const [isUpdatingMarkers, setIsUpdatingMarkers] = useState(false);
+    const {loading, fetchData} = useSensorDataNew();
 
     useEffect(() => {
         void fetchData(
@@ -51,41 +39,6 @@ export default function NativeMap(props: MapProps) {
             }
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // fetchData is a hook function and changes on every render, causing infinite loop if included
-
-    // Delay marker rendering after map is ready to prevent race conditions
-    useEffect(() => {
-        if (mapReady && content.length > 0) {
-            // Temporarily disable marker interactions during update
-            setIsUpdatingMarkers(true);
-
-            // Wait for MapLibre to fully initialize before rendering markers
-            const readyTimer = setTimeout(() => {
-                setMarkersReady(true);
-            }, 300);
-
-            // Re-enable interactions after markers are rendered + additional sync time
-            const interactionTimer = setTimeout(() => {
-                setIsUpdatingMarkers(false);
-            }, 800); // 300ms for markers + 500ms for native layer sync
-
-            return () => {
-                clearTimeout(readyTimer);
-                clearTimeout(interactionTimer);
-            };
-        } else {
-            setMarkersReady(false);
-            setIsUpdatingMarkers(false);
-        }
-    }, [mapReady, content.length]);
-
-    // Clean up markers before unmounting to prevent MapLibre race condition
-    useEffect(() => {
-        return () => {
-            // Set markers to empty before unmount to allow MapLibre to clean up properly
-            setMarkersReady(false);
-            setMapReady(false);
-        };
     }, []);
 
     // CONSOLIDATED HOOKS - Extract shared logic
@@ -122,7 +75,7 @@ export default function NativeMap(props: MapProps) {
         highlightedSensorId, setHighlightedSensorId
     } = useMapState();
 
-    const {mapStyle} = useMapStyle(isDark);
+    const { mapStyle } = useMapStyle(isDark);
 
     const visibleSensors = useMemo(() => {
         return filteredContent.filter(sensor => {
@@ -146,21 +99,7 @@ export default function NativeMap(props: MapProps) {
         zoomLevel
     );
 
-    // Detect cluster changes and temporarily disable interactions to prevent race conditions
-    useEffect(() => {
-        if (markersReady && clusters.length > 0) {
-            setIsUpdatingMarkers(true);
-            const timer = setTimeout(() => {
-                setIsUpdatingMarkers(false);
-            }, 600); // Wait for native layer to sync after cluster update
-            return () => clearTimeout(timer);
-        }
-    }, [clusters.length, markersReady]);
-
     const pins = useMemo(() => {
-        // Don't render markers until map is fully ready or during updates to prevent race conditions
-        if (!markersReady || isUpdatingMarkers) return [];
-
         return clusters.map(cluster => {
             const [longitude, latitude] = cluster.geometry.coordinates;
             const {cluster: isCluster, point_count, locationWithBoxes} = cluster.properties;
@@ -188,7 +127,7 @@ export default function NativeMap(props: MapProps) {
             );
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [markersReady, isUpdatingMarkers, clusters, getClusterExpansionZoom, highlightedSensorId]);
+    }, [clusters, getClusterExpansionZoom, highlightedSensorId]);
 
     // ========== CAMERA HELPERS ==========
 
@@ -213,10 +152,6 @@ export default function NativeMap(props: MapProps) {
 
     const handleSensorSelect = (sensor: { location?: { id: number; coordinates: { lat: number; lon: number } } }) => {
         if (!sensor.location) return;
-        // Prevent interaction during marker updates to avoid MapLibre race condition
-        if (isUpdatingMarkers) {
-            return;
-        }
         const {lat, lon} = sensor.location.coordinates;
         setHighlightedSensorId(sensor.location.id);
         flyTo(lon, lat);
@@ -225,16 +160,8 @@ export default function NativeMap(props: MapProps) {
     };
 
     const handleClusterPress = (longitude: number, latitude: number, clusterId: number) => {
-        // Prevent interaction during marker updates to avoid MapLibre race condition
-        if (isUpdatingMarkers) {
-            return;
-        }
-        try {
-            const expansionZoom = getClusterExpansionZoom(clusterId);
-            flyTo(longitude, latitude, expansionZoom);
-        } catch (error) {
-            // Silently handle cluster expansion errors during transitions - this is expected
-        }
+        const expansionZoom = getClusterExpansionZoom(clusterId);
+        flyTo(longitude, latitude, expansionZoom);
     };
 
     const handleRegionIsChanging = () => {
@@ -248,50 +175,52 @@ export default function NativeMap(props: MapProps) {
     const handleRegionDidChange = async () => {
         hasSnappedForGestureRef.current = false;
 
+        try {
+            const map = mapRef.current;
+            if (!map) return;
 
-        const map = mapRef.current;
-        if (!map) return;
+            const [visibleBounds, currentZoom] = await Promise.all([
+                map.getVisibleBounds?.(),
+                map.getZoom?.()
+            ]);
 
-        const [visibleBounds, currentZoom] = await Promise.all([
-            map.getVisibleBounds?.(),
-            map.getZoom?.()
-        ]);
+            if (!visibleBounds || visibleBounds.length !== 2) return;
 
-        if (!visibleBounds || visibleBounds.length !== 2) return;
+            const [a, b] = visibleBounds as [number[], number[]];
 
-        const [a, b] = visibleBounds as [number[], number[]];
+            const west = Math.min(a[0], b[0]);
+            const south = Math.min(a[1], b[1]);
+            const east = Math.max(a[0], b[0]);
+            const north = Math.max(a[1], b[1]);
 
-        const west = Math.min(a[0], b[0]);
-        const south = Math.min(a[1], b[1]);
-        const east = Math.max(a[0], b[0]);
-        const north = Math.max(a[1], b[1]);
+            const [prevWest, prevSouth, prevEast, prevNorth] = viewportBounds;
+            const threshold = 0.0001;
 
-        const [prevWest, prevSouth, prevEast, prevNorth] = viewportBounds;
-        const threshold = 0.0001;
+            const boundsChanged =
+                Math.abs(west - prevWest) > threshold ||
+                Math.abs(south - prevSouth) > threshold ||
+                Math.abs(east - prevEast) > threshold ||
+                Math.abs(north - prevNorth) > threshold;
 
-        const boundsChanged =
-            Math.abs(west - prevWest) > threshold ||
-            Math.abs(south - prevSouth) > threshold ||
-            Math.abs(east - prevEast) > threshold ||
-            Math.abs(north - prevNorth) > threshold;
+            if (boundsChanged) {
+                setViewportBounds([west, south, east, north]);
+            }
 
-        if (boundsChanged) {
-            setViewportBounds([west, south, east, north]);
+            if (typeof currentZoom === 'number' && Math.abs(currentZoom - zoomLevel) > 0.01) {
+                setZoomLevel(currentZoom);
+            }
+
+            const newLon = (west + east) / 2;
+            const newLat = (south + north) / 2;
+            if (
+                Math.abs(newLon - center[0]) > threshold ||
+                Math.abs(newLat - center[1]) > threshold
+            ) {
+                setCenter([newLon, newLat]);
+            }
+        } catch (error) {
+            console.debug('Error getting map state:', error);
         }
-
-        if (typeof currentZoom === 'number' && Math.abs(currentZoom - zoomLevel) > 0.01) {
-            setZoomLevel(currentZoom);
-        }
-
-        const newLon = (west + east) / 2;
-        const newLat = (south + north) / 2;
-        if (
-            Math.abs(newLon - center[0]) > threshold ||
-            Math.abs(newLat - center[1]) > threshold
-        ) {
-            setCenter([newLon, newLat]);
-        }
-
     };
 
     // ========== SPEED DIAL ==========
@@ -347,7 +276,6 @@ export default function NativeMap(props: MapProps) {
                 zoomEnabled
                 onRegionIsChanging={handleRegionIsChanging}
                 onRegionDidChange={handleRegionDidChange}
-                onDidFinishLoadingMap={() => setMapReady(true)}
             >
                 <Camera
                     ref={cameraRef}
