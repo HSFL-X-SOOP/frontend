@@ -2,24 +2,16 @@ import { styled, Button } from 'tamagui'
 
 export const PrimaryButton = styled(Button, {
     name: 'PrimaryButton',
-    unstyled: true,
-    size: '$5',
     borderRadius: '$6',
-    paddingHorizontal: '$6',
-    paddingVertical: '$3',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '$accent5',
     borderWidth: 1,
     borderColor: '$accent7',
-    fontWeight: '600',
-    fontSize: '$4',
     shadowColor: '$accent3',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 2,
+
     hoverStyle: {
         backgroundColor: '$accent8',
         borderColor: '$accent8',
@@ -49,21 +41,12 @@ export const PrimaryButton = styled(Button, {
 
 export const SecondaryButton = styled(Button, {
     name: 'SecondaryButton',
-    unstyled: true,
-
-    // Layout
-    size: '$5',
     borderRadius: '$6',
-    paddingHorizontal: '$6',
-    paddingVertical: '$3',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent',
     borderWidth: 1.5,
     borderColor: '$accent7',
-    fontWeight: '600',
-    fontSize: '$4',
     shadowColor: '$accent3',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -78,7 +61,6 @@ export const SecondaryButton = styled(Button, {
     },
 
     pressStyle: {
-        backgroundColor: '$ctaBgHover',
         borderColor: '$accent6',
         scale: 0.98,
     },
@@ -100,7 +82,6 @@ export const PrimaryButtonText = styled(Button.Text, {
     backgroundColor: 'transparent',
     color: 'white',
     fontWeight: '600',
-    fontSize: '$4',
 })
 
 export const SecondaryButtonText = styled(Button.Text, {
@@ -108,7 +89,6 @@ export const SecondaryButtonText = styled(Button.Text, {
     backgroundColor: 'transparent',
     color: '$accent9',
     fontWeight: '600',
-    fontSize: '$4',
 })
 
 export const IconButton = styled(Button, {

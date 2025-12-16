@@ -317,8 +317,8 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
     return (
         <ScrollView showsVerticalScrollIndicator={false}>
             <YStack gap="$4">
-                {/* Header with Edit Button */}
-                <XStack justifyContent="space-between" alignItems="center">
+                {/* Header */}
+                <YStack gap="$3">
                     <YStack>
                         <H4 color="$accent7" fontFamily="$oswald">
                             {displayData.name || t('harbor.manageHarbor')}
@@ -327,7 +327,8 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                             {t('harbor.manageDescription')}
                         </Text>
                     </YStack>
-                    <XStack gap="$2">
+                    {/* Edit Button */}
+                    <XStack justifyContent="flex-end" alignItems="center">
                         {!isEditing && (
                             <PrimaryButton
                                 size="$3"
@@ -340,7 +341,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                             </PrimaryButton>
                         )}
                     </XStack>
-                </XStack>
+                </YStack>
 
                 {/* Harbor Image Section */}
                 <Card backgroundColor="$content1" borderRadius="$6" padding="$5"
@@ -350,7 +351,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                             <View
                                 width={40}
                                 height={40}
-                                backgroundColor="$accent2"
+                                backgroundColor="$content2"
                                 borderRadius="$8"
                                 alignItems="center"
                                 justifyContent="center"
@@ -397,7 +398,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                                             }}
                                         >
                                             {currentImageUrl ? (
-                                                <YStack width="100%" height="100%" gap="$2">
+                                                <YStack width="100%" gap="$2">
                                                     <Image
                                                         key={imageKey}
                                                         source={{uri: currentImageUrl}}
@@ -424,7 +425,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                                                         width={80}
                                                         height={80}
                                                         borderRadius="$10"
-                                                        backgroundColor="$accent2"
+                                                        backgroundColor="$content2"
                                                         alignItems="center"
                                                         justifyContent="center"
                                                     >
@@ -458,7 +459,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                                             onPress={triggerFileInput}
                                         >
                                             {currentImageUrl ? (
-                                                <YStack width="100%" height="100%" gap="$2">
+                                                <YStack width="100%" gap="$2">
                                                     <Image
                                                         key={imageKey}
                                                         source={{uri: currentImageUrl}}
@@ -485,7 +486,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                                                         width={80}
                                                         height={80}
                                                         borderRadius="$10"
-                                                        backgroundColor="$accent2"
+                                                        backgroundColor="$content2"
                                                         alignItems="center"
                                                         justifyContent="center"
                                                     >
@@ -526,7 +527,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                             <View
                                 width={40}
                                 height={40}
-                                backgroundColor="$accent2"
+                                backgroundColor="$content2"
                                 borderRadius="$8"
                                 alignItems="center"
                                 justifyContent="center"
@@ -593,7 +594,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                             <View
                                 width={40}
                                 height={40}
-                                backgroundColor="$accent2"
+                                backgroundColor="$content2"
                                 borderRadius="$8"
                                 alignItems="center"
                                 justifyContent="center"
@@ -630,7 +631,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                             <View
                                 width={40}
                                 height={40}
-                                backgroundColor="$accent2"
+                                backgroundColor="$content2"
                                 borderRadius="$8"
                                 alignItems="center"
                                 justifyContent="center"
@@ -667,7 +668,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                             <View
                                 width={40}
                                 height={40}
-                                backgroundColor="$accent2"
+                                backgroundColor="$content2"
                                 borderRadius="$8"
                                 alignItems="center"
                                 justifyContent="center"
@@ -767,26 +768,26 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                 </Card>
 
                 {isEditing && (
-                    <XStack gap="$3" justifyContent="flex-end" paddingBottom="$4">
+                    <XStack gap="$3" justifyContent="flex-end" paddingBottom="$4" flexWrap="wrap">
                         <SecondaryButton
-                            flex={1}
+                            minWidth={120}
                             size="$4"
                             onPress={handleCancel}
                             disabled={isSaving}
                             icon={<X size={20}/>}
                         >
-                            <SecondaryButtonText>
+                            <SecondaryButtonText flexShrink={0} flexWrap="nowrap">
                                 {t('profile.actions.cancel')}
                             </SecondaryButtonText>
                         </SecondaryButton>
                         <PrimaryButton
-                            flex={1}
+                            minWidth={180}
                             size="$4"
                             disabled={isSaving}
                             onPress={handleSave}
                             icon={isSaving ? <Spinner color="white"/> : <Save size={20}/>}
                         >
-                            <PrimaryButtonText>
+                            <PrimaryButtonText flexShrink={0} flexWrap="nowrap">
                                 {isSaving ? t('profile.actions.saving') : t('profile.actions.saveChanges')}
                             </PrimaryButtonText>
                         </PrimaryButton>

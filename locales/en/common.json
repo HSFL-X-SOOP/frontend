@@ -139,6 +139,13 @@
       "feedbackSupport": "Feedback & Support",
       "calendar": "Calendar"
     },
+    "nameSection": {
+      "title": "Your Name",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "firstNamePlaceholder": "Enter your first name",
+      "lastNamePlaceholder": "Enter your last name"
+    },
     "languageSection": {
       "title": "Language",
       "german": "German",
