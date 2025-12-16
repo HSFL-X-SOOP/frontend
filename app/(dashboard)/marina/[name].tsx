@@ -362,11 +362,6 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
                             <Text color="white" fontSize="$3" opacity={0.9} marginBottom="$1">
                                 {t('dashboard.title')}
                             </Text>
-                            <H1 color="white" fontSize={media.lg ? "$10" : "$8"} fontWeight="700"
-                                textShadowColor="rgba(0,0,0,0.2)" textShadowOffset={{width: 0, height: 1}}
-                                textShadowRadius={2}>
-                                {harbourName || t('dashboard.loading')}
-                            </H1>
                             <View style={{width: 300}}>
                                 <XStack gap={20}>
                                     <NavigateDashboardDropdownMenu
