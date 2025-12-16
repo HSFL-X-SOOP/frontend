@@ -9,6 +9,8 @@ import {SelectItem} from '@/types/select';
 import {fuzzyMatch} from '@/utils/searchUtils';
 import {PrimaryButton, PrimaryButtonText} from '@/types/button';
 import {calculateDistance, filterSensorsByType, getLatestMeasurementTime} from '@/utils/sensorUtils';
+import { ActionSheetSelect } from '@/components/ui/ActionSheetSelect';
+import { Platform } from 'react-native';
 
 interface SensorListProps {
     sensors: LocationWithBoxes[];
@@ -106,6 +108,49 @@ export default function SensorList({
         );
     }
 
+    const setFilterTypeDropdownWeb = (
+        <SelectWithSheet
+            id="filter-type-select"
+            name="filterType"
+            items={filterTypeItems}
+            value={filterType}
+            onValueChange={setFilterType}
+            placeholder={t('sensor.filterType')}
+        />
+    )
+
+    const sortByDropdownWeb = (
+        <SelectWithSheet
+            id="sort-by-select"
+            name="sortBy"
+            items={sortByItems}
+            value={sortBy}
+            onValueChange={setSortBy}
+            placeholder={t('sensor.sortBy')}
+        />
+    )
+
+    const sortByDropdownMobile = (
+        <ActionSheetSelect
+            items={sortByItems}
+            value={sortBy}  
+            placeholder={t('sensor.sortBy')}
+            onChange={setSortBy}
+        />
+    )
+
+    const setFilterTypeDropdownMobile = (        
+        <ActionSheetSelect
+            items={filterTypeItems}
+            value={filterType}
+            placeholder={t('sensor.filterType')}
+            onChange={setFilterType}
+        />
+    )
+
+    const setFilterTypeDropdown = Platform.OS === 'web' ? setFilterTypeDropdownWeb : setFilterTypeDropdownMobile;
+    const sortByDropdown = Platform.OS === 'web' ? sortByDropdownWeb : sortByDropdownMobile;
+
     return (
         <YStack flex={1}>
             {/* Fixed Header Section - NOT scrollable */}
@@ -201,27 +246,13 @@ export default function SensorList({
                         {/* Filter Type */}
                         <XStack flex={1} minWidth="45%" gap="$2" alignItems="center">
                             <Filter size={16} color="$color"/>
-                            <SelectWithSheet
-                                id="filter-type-select"
-                                name="filterType"
-                                items={filterTypeItems}
-                                value={filterType}
-                                onValueChange={setFilterType}
-                                placeholder={t('sensor.filterType')}
-                            />
+                            {setFilterTypeDropdown}
                         </XStack>
 
                         {/* Sort By */}
                         <XStack flex={1} minWidth="45%" gap="$2" alignItems="center">
                             <ArrowUpDown size={16} color="$color"/>
-                            <SelectWithSheet
-                                id="sort-by-select"
-                                name="sortBy"
-                                items={sortByItems}
-                                value={sortBy}
-                                onValueChange={setSortBy}
-                                placeholder={t('sensor.sortBy')}
-                            />
+                            {sortByDropdown}
                         </XStack>
                     </XStack>
                 </YStack>
