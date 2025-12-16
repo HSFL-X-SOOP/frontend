@@ -10,13 +10,20 @@ interface NavigateDashboardDropdownMenuProps {
     sensorLocations: MarinaNameWithId[];
     isDark?: boolean;
     selectedMarina: string;
+    onSelectMarina?: (marinaName: string) => void;
 }
 
 export function NavigateDashboardDropdownMenu(props: NavigateDashboardDropdownMenuProps) {
-    const {router, isDark, sensorLocations, selectedMarina} = props;
+    const {router, isDark, sensorLocations, selectedMarina, onSelectMarina} = props;
 
     const handleValueChange = (value: string) => {
-        router.push({ pathname: '/(dashboard)/marina/[name]', params: { name: value } });
+        if (onSelectMarina) {
+            // Use callback if provided (for tabs)
+            onSelectMarina(value);
+        } else {
+            // Otherwise use router navigation (for direct routes)
+            router.push({ pathname: '/(dashboard)/marina/[name]', params: { name: value } });
+        }
     };
 
     const locationOptions: SelectItem<string>[] = useMemo(() =>

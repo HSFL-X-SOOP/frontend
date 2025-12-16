@@ -1,10 +1,17 @@
-import DashboardScreen from "@/app/(dashboard)/marina/[name].tsx";
+import DashboardScreen from "@/app/(dashboard)/marina/[name]";
+import {useState} from 'react';
 
 /**
- * Dashboard Tab - Testing with hooks
+ * Dashboard Tab - Manages marina selection without navigation
  */
 export default function DashboardTabScreen() {
+    const [selectedMarina, setSelectedMarina] = useState<string>();
+
     return (
-        <DashboardScreen/>
+        <DashboardScreen
+            key={selectedMarina} // Force remount when marina changes
+            selectedMarinaName={selectedMarina}
+            onSelectMarina={setSelectedMarina}
+        />
     );
 }

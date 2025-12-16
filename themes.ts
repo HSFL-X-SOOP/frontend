@@ -135,6 +135,7 @@ export const themes = createThemes({
                 content3: '#3f3f46',
                 content4: '#52525b',
                 ctaBgHover: 'rgba(140,212,250,0.2)',
+                ctaBgPress: 'rgba(140,212,250,0.2)',
             },
         },
     },

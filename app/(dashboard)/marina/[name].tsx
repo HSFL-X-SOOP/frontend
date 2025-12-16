@@ -70,8 +70,12 @@ import {IconButton} from '@/types/button';
 // Main Component
 // ============================================================================
 
-export default function DashboardScreen() {
-    const DEFAULT_MARINA_NAME = 'Stadthafen Flensburg "Im Jaich"';
+interface DashboardScreenProps {
+    selectedMarinaName?: string;
+    onSelectMarina?: (marinaName: string) => void;
+}
+
+export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensburg "Im Jaich"', onSelectMarina}: DashboardScreenProps = {}) {
     const DEFAULT_IMAGE_URL = "https://fastly.picsum.photos/id/17/2500/1667.jpg?hmac=HD-JrnNUZjFiP2UZQvWcKrgLoC_pc_ouUSWv8kHsJJY";
 
     const getMarinaIdByName = (name: string, locations: LocationWithBoxes[]): number | null => {
@@ -105,9 +109,11 @@ export default function DashboardScreen() {
     const {fetchLocationById} = useLocations()
     const [allSensorData, setAllSensorData] = useState<LocationWithBoxes[]>([]);
 
-    // Route params
-    let {name} = useLocalSearchParams();
-    if (!name) name = DEFAULT_MARINA_NAME;
+    // Get marina name from prop (for tabs), route params, or default
+    const routeParams = useLocalSearchParams();
+    const marinaName = useMemo(() => {
+        return routeParams.name || selectedMarinaName;
+    }, [routeParams.name, selectedMarinaName]);
 
     // User info
     const userID = session?.profile?.id ?? null;
@@ -167,9 +173,9 @@ export default function DashboardScreen() {
     }, []); // fetchSensors comes from a hook and is unstable; toast/t are static utilities
 
     useEffect(() => {
-        const id = getMarinaIdByName(name as string, allSensorData);
+        const id = getMarinaIdByName(marinaName as string, allSensorData);
         setMarinaID(id);
-    }, [name, allSensorData]);
+    }, [marinaName, allSensorData]);
 
     useEffect(() => {
         if (!marinaID) return;
@@ -368,6 +374,7 @@ export default function DashboardScreen() {
                                         router={router}
                                         sensorLocations={sensorLocations}
                                         selectedMarina={harbourName}
+                                        onSelectMarina={onSelectMarina}
                                     />
                                     {isLoggedIn && (
                                         <XStack>

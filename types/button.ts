@@ -72,7 +72,7 @@ export const SecondaryButton = styled(Button, {
     },
 
     pressStyle: {
-        backgroundColor: '$accent3',
+        backgroundColor: '$ctaBgPress',
         borderColor: '$accent6',
         scale: 0.98,
     },

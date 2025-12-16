@@ -198,14 +198,14 @@ function RootContent() {
                             <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
                         </View>
                     ) : (
-                        <Stack screenOptions={{ headerShown: false }}>
-                            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                            <Stack.Screen name="(map)" options={{ headerShown: false }} />
-                            <Stack.Screen name="(dashboard)" options={{ headerShown: false }} />
-                            <Stack.Screen name="(profile)" options={{ headerShown: false }} />
-                            <Stack.Screen name="(about)" options={{ headerShown: false }} />
-                            <Stack.Screen name="(other)" options={{ headerShown: false }} />
+                        <Stack screenOptions={{headerShown: false}}>
+                            <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+                            <Stack.Screen name="(auth)" options={{headerShown: false}}/>
+                            <Stack.Screen name="(map)" options={{headerShown: false}}/>
+                            <Stack.Screen name="(dashboard)" options={{headerShown: false}}/>
+                            <Stack.Screen name="(profile)" options={{headerShown: false}}/>
+                            <Stack.Screen name="(about)" options={{headerShown: false}}/>
+                            <Stack.Screen name="(other)" options={{headerShown: false}}/>
                         </Stack>
                     )}
                 </AuthProvider>
