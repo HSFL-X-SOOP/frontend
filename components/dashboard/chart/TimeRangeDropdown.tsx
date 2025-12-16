@@ -41,12 +41,6 @@ export function TimeRangeDropdown(props: TimeRangeDropdownProps) {
             value={selectedTimeRange}
             onValueChange={setTimeRange}
             placeholder={t('dashboard.timeRange.selectRange')}
-            triggerProps={{
-                width: 180,
-                iconAfter: ChevronDown,
-                backgroundColor: isDark ? '$gray8' : '$gray2',
-                borderColor: isDark ? '$gray7' : '$gray4',
-            }}
         />
     );
 }

@@ -2,7 +2,7 @@ import React, {JSX} from 'react';
 import { YStack } from 'tamagui';
 import type { IconProps } from '@tamagui/helpers-icon';
 
-type IconComponent = (props: IconProps) => JSX.Element;
+type IconComponent = React.ComponentType<IconProps>;
 
 interface IconContainerProps {
     icon: IconComponent;

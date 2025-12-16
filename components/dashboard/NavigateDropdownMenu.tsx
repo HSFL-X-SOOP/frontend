@@ -18,10 +18,8 @@ export function NavigateDashboardDropdownMenu(props: NavigateDashboardDropdownMe
 
     const handleValueChange = (value: string) => {
         if (onSelectMarina) {
-            // Use callback if provided (for tabs)
             onSelectMarina(value);
         } else {
-            // Otherwise use router navigation (for direct routes)
             router.push({ pathname: '/(dashboard)/marina/[name]', params: { name: value } });
         }
     };
@@ -42,12 +40,6 @@ export function NavigateDashboardDropdownMenu(props: NavigateDashboardDropdownMe
             value={selectedMarina}
             onValueChange={handleValueChange}
             placeholder="Select Location"
-            triggerProps={{
-                width: 280,
-                iconAfter: ChevronDown,
-                backgroundColor: isDark ? '$gray8' : '$gray2',
-                borderColor: isDark ? '$gray7' : '$gray4'
-            }}
         />
     );
 }

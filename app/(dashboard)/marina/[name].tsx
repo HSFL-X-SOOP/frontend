@@ -109,11 +109,7 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
     const {fetchLocationById} = useLocations()
     const [allSensorData, setAllSensorData] = useState<LocationWithBoxes[]>([]);
 
-    // Get marina name from prop (for tabs), route params, or default
     const routeParams = useLocalSearchParams();
-    const marinaName = useMemo(() => {
-        return routeParams.name || selectedMarinaName;
-    }, [routeParams.name, selectedMarinaName]);
 
     // User info
     const userID = session?.profile?.id ?? null;
@@ -172,10 +168,14 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // fetchSensors comes from a hook and is unstable; toast/t are static utilities
 
+    // Direct effect on path and prop changes - triggers all dependent API calls
     useEffect(() => {
-        const id = getMarinaIdByName(marinaName as string, allSensorData);
+        const name = routeParams.name || selectedMarinaName;
+        if (!name || !allSensorData.length) return;
+
+        const id = getMarinaIdByName(name as string, allSensorData);
         setMarinaID(id);
-    }, [marinaName, allSensorData]);
+    }, [routeParams.name, selectedMarinaName, allSensorData]);
 
     useEffect(() => {
         if (!marinaID) return;
