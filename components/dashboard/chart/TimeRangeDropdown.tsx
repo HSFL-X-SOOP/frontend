@@ -1,5 +1,4 @@
 import {useTranslation} from "@/hooks/ui";
-import {ChevronDown} from "@tamagui/lucide-icons";
 import {useMemo} from "react";
 import {SelectWithSheet} from "@/components/ui/SelectWithSheet";
 import type {SelectItem} from "@/types/select";
@@ -16,11 +15,10 @@ export type ChartTimeRange =
 interface TimeRangeDropdownProps {
     selectedTimeRange: ChartTimeRange;
     setTimeRange: (range: ChartTimeRange) => void;
-    isDark?: boolean;
 }
 
 export function TimeRangeDropdown(props: TimeRangeDropdownProps) {
-    const {selectedTimeRange, setTimeRange, isDark} = props;
+    const {selectedTimeRange, setTimeRange} = props;
     const {t} = useTranslation();
 
     const timeRangeOptions: SelectItem<ChartTimeRange>[] = useMemo(() => [

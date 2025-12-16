@@ -40,11 +40,17 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
     const cardWidth = 350;
 
     const handleNavigateToDashboard = () => {
-        if (!locationWithBoxes.location?.name) return;
-        router.push(`/marina/${locationWithBoxes.location.name}` as any);
-        setTimeout(() => {
-            closeOverlay?.();
-        }, 100);
+        const name = locationWithBoxes.location?.name;
+        if (!name) return;
+
+        // Use typed navigation to ensure correct route on native/web and auto-encode the param
+        router.push({
+            pathname: '/(dashboard)/marina/[name]',
+            params: {name},
+        });
+
+        // Close the popover after triggering navigation
+        closeOverlay?.();
     };
 
     return (

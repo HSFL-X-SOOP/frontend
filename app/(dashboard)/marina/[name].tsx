@@ -488,8 +488,8 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
                                                           textAlign="center">
                                                         {getTextFromMeasurementType(measurement.measurementType, t)}
                                                     </Text>
-                                                    <XStack alignItems="center" gap="$2">
-                                                        <H2 fontSize="$10" fontWeight="700"
+                                                    <XStack alignItems="center" gap="$2" paddingTop="$1">
+                                                        <H2 fontSize="$10" lineHeight={56} fontWeight="700"
                                                             color={getMeasurementColor(measurement.measurementType)}>
                                                             {formatMeasurementValue(measurement.value ?? 0)}
                                                         </H2>
@@ -529,8 +529,7 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
                                     <H3 fontSize="$5" fontWeight="600">{t('dashboard.historicalData')}</H3>
                                     <Text fontSize="$2" color="$gray11">{getTimeRangeLabel(timeRange, t)}</Text>
                                 </YStack>
-                                <TimeRangeDropdown selectedTimeRange={timeRange} setTimeRange={setTimeRange}
-                                                   isDark={isDark}/>
+                                <TimeRangeDropdown selectedTimeRange={timeRange} setTimeRange={setTimeRange}/>
                             </XStack>
                             <YStack gap="$3" width="100%">
                                 <LineChartCard

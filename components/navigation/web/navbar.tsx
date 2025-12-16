@@ -25,6 +25,9 @@ export function NavbarWeb() {
     const isMobileWeb = useIsMobileWeb();
     const toast = useToast();
     const insets = useSafeAreaInsets();
+    const logoSize = isMobileWeb ? 50 : 55;
+    const navbarMinHeight = logoSize + (isMobileWeb ? 12 : 16);
+    const logoVerticalOffset = isMobileWeb ? 1 : 2;
 
     const handleLogout = () => {
         logout();
@@ -36,14 +39,43 @@ export function NavbarWeb() {
     };
 
     return (
-        <XStack jc={"space-between"} backgroundColor={"$background"} alignItems={"center"} px={"$14"} $md={{px: "$4"}}
-                gap={"$4"}
-                py={"$1"}>
+        <XStack
+            jc={"space-between"}
+            backgroundColor={"$background"}
+            alignItems={"center"}
+            px={"$14"}
+            $md={{px: "$4"}}
+            gap={"$4"}
+            py={isMobileWeb ? "$1" : "$2"}
+            minHeight={navbarMinHeight}
+        >
             <Link href={"/map" as Href}>
-                <XStack ac="center" jc="flex-start" gap="$2">
-                    <LOGO size={isMobileWeb ? 50 : 55} color={t.accent8?.val}/>
-                    <Text fontSize={isMobileWeb ? 28 : 32} fontFamily={"$oswald"} alignSelf={"center"} fontWeight="bold"
-                          textAlign={"left"} color={"$accent8"}>Marlin</Text>
+                <XStack alignItems="center" jc="flex-start" gap="$2" minHeight={logoSize}>
+                    <YStack height={logoSize} justifyContent="center">
+                        <LOGO
+                            size={logoSize}
+                            color={t.accent8?.val}
+                            style={{transform: [{translateY: logoVerticalOffset}]}}
+                        />
+                    </YStack>
+                    <YStack
+                        gap="$0"
+                        justifyContent="center"
+                        alignItems="flex-start"
+                        height={logoSize}
+                    >
+                        <Text fontSize={isMobileWeb ? 28 : 32} fontFamily={"$oswald"} fontWeight="bold"
+                              textAlign={"left"} color={"$accent8"}>Marlin</Text>
+                        <Text
+                            fontSize={isMobileWeb ? 10 : 12}
+                            fontWeight="600"
+                            fontFamily={"$oswald"}
+                            color={"$accent8"}
+                            letterSpacing={1}
+                        >
+                            MARLIN - Maritime Live Information
+                        </Text>
+                    </YStack>
                 </XStack>
             </Link>
 
