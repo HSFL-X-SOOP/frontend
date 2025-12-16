@@ -2,6 +2,8 @@ import {useTranslation} from "@/hooks/ui";
 import {useMemo} from "react";
 import {SelectWithSheet} from "@/components/ui/SelectWithSheet";
 import type {SelectItem} from "@/types/select";
+import { ActionSheetSelect } from "@/components/ui/ActionSheetSelect";
+import { Platform } from "react-native";
 
 export type ChartTimeRange =
     "today"
@@ -31,7 +33,16 @@ export function TimeRangeDropdown(props: TimeRangeDropdownProps) {
         {value: "last1year", label: t('dashboard.timeRange.last1yearButton')},
     ], [t]);
 
-    return (
+    const mobileDropdown = (
+        <ActionSheetSelect
+            items={timeRangeOptions}
+            value={selectedTimeRange}
+            placeholder={t('dashboard.timeRange.selectRange')}
+            onChange={setTimeRange}
+            />
+    )
+
+    const webDropdown = (
         <SelectWithSheet
             id="time-range-select"
             name="timeRange"
@@ -40,5 +51,7 @@ export function TimeRangeDropdown(props: TimeRangeDropdownProps) {
             onValueChange={setTimeRange}
             placeholder={t('dashboard.timeRange.selectRange')}
         />
-    );
+    )
+
+    return Platform.OS === 'web' ? webDropdown : mobileDropdown;
 }

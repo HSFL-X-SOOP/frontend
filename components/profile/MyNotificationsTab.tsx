@@ -25,6 +25,8 @@ import { useSensorDataTimeRange } from '@/hooks/data/useSensors';
 import { AppError } from "@/utils/errors";
 import { LocationWithBoxes } from '@/api/models/sensor';
 import { ChartTimeRange } from '@/components/dashboard';
+import { ActionSheetSelect } from '@/components/ui/ActionSheetSelect';
+import { Platform } from 'react-native';
 
 export function MyNotificationsTab() {
     const {t} = useTranslation();
@@ -160,25 +162,40 @@ export function MyNotificationsTab() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedUserLocation, userID]); // userLocations is a hook object and changes on every render
 
+    const mobileDropdown = (
+        <ActionSheetSelect
+            items={myLocationsSelect?.map(location => ({
+                value: location.locationId.toString(),
+                label: location.name.toString()
+            })) || []}
+            value={(myLocationsSelect?.filter(location => location.locationId === selectedUserLocationId)[0]?.locationId.toString()) || myLocationsSelect[0]?.name}
+            placeholder={t("notificationMeasurementRule.selectUserLocation")}
+            onChange={handleValueChange}
+            />
+    )
+
+    const webDropdown = (
+        <SelectWithSheet
+            id="user-location-select"
+            name="user-location"
+            items={myLocationsSelect?.map(location => ({
+                value: location.locationId.toString(),
+                label: location.name.toString()
+            })) || []}
+            value={(myLocationsSelect?.filter(location => location.locationId === selectedUserLocationId)[0]?.locationId.toString()) || myLocationsSelect[0]?.name}
+            onValueChange={handleValueChange}
+            placeholder={t("notificationMeasurementRule.selectUserLocation")}
+            triggerProps={{
+                width: 280,
+                iconAfter: ChevronDown,
+                backgroundColor: isDark ? '$gray8' : '$gray2',
+                borderColor: isDark ? '$gray7' : '$gray4'
+            }}
+        />
+    )
     const SelectSheet = useCallback(() => {
         return (
-            <SelectWithSheet
-                id="user-location-select"
-                name="user-location"
-                items={myLocationsSelect?.map(location => ({
-                    value: location.locationId.toString(),
-                    label: location.name.toString()
-                })) || []}
-                value={(myLocationsSelect?.filter(location => location.locationId === selectedUserLocationId)[0]?.locationId.toString()) || myLocationsSelect[0]?.name}
-                onValueChange={handleValueChange}
-                placeholder={t("notificationMeasurementRule.selectUserLocation")}
-                triggerProps={{
-                    width: 280,
-                    iconAfter: ChevronDown,
-                    backgroundColor: isDark ? '$gray8' : '$gray2',
-                    borderColor: isDark ? '$gray7' : '$gray4'
-                }}
-            />
+            Platform.OS === 'web' ? webDropdown : mobileDropdown
         )
     }, [myLocationsSelect, selectedUserLocationId, handleValueChange, isDark, t]);
 
