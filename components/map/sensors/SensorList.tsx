@@ -288,7 +288,7 @@ export default function SensorList({
                         </YStack>
                     ) : (
                         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            <XStack gap="$3" paddingHorizontal="$3" paddingVertical="$1">
+                            <XStack gap="$3" paddingHorizontal="$3" paddingVertical="$3">
                                 {processedSensors.map((sensor) => (
                                     <YStack key={sensor.location?.id} width={280}>
                                         <SensorListItem
