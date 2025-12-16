@@ -1,8 +1,8 @@
-import { Redirect } from 'expo-router';
+import MapScreen from "@/app/(map)/map";
 
 /**
- * Map Tab - Redirects to the main map screen
+ * Map Tab - Shows the interactive map
  */
 export default function MapTabScreen() {
-    return <Redirect href="/map" />;
+    return <MapScreen />;
 }

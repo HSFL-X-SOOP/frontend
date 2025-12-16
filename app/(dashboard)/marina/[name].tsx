@@ -23,7 +23,7 @@ import {
     getMeasurementTypeSymbol,
     getTextFromMeasurementType
 } from '@/utils/measurements';
-import { mapTimeRangeToApi, getFilteredMeasurements, getCurrentValues } from '@/utils/sensorMeasurements';
+import {mapTimeRangeToApi, getFilteredMeasurements, getCurrentValues} from '@/utils/sensorMeasurements';
 import {formatTimeToLocal} from '@/utils/time';
 import {
     Activity,
@@ -65,40 +65,34 @@ import {UserLocation} from '@/api/models/userLocation';
 import {useSession} from '@/context/SessionContext';
 import {IconButton} from '@/types/button';
 
-// ============================================================================
-// Constants
-// ============================================================================
-
-const DEFAULT_MARINA_NAME = 'Stadthafen Flensburg "Im Jaich"';
-const DEFAULT_IMAGE_URL = "https://fastly.picsum.photos/id/17/2500/1667.jpg?hmac=HD-JrnNUZjFiP2UZQvWcKrgLoC_pc_ouUSWv8kHsJJY";
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-const getMarinaIdByName = (name: string, locations: LocationWithBoxes[]): number | null => {
-    const location = locations.find(loc => loc.location?.name === name);
-    return location?.location?.id ?? null;
-};
-
-const getTimeRangeLabel = (timeRange: ChartTimeRange, t: any): string => {
-    const labels: Record<ChartTimeRange, string> = {
-        'today': t('dashboard.timeRange.today'),
-        'yesterday': t('dashboard.timeRange.yesterday'),
-        'last7days': t('dashboard.timeRange.last7days'),
-        'last30days': t('dashboard.timeRange.last30days'),
-        'last90days': t('dashboard.timeRange.last90days'),
-        'last180days': t('dashboard.timeRange.last180days'),
-        'last1year': t('dashboard.timeRange.last1year')
-    };
-    return labels[timeRange] ?? '';
-};
 
 // ============================================================================
 // Main Component
 // ============================================================================
 
 export default function DashboardScreen() {
+    const DEFAULT_MARINA_NAME = 'Stadthafen Flensburg "Im Jaich"';
+    const DEFAULT_IMAGE_URL = "https://fastly.picsum.photos/id/17/2500/1667.jpg?hmac=HD-JrnNUZjFiP2UZQvWcKrgLoC_pc_ouUSWv8kHsJJY";
+
+    const getMarinaIdByName = (name: string, locations: LocationWithBoxes[]): number | null => {
+        const location = locations.find(loc => loc.location?.name === name);
+        return location?.location?.id ?? null;
+    };
+
+    const getTimeRangeLabel = (timeRange: ChartTimeRange, t: any): string => {
+        const labels: Record<ChartTimeRange, string> = {
+            'today': t('dashboard.timeRange.today'),
+            'yesterday': t('dashboard.timeRange.yesterday'),
+            'last7days': t('dashboard.timeRange.last7days'),
+            'last30days': t('dashboard.timeRange.last30days'),
+            'last90days': t('dashboard.timeRange.last90days'),
+            'last180days': t('dashboard.timeRange.last180days'),
+            'last1year': t('dashboard.timeRange.last1year')
+        };
+        return labels[timeRange] ?? '';
+    };
+
+
     // Hooks
     const media = useMedia();
     const router = useRouter();

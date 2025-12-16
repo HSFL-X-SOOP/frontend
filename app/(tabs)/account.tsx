@@ -1,10 +1,11 @@
-import { Redirect } from 'expo-router';
+import ProfileScreen from "@/app/(profile)/profile";
+import LoginScreen from "@/app/(auth)/login";
 import { useSession } from '@/context/SessionContext';
 
 /**
  * Account Tab
- * - Redirects to Profile if logged in
- * - Redirects to Login if not logged in
+ * - Shows Profile if logged in
+ * - Shows Login if not logged in
  */
 export default function AccountTabScreen() {
     const { session } = useSession();
@@ -13,8 +14,8 @@ export default function AccountTabScreen() {
     const isLoggedIn = session?.profile?.id != null;
 
     if (isLoggedIn) {
-        return <Redirect href="/(profile)/profile" />;
+        return <ProfileScreen />;
     } else {
-        return <Redirect href="/(auth)/login" />;
+        return <LoginScreen />;
     }
 }

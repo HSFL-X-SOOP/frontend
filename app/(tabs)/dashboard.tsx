@@ -1,8 +1,10 @@
-import { Redirect } from 'expo-router';
+import DashboardScreen from "@/app/(dashboard)/marina/[name].tsx";
 
 /**
- * Dashboard Tab - Redirects to the default marina/dashboard
+ * Dashboard Tab - Testing with hooks
  */
 export default function DashboardTabScreen() {
-    return <Redirect href='/marina/Stadthafen Flensburg "Im Jaich"' />;
+    return (
+        <DashboardScreen/>
+    );
 }
