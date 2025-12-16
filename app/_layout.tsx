@@ -144,6 +144,8 @@ function RootContent() {
                 'Request failed due to a permanent error: Canceled',
                 'Mbgl-HttpRequest',
                 'MapLibre info',
+                'IndexOutOfBoundsException', // MapLibre Fabric renderer race condition
+                'getFeatureAt', // MapLibre marker removal race condition
             ])
         }
 
@@ -203,8 +205,6 @@ function RootContent() {
                             <Stack screenOptions={{headerShown: false}}>
                                 <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
                                 <Stack.Screen name="(auth)" options={{headerShown: false}}/>
-                                <Stack.Screen name="(map)" options={{headerShown: false}}/>
-                                <Stack.Screen name="(dashboard)" options={{headerShown: false}}/>
                                 <Stack.Screen name="(profile)" options={{headerShown: false}}/>
                                 <Stack.Screen name="(about)" options={{headerShown: false}}/>
                                 <Stack.Screen name="(other)" options={{headerShown: false}}/>
@@ -217,6 +217,10 @@ function RootContent() {
          </ActionSheetProvider>
     );
 }
+
+export const unstable_settings = {
+    anchor: '(tabs)',
+};
 
 export default function RootLayout() {
     const [loaded] = useFonts({

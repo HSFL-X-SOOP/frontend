@@ -39,6 +39,9 @@ export default function NativeMap(props: MapProps) {
     // DATA
     const {loading, fetchData} = useSensorDataNew();
     const [content, setContent] = useState<LocationWithBoxes[]>([]);
+    const [mapReady, setMapReady] = useState(false);
+    const [markersReady, setMarkersReady] = useState(false);
+    const [isUpdatingMarkers, setIsUpdatingMarkers] = useState(false);
 
     useEffect(() => {
         void fetchData(
@@ -49,6 +52,41 @@ export default function NativeMap(props: MapProps) {
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // fetchData is a hook function and changes on every render, causing infinite loop if included
+
+    // Delay marker rendering after map is ready to prevent race conditions
+    useEffect(() => {
+        if (mapReady && content.length > 0) {
+            // Temporarily disable marker interactions during update
+            setIsUpdatingMarkers(true);
+
+            // Wait for MapLibre to fully initialize before rendering markers
+            const readyTimer = setTimeout(() => {
+                setMarkersReady(true);
+            }, 300);
+
+            // Re-enable interactions after markers are rendered + additional sync time
+            const interactionTimer = setTimeout(() => {
+                setIsUpdatingMarkers(false);
+            }, 800); // 300ms for markers + 500ms for native layer sync
+
+            return () => {
+                clearTimeout(readyTimer);
+                clearTimeout(interactionTimer);
+            };
+        } else {
+            setMarkersReady(false);
+            setIsUpdatingMarkers(false);
+        }
+    }, [mapReady, content.length]);
+
+    // Clean up markers before unmounting to prevent MapLibre race condition
+    useEffect(() => {
+        return () => {
+            // Set markers to empty before unmount to allow MapLibre to clean up properly
+            setMarkersReady(false);
+            setMapReady(false);
+        };
+    }, []);
 
     // CONSOLIDATED HOOKS - Extract shared logic
     const {
@@ -108,7 +146,21 @@ export default function NativeMap(props: MapProps) {
         zoomLevel
     );
 
+    // Detect cluster changes and temporarily disable interactions to prevent race conditions
+    useEffect(() => {
+        if (markersReady && clusters.length > 0) {
+            setIsUpdatingMarkers(true);
+            const timer = setTimeout(() => {
+                setIsUpdatingMarkers(false);
+            }, 600); // Wait for native layer to sync after cluster update
+            return () => clearTimeout(timer);
+        }
+    }, [clusters.length, markersReady]);
+
     const pins = useMemo(() => {
+        // Don't render markers until map is fully ready or during updates to prevent race conditions
+        if (!markersReady || isUpdatingMarkers) return [];
+
         return clusters.map(cluster => {
             const [longitude, latitude] = cluster.geometry.coordinates;
             const {cluster: isCluster, point_count, locationWithBoxes} = cluster.properties;
@@ -136,7 +188,7 @@ export default function NativeMap(props: MapProps) {
             );
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [clusters, getClusterExpansionZoom, highlightedSensorId]);
+    }, [markersReady, isUpdatingMarkers, clusters, getClusterExpansionZoom, highlightedSensorId]);
 
     // ========== CAMERA HELPERS ==========
 
@@ -161,6 +213,10 @@ export default function NativeMap(props: MapProps) {
 
     const handleSensorSelect = (sensor: { location?: { id: number; coordinates: { lat: number; lon: number } } }) => {
         if (!sensor.location) return;
+        // Prevent interaction during marker updates to avoid MapLibre race condition
+        if (isUpdatingMarkers) {
+            return;
+        }
         const {lat, lon} = sensor.location.coordinates;
         setHighlightedSensorId(sensor.location.id);
         flyTo(lon, lat);
@@ -169,8 +225,16 @@ export default function NativeMap(props: MapProps) {
     };
 
     const handleClusterPress = (longitude: number, latitude: number, clusterId: number) => {
-        const expansionZoom = getClusterExpansionZoom(clusterId);
-        flyTo(longitude, latitude, expansionZoom);
+        // Prevent interaction during marker updates to avoid MapLibre race condition
+        if (isUpdatingMarkers) {
+            return;
+        }
+        try {
+            const expansionZoom = getClusterExpansionZoom(clusterId);
+            flyTo(longitude, latitude, expansionZoom);
+        } catch (error) {
+            // Silently handle cluster expansion errors during transitions - this is expected
+        }
     };
 
     const handleRegionIsChanging = () => {
@@ -283,6 +347,7 @@ export default function NativeMap(props: MapProps) {
                 zoomEnabled
                 onRegionIsChanging={handleRegionIsChanging}
                 onRegionDidChange={handleRegionDidChange}
+                onDidFinishLoadingMap={() => setMapReady(true)}
             >
                 <Camera
                     ref={cameraRef}

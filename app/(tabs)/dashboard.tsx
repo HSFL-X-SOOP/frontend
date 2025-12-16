@@ -9,7 +9,6 @@ export default function DashboardTabScreen() {
 
     return (
         <DashboardScreen
-            key={selectedMarina} // Force remount when marina changes
             selectedMarinaName={selectedMarina}
             onSelectMarina={setSelectedMarina}
         />

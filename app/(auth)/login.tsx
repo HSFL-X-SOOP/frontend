@@ -17,6 +17,7 @@ import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
+import {getAuthRoute, getProfileRoute} from '@/utils/navigation';
 
 const logger = createLogger('Auth:Login');
 
@@ -96,7 +97,7 @@ export default function LoginScreen() {
                 // Check if user has a profile, if not redirect to create-profile
                 if (!res.profile || !res.profile.profileCreatedAt) {
                     logger.info('No profile found or not created, redirecting to create-profile');
-                    router.push("/(profile)/create-profile");
+                    router.push(getProfileRoute('create-profile'));
                 } else {
                     router.push("/map");
                 }
@@ -329,7 +330,7 @@ export default function LoginScreen() {
                     <YStack alignItems="center">
                         <Text fontSize={14} color="$color">
                             {t('auth.dontHaveAccount')}{' '}
-                            <Link href={"/(auth)/register" as Href}>
+                            <Link href={getAuthRoute('register')}>
                                 <Text color="$accent7" textDecorationLine="underline" fontWeight="600">
                                     {t('auth.signUp')}
                                 </Text>

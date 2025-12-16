@@ -21,6 +21,7 @@ import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
+import {getAuthRoute} from '@/utils/navigation';
 
 const logger = createLogger('Auth:Register');
 
@@ -340,7 +341,7 @@ export default function RegisterScreen() {
 
                     <Text fontSize={14} color="$color">
                         {t('auth.alreadyHaveAccount')}{' '}
-                        <Link href={"/(auth)/login" as Href}>
+                        <Link href={getAuthRoute('login')}>
                             <Text color="$accent7" textDecorationLine="underline"
                                   fontWeight="600">{t('auth.signIn')}</Text>
                         </Link>

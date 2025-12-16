@@ -103,6 +103,31 @@ export default function TabLayout() {
                     tabBarIcon: ({ color }) => <TabBarIcon icon={User} color={color} />,
                 }}
             />
+            {/* Hidden screens - accessible but not shown in tab bar */}
+            <Tabs.Screen
+                name="login"
+                options={{
+                    href: null,
+                }}
+            />
+            <Tabs.Screen
+                name="register"
+                options={{
+                    href: null,
+                }}
+            />
+            <Tabs.Screen
+                name="profile-detail"
+                options={{
+                    href: null,
+                }}
+            />
+            <Tabs.Screen
+                name="create-profile"
+                options={{
+                    href: null,
+                }}
+            />
         </Tabs>
     );
 }
