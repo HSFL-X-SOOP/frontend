@@ -15,7 +15,10 @@
         "aps-environment": "production"
       },
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification", "fetch"],
+        "UIBackgroundModes": [
+          "remote-notification",
+          "fetch"
+        ],
         "NSLocationWhenInUseUsageDescription": "This app uses a mapping library that may access location services. Your location is not currently being collected or tracked.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "This app uses a mapping library that may access location services. Your location is not currently being collected or tracked."
       }
@@ -57,6 +60,13 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "appMode": "test",
+      "router": {},
+      "eas": {
+        "projectId": "715a2f82-73aa-4b90-81d2-dab97eaf0219"
+      }
     }
   }
 }

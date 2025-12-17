@@ -18,6 +18,9 @@ import messaging from '@react-native-firebase/messaging';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 import {getAuthRoute, getProfileRoute} from '@/utils/navigation';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 
 const logger = createLogger('Auth:Login');
 
@@ -44,36 +47,41 @@ export default function LoginScreen() {
         }
     }, [session, router]);
 
+    const [expoPushToken, setExpoPushToken] = useState('');
+    const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
+    const [notification, setNotification] = useState<Notifications.Notification | undefined>(
+        undefined
+    );
+
     const handleRegisterUserDevice = async (userId: number) => {
         if (Platform.OS === 'web') {return;}
 
-        try {
-            const authStatus = await messaging().requestPermission();
-            const enabled =
-                authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-                authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-            if (enabled) {
-                try {
-                    let token = await messaging().getToken();
-                    logger.debug('FCM Token obtained');
-                    const result = await userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
-                    if (result.ok) {
-                        logger.info('User device registered with FCM token');
-                    } else {
-                        logger.warn('Failed to register user device (non-critical)', {message: result.error.message});
-                    }
-                } catch (error) {
-                    logger.error('Failed to get FCM token', error);
-                    // Device registration failure is non-critical - app continues
-                }
-            }
-        } catch (error) {
-            logger.error('Failed to request messaging permission', error);
-            // Permission denial is non-critical - app continues
+        registerForPushNotificationsAsync().then(token => token && setExpoPushToken(token));
+        console.log('Expo Push Token:', expoPushToken);
+        if (Platform.OS === 'android') {
+        Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []));
         }
-    }
+        const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+        setNotification(notification);
+        });
 
+        const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+        console.log(response);
+        });
+
+        const result = await userDeviceStore.registerUserDevice({fcmToken: expoPushToken, userId: userId});
+        if (result.ok) {
+            logger.info('User device registered with FCM token');
+        } else {
+            logger.warn('Failed to register user device (non-critical)', {message: result.error.message});
+        }
+
+        return () => {
+        notificationListener.remove();
+        responseListener.remove();
+        };
+    }
+    
     const handleSubmit = async () => {
         logger.info('Login attempt', {email, rememberMe});
         setIsLoading(true);
@@ -341,4 +349,50 @@ export default function LoginScreen() {
             </ScrollView>
         </View>
     );
+}
+
+async function registerForPushNotificationsAsync() {
+  let token;
+
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('myNotificationChannel', {
+      name: 'A channel is needed for the permissions prompt to appear',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (Device.isDevice) {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+
+    try {
+      const projectId =
+        Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+      if (!projectId) {
+        throw new Error('Project ID not found');
+      }
+      token = (
+        await Notifications.getExpoPushTokenAsync({
+          projectId,
+        })
+      ).data;
+      console.log(token);
+    } catch (e) {
+      token = `${e}`;
+    }
+  } else {
+    alert('Must use physical device for Push Notifications');
+  }
+
+  return token;
 }

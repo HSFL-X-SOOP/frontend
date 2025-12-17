@@ -14,14 +14,14 @@ import {
 } from '@expo-google-fonts/inter'
 import {StatusBar} from 'expo-status-bar'
 import {Platform, View, LogBox} from 'react-native'
-import {useEffect, useMemo} from 'react'
+import {useEffect, useMemo, useState} from 'react'
 import 'react-native-reanimated'
 import '../global.css'
 import {createLogger} from '@/utils/logger'
 
 import tamaguiConfig from '@/tamagui.config'
 import {PortalProvider} from '@tamagui/portal'
-import {TamaguiProvider, Theme, XStack, YStack} from 'tamagui'
+import {Button, TamaguiProvider, Theme, XStack, YStack} from 'tamagui'
 import {Toast, ToastProvider, ToastViewport, useToastState} from '@tamagui/toast'
 import {CheckCircle, XCircle, AlertTriangle, Info} from '@tamagui/lucide-icons'
 
@@ -33,6 +33,16 @@ import {Slot, usePathname, Stack} from 'expo-router'
 import {SafeAreaProvider, useSafeAreaInsets} from 'react-native-safe-area-context'
 import type {ToastType} from '@/hooks/ui'
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 function CurrentToast() {
     const currentToast = useToastState()
