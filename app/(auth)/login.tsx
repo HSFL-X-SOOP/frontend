@@ -38,7 +38,6 @@ export default function LoginScreen() {
     const {login: logUserIn, session} = useSession();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
     const {handleAppleSignIn, isLoading: appleLoading} = useAppleSignIn();
-    const userDeviceStore = useUserDeviceStore();
 
     useEffect(() => {
         if (session) {
@@ -47,41 +46,6 @@ export default function LoginScreen() {
         }
     }, [session, router]);
 
-    const [expoPushToken, setExpoPushToken] = useState('');
-    const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
-    const [notification, setNotification] = useState<Notifications.Notification | undefined>(
-        undefined
-    );
-
-    const handleRegisterUserDevice = async (userId: number) => {
-        if (Platform.OS === 'web') {return;}
-
-        registerForPushNotificationsAsync().then(token => token && setExpoPushToken(token));
-        console.log('Expo Push Token:', expoPushToken);
-        if (Platform.OS === 'android') {
-        Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []));
-        }
-        const notificationListener = Notifications.addNotificationReceivedListener(notification => {
-        setNotification(notification);
-        });
-
-        const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-        console.log(response);
-        });
-
-        const result = await userDeviceStore.registerUserDevice({fcmToken: expoPushToken, userId: userId});
-        if (result.ok) {
-            logger.info('User device registered with FCM token');
-        } else {
-            logger.warn('Failed to register user device (non-critical)', {message: result.error.message});
-        }
-
-        return () => {
-        notificationListener.remove();
-        responseListener.remove();
-        };
-    }
-    
     const handleSubmit = async () => {
         logger.info('Login attempt', {email, rememberMe});
         setIsLoading(true);
@@ -100,7 +64,6 @@ export default function LoginScreen() {
                 toast.success(t('auth.loginSuccess'), {
                     message: t('auth.welcomeBack')
                 });
-                handleRegisterUserDevice(res.profile?.id || 0);
 
                 // Check if user has a profile, if not redirect to create-profile
                 if (!res.profile || !res.profile.profileCreatedAt) {
@@ -292,7 +255,6 @@ export default function LoginScreen() {
                                                 message: t('auth.welcomeBack'),
                                                 duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
                                             });
-                                            handleRegisterUserDevice(userId || 0);
                                         },
                                         (error) => {
                                             toast.error(
