@@ -6,28 +6,19 @@ import { createLogger } from '@/utils/logger';
 const logger = createLogger('Hooks:LocalStorage');
 
 export function useLocalStorage<T>(key: string, initialValue?: T): [T | undefined, Dispatch<SetStateAction<T | undefined>>] {
-    const [value, setValue] = useState<T | undefined>(() => {
-        if (Platform.OS === 'web') {
-            try {
-                const storedValue = localStorage.getItem(key);
-                if (storedValue !== null) {
-                    return JSON.parse(storedValue);
-                }
-            } catch (error) {
-                console.warn(`Error loading key "${key}" from storage`, error);
-            }
-        }
-        return initialValue;
-    });
+    const [value, setValue] = useState<T | undefined>(initialValue);
 
     useEffect(() => {
-        if (Platform.OS === 'web') {
-            return;
-        }
-
         const loadStoredValue = async () => {
             try {
-                const storedValue = await Storage.getItem(key);
+                let storedValue: string | null;
+
+                if (Platform.OS === 'web') {
+                    storedValue = localStorage.getItem(key);
+                } else {
+                    storedValue = await Storage.getItem(key);
+                }
+
                 if (storedValue !== null) {
                     setValue(JSON.parse(storedValue));
                 }
