@@ -33,12 +33,12 @@ export function useNotificationMeasurementRuleStore() {
             );
         },
 
-        getNotificationMeasurementRule: (userId: number, locationId: number, measurementTypeId: number): Promise<Result<NotificationMeasurementRule | null>> => {
-            return api.requestSafe(
-                httpClient.get<NotificationMeasurementRule | null>(`/notification-measurement-rules/user/${userId}/location/${locationId}/measurementTypeId/${measurementTypeId}`),
-                'NotificationMeasurementRuleStore:getNotificationMeasurementRule'
-            );
-        },
+        // getNotificationMeasurementRule: (userId: number, locationId: number, measurementTypeId: number): Promise<Result<NotificationMeasurementRule | null>> => {
+        //     return api.requestSafe(
+        //         httpClient.get<NotificationMeasurementRule | null>(`/notification-measurement-rules/user/${userId}/location/${locationId}/measurementTypeId/${measurementTypeId}`),
+        //         'NotificationMeasurementRuleStore:getNotificationMeasurementRule'
+        //     );
+        // },
 
         createNotificationMeasurementRule: (body: CreateOrUpdateNotificationMeasurementRuleRequest): Promise<Result<CreateOrUpdateNotificationMeasurementRuleResponse>> => {
             return api.requestSafe(

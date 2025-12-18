@@ -12,6 +12,11 @@ import {
     getIDFromMeasurementType
 } from '@/utils/measurements';
 
+export enum SetNotificationMeasurementRuleDialogType {
+    CREATE,
+    UPDATE
+}
+
 
 export function SetNotificationMeasurementRulePopover({
                                                           Icon,
@@ -24,6 +29,8 @@ export function SetNotificationMeasurementRulePopover({
                                                           measurementId,
                                                           t,
                                                           fetchNotifications,
+                                                          setNotificationMeasurementRuleDialogType,
+                                                          notificationId,
                                                           ...props
                                                       }: PopoverProps & {
     Icon?: any;
@@ -35,6 +42,8 @@ export function SetNotificationMeasurementRulePopover({
     MeasurementType: string,
     measurementId?: number,
     t: any,
+    setNotificationMeasurementRuleDialogType: SetNotificationMeasurementRuleDialogType,
+    notificationId?: number,
     fetchNotifications?: () => void
 }) {
     const notificationMeasurementRules = useNotificationMeasurementRules();
@@ -46,11 +55,10 @@ export function SetNotificationMeasurementRulePopover({
     const [existingRule, setExistingRule] = useState<NotificationMeasurementRule | null | undefined>(undefined);
 
     useEffect(() => {
+        if (setNotificationMeasurementRuleDialogType == SetNotificationMeasurementRuleDialogType.CREATE) return;
         if (!marinaID || !userID) return;
-        void notificationMeasurementRules.getNotificationMeasurementRule(
-            userID,
-            marinaID,
-            getIDFromMeasurementType(MeasurementType),
+        void notificationMeasurementRules.getNotificationMeasurementRuleById(
+            notificationId || 0,
             (fetchedRule) => {
                 setExistingRule(fetchedRule);
                 setMeasurementValue(fetchedRule?.measurementValue || 0);

@@ -27,6 +27,7 @@ import { LocationWithBoxes } from '@/api/models/sensor';
 import { ChartTimeRange } from '@/components/dashboard';
 import { ActionSheetSelect } from '@/components/ui/ActionSheetSelect';
 import { Platform } from 'react-native';
+import { SetNotificationMeasurementRuleDialogType } from '@/components/notifications/Popovers/SetNotificationMeasurementRulePopover';
 
 export function MyNotificationsTab() {
     const {t} = useTranslation();
@@ -294,13 +295,15 @@ export function MyNotificationsTab() {
                                         placement="top"
                                         Icon={Edit3}
                                         Name={getTextFromMeasurementType(notification.measurementTypeId.toString(), t)}
-                                        Value={notification.measurementValue}
+                                        Value={getCurrentValueByType(currentValues, notification.measurementTypeId.toString()) ?? undefined}
                                         MeasurementType={notification.measurementTypeId.toString()}
                                         marinaID={notification.locationId}
                                         userID={userID}
                                         measurementId={notification.id}
                                         t={t}
                                         fetchNotifications={fetchNotifications}
+                                        setNotificationMeasurementRuleDialogType={SetNotificationMeasurementRuleDialogType.UPDATE}
+                                        notificationId={notification.id}
                                     />
                                     <DeleteNotificationMeasurementRulePopover
                                         Icon={Trash}

@@ -66,14 +66,12 @@ export const useNotificationMeasurementRules = () => {
     }, [notificationMeasurementRuleStore]);
 
     const getNotificationMeasurementRule = useCallback(async (
-        userId: number,
-        locationId: number,
-        measurementTypeId: number,
+        id: number,
         onSuccess: (data: NotificationMeasurementRule | null) => void,
         onError: (error: AppError) => void
     ) => {
         setLoading(true);
-        const result = await notificationMeasurementRuleStore.getNotificationMeasurementRule(userId, locationId, measurementTypeId);
+        const result = await notificationMeasurementRuleStore.getNotificationMeasurementRuleById(id);
 
         if (result.ok) {
             onSuccess(result.value);
