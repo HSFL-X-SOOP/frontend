@@ -1,17 +1,15 @@
-import React, {useState, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {LocationWithBoxes} from '@/api/models/sensor';
 import {PointAnnotation} from '@maplibre/maplibre-react-native';
-import {Modal, Pressable, StyleSheet, View} from 'react-native';
-import {SensorPopup} from '../sensors/MapSensorMeasurements';
+import { StyleSheet, View} from 'react-native';
 import {SensorMarkerContent} from '../sensors/MapSensorTemperatureText';
-import {Theme, YStack} from 'tamagui';
-import {useThemeContext} from '@/context/ThemeSwitch';
 
 interface SensorMarkerProps {
     locationWithBoxes: LocationWithBoxes;
     isDark?: boolean;
-    onPress?: () => void;
     index?: number;
+    setMarker?: (locationWithBoxes: LocationWithBoxes) => void;
+    setOpen?: (open: boolean) => void;
 }
 
 /**
@@ -22,7 +20,8 @@ const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProp
     return (
         prevProps.locationWithBoxes?.location?.id === nextProps.locationWithBoxes?.location?.id &&
         prevProps.isDark === nextProps.isDark &&
-        prevProps.onPress === nextProps.onPress
+        prevProps.setMarker === nextProps.setMarker &&
+        prevProps.setOpen === nextProps.setOpen
     );
 };
 
@@ -31,10 +30,7 @@ const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProp
  * Memoized to prevent unnecessary re-renders when parent re-renders
  * Shows sensor data on map with interactive modal popup
  */
-const NativeSensorMarker = ({locationWithBoxes, onPress}: SensorMarkerProps) => {
-    const [open, setOpen] = useState(false);
-    const {currentTheme} = useThemeContext();
-
+const NativeSensorMarker = ({locationWithBoxes, setMarker, setOpen}: SensorMarkerProps) => {
     // Memoize marker position to avoid recalculation
     const markerCoordinates = useMemo(
         () => ({
@@ -45,47 +41,18 @@ const NativeSensorMarker = ({locationWithBoxes, onPress}: SensorMarkerProps) => 
         [locationWithBoxes.location?.id, locationWithBoxes.location?.coordinates.lon, locationWithBoxes.location?.coordinates.lat]
     );
 
-    const handleMarkerPress = () => {
-        setOpen(true);
-        onPress?.();
-    };
-
-    const handleCloseModal = () => {
-        setOpen(false);
-    };
-
     return (
         <>
             <PointAnnotation
                 id={`marker-${markerCoordinates.id}`}
                 key={`marker-${markerCoordinates.id}`}
                 coordinate={[markerCoordinates.lon, markerCoordinates.lat]}
-                onSelected={handleMarkerPress}
+                onSelected={() => {setMarker?.(locationWithBoxes); setOpen?.(true);}}
             >
                 <View>
                     <SensorMarkerContent locationWithBoxes={locationWithBoxes}/>
                 </View>
             </PointAnnotation>
-
-            <Modal
-                visible={open}
-                transparent
-                animationType="fade"
-                onRequestClose={handleCloseModal}
-            >
-                <Pressable style={styles.overlay} onPress={handleCloseModal}>
-                    <Pressable onPress={(e) => e.stopPropagation()}>
-                        <Theme name={currentTheme}>
-                            <YStack>
-                                <SensorPopup
-                                    locationWithBoxes={locationWithBoxes}
-                                    closeOverlay={handleCloseModal}
-                                />
-                            </YStack>
-                        </Theme>
-                    </Pressable>
-                </Pressable>
-            </Modal>
         </>
     );
 };

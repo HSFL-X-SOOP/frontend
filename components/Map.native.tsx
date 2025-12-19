@@ -2,7 +2,7 @@ import {useSensorDataNew} from "@/hooks/data";
 import {useSupercluster, useMapFilters, useMapCamera, useMapState, useMapStyle,useMapSpeedDialActions} from "@/hooks/map";
 import {MapView, Camera, type CameraRef, type MapViewRef} from "@maplibre/maplibre-react-native";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {View} from "react-native";
+import {Modal, Pressable, View} from "react-native";
 import SensorMarker from "./map/markers/NativeSensorMarker";
 import ClusterMarker from "./map/markers/NativeClusterMarker";
 import MapSensorBottomSheet, {MapSensorBottomSheetRef} from "./map/controls/MapSensorBottomSheet";
@@ -12,6 +12,10 @@ import {Plus} from "@tamagui/lucide-icons";
 import MapFilterButton, {MapFilterState} from "./map/controls/MapFilterButton";
 import {MAP_CONSTANTS} from '@/config/constants';
 import {LocationWithBoxes} from "@/api/models/sensor.ts";
+import { Theme, YStack } from "tamagui";
+import { SensorPopup } from "./map/sensors/MapSensorMeasurements";
+import { useThemeContext } from "@/context/ThemeSwitch";
+import { StyleSheet } from "react-native";
 
 interface MapProps {
     module1Visible?: boolean;
@@ -30,6 +34,9 @@ export default function NativeMap(props: MapProps) {
     const hasSnappedForGestureRef = useRef(false);
     const [content, setContent] = useState<LocationWithBoxes[]>([]);
     const {loading, fetchData} = useSensorDataNew();
+    const [open, setOpen] = useState(false);
+    const {currentTheme} = useThemeContext();
+    const [locationWithBoxes, setLocationWithBoxes] = useState<LocationWithBoxes>()
 
     useEffect(() => {
         void fetchData(
@@ -99,6 +106,14 @@ export default function NativeMap(props: MapProps) {
         zoomLevel
     );
 
+
+    
+    const handleCloseModal = () => {
+        setOpen(false);
+    };
+    
+
+
     const pins = useMemo(() => {
         return clusters.map(cluster => {
             const [longitude, latitude] = cluster.geometry.coordinates;
@@ -112,7 +127,7 @@ export default function NativeMap(props: MapProps) {
                         longitude={longitude}
                         pointCount={point_count!}
                         clusterId={cluster.id as number}
-                        onPress={() =>
+                        onPress={() => 
                             handleClusterPress(longitude, latitude, cluster.id as number)
                         }
                     />
@@ -123,6 +138,8 @@ export default function NativeMap(props: MapProps) {
                 <SensorMarker
                     key={locationWithBoxes!.location!.id}
                     locationWithBoxes={locationWithBoxes!}
+                    setMarker={setLocationWithBoxes}
+                    setOpen={setOpen}
                 />
             );
         });
@@ -321,6 +338,37 @@ export default function NativeMap(props: MapProps) {
                 isOpen={isFilterOpen}
                 onOpenChange={setIsFilterOpen}
             />
+
+            <Modal
+                visible={open}
+                transparent
+                animationType="fade"
+                onRequestClose={handleCloseModal}
+            >
+                <Pressable style={styles.overlay} onPress={handleCloseModal}>
+                    <Pressable onPress={(e) => e.stopPropagation()}>
+                        <Theme name={currentTheme}>
+                            <YStack>
+                                <SensorPopup
+                                    locationWithBoxes={locationWithBoxes!}
+                                    closeOverlay={handleCloseModal}
+                                />
+                            </YStack>
+                        </Theme>
+                    </Pressable>
+                </Pressable>
+            </Modal>
+
+
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+});
