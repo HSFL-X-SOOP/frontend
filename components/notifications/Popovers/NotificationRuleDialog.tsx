@@ -33,8 +33,6 @@ interface NotificationRuleDialogProps extends PopoverProps {
     t: any;
 }
 
-const TEMPERATURE_MIN_VALUE = -10;
-const TEMPERATURE_MAX_VALUE = 50;
 
 export function NotificationRuleDialog({
                                            Icon,
@@ -52,26 +50,6 @@ export function NotificationRuleDialog({
     const [operator, setOperator] = useState<string>('>');
     const [isActive, setIsActive] = useState<boolean>(true);
     const [open, setOpen] = useState(false);
-    const [existingRule, setExistingRule] = useState<NotificationMeasurementRule | null | undefined>(undefined);
-
-    useEffect(() => {
-        if (!marinaID || !userID) return;
-
-        void notificationMeasurementRules.getNotificationMeasurementRule(
-            userID,
-            marinaID,
-            getIDFromMeasurementType(MeasurementType),
-            (fetchedRule) => {
-                setExistingRule(fetchedRule);
-                setMeasurementValue(fetchedRule?.measurementValue || 0);
-                setOperator(fetchedRule?.operator || '>');
-                setIsActive(fetchedRule?.isActive ?? true);
-            },
-            () => {
-                setExistingRule(null);
-            }
-        );
-    }, [marinaID, userID, MeasurementType]);
 
     const handleSave = useCallback((value: number) => {
         if (!marinaID) return;
@@ -85,45 +63,27 @@ export function NotificationRuleDialog({
             isActive: isActive,
         };
 
-        if (existingRule) {
-            void notificationMeasurementRules.update(
-                existingRule.id,
-                notificationMeasurementRule,
-                () => {
-                    toast.success(t('dashboard.measurements.save'), {
-                        message: t('dashboard.measurements.notificationRuleSaved')
-                    });
-                    setOpen(false);
-                },
-                (error) => {
-                    toast.error(t('common.error'), {
-                        message: t(error.onGetMessage())
-                    });
-                }
-            );
-        } else {
-            void notificationMeasurementRules.create(
-                notificationMeasurementRule,
-                () => {
-                    toast.success(t('dashboard.measurements.save'), {
-                        message: t('dashboard.measurements.notificationRuleSaved')
-                    });
-                    setOpen(false);
-                },
-                (error) => {
-                    toast.error(t('common.error'), {
-                        message: t(error.onGetMessage())
-                    });
-                }
-            );
-        }
-    }, [marinaID, operator, isActive, userID, MeasurementType, existingRule, notificationMeasurementRules, toast, t]);
+        void notificationMeasurementRules.create(
+            notificationMeasurementRule,
+            () => {
+                toast.success(t('dashboard.measurements.save'), {
+                    message: t('dashboard.measurements.notificationRuleSaved')
+                });
+                setOpen(false);
+            },
+            (error) => {
+                toast.error(t('common.error'), {
+                    message: t(error.onGetMessage())
+                });
+            }
+        );
+        
+    }, [marinaID, operator, isActive, userID, MeasurementType, notificationMeasurementRules, toast, t]);
 
     const handleValueChange = (text: string) => {
         if (/^-?\d*\.?\d*$/.test(text)) {
             let value = text === "" ? 0 : parseFloat(text);
-            if (value < TEMPERATURE_MIN_VALUE) value = TEMPERATURE_MIN_VALUE;
-            if (value > TEMPERATURE_MAX_VALUE) value = TEMPERATURE_MAX_VALUE;
+
             setMeasurementValue(value);
         }
     };
