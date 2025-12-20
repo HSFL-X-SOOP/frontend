@@ -7,7 +7,9 @@ import {
     YStack,
     Spinner,
     Separator,
-    Tabs
+    Tabs,
+    H2,
+    Button
 } from "tamagui";
 import {User, Anchor, Bell} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
@@ -33,6 +35,12 @@ export default function ProfileScreen() {
     const [activeTab, setActiveTab] = useState("profile");
     const [harborLocation, setHarborLocation] = useState<DetailedLocationDTO | null>(null);
     const isWeb = Platform.OS === 'web';
+
+    useEffect(() => {
+        if (!session) {
+            router.replace(getMapRoute());
+        }
+    }, [session, router]);
 
     useEffect(() => {
         if (!session?.profile) {

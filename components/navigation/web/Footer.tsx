@@ -14,7 +14,7 @@ export function Footer() {
         >
             <XStack maxWidth={1400} width="100%" alignSelf="center" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap="$4">
                 <Text fontSize="$2" color="$gray11">
-                    © 2024 MARLIN - Hochschule Flensburg & SOOP
+                    © 2025 MARLIN - Hochschule Flensburg & SOOP
                 </Text>
                 <XStack gap="$3" alignItems="center">
                     <Link href="mailto:info@marlin-live.com">

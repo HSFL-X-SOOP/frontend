@@ -224,6 +224,9 @@ export const getMeasurementTypeSymbol = (measurementType: string, t: TFunction):
 };
 
 
-export const formatMeasurementValue = (value: number): string => {
+export const formatMeasurementValue = (value: number | undefined | null): string => {
+    if (value === undefined || value === null || isNaN(value)) {
+        return '0.0';
+    }
     return value < 1 ? value.toFixed(2) : value.toFixed(1);
 };

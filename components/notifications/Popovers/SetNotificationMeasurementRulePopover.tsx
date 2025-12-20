@@ -157,7 +157,7 @@ export function SetNotificationMeasurementRulePopover({
 
                             <XStack alignItems="baseline" gap="$2">
                                 <H2 fontSize="$9" color={getMeasurementColor(MeasurementType)}>
-                                    {formatMeasurementValue(Value!)}
+                                    {formatMeasurementValue(Value ?? 0)}
                                 </H2>
                                 <Text fontSize="$5" color={getMeasurementColor(MeasurementType)}>
                                     {getMeasurementTypeSymbol(MeasurementType, t)}
