@@ -21,7 +21,7 @@ import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
-import {getAuthRoute} from '@/utils/navigation';
+import {getAuthRoute, getMapRoute} from '@/utils/navigation';
 
 const logger = createLogger('Auth:Register');
 
@@ -261,7 +261,7 @@ export default function RegisterScreen() {
                             size="$4"
                             onPress={async () => {
                                 await handleGoogleSignIn(
-                                    '/',
+                                    getMapRoute(),
                                     () => {
                                         toast.success(t('auth.googleSignInSuccess'), {
                                             message: t('auth.accountCreated'),
@@ -301,7 +301,7 @@ export default function RegisterScreen() {
                                 size="$4"
                                 onPress={async () => {
                                     await handleAppleSignIn(
-                                        '/',
+                                        getMapRoute(),
                                         (userId) => {
                                             toast.success(t('auth.appleSignInSuccess'), {
                                                 message: t('auth.accountCreated'),

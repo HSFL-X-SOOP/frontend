@@ -10,6 +10,7 @@ import {useTranslation, useToast} from '@/hooks/ui';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PrimaryButton, PrimaryButtonText} from '@/types/button';
 import { createLogger } from '@/utils/logger';
+import {getMapRoute} from '@/utils/navigation';
 
 const logger = createLogger('Profile:CreateProfile');
 
@@ -84,7 +85,7 @@ export default function CreateProfileScreen() {
                     message: t('profile.profileCreated')
                 });
 
-                router.replace('/map');
+                router.replace(getMapRoute());
             },
             (error) => {
                 toast.error(t('profile.errors.creationFailed'), {

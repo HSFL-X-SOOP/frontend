@@ -11,7 +11,7 @@ import {useSession} from '@/context/SessionContext';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText, IconButton} from '@/types/button';
 
 import {LanguageSelector} from '@/components/common/LanguageSelector';
-
+import {getMapRoute} from '@/utils/navigation';
 
 import {UI_CONSTANTS} from '@/config/constants';
 
@@ -35,7 +35,7 @@ export function NavbarWeb() {
             message: translate('auth.logoutMessage'),
             duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
         });
-        router.push('/map');
+        router.push(getMapRoute());
     };
 
     return (

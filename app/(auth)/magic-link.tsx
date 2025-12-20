@@ -12,6 +12,7 @@ import {useTranslation,useToast} from '@/hooks/ui';
 import {createLogger} from '@/utils/logger';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText} from '@/types/button';
+import {getMapRoute} from '@/utils/navigation';
 
 const logger = createLogger('Auth:MagicLink');
 
@@ -83,7 +84,7 @@ export default function MagicLinkScreen() {
                 toast.success(t('auth.magicLink.loginSuccess'), {
                     message: t('auth.welcomeBack')
                 });
-                router.replace("/map");
+                router.replace(getMapRoute());
             },
             (error) => {
                 logger.error('Magic link login failed', error);

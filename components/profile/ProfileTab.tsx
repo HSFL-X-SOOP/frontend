@@ -11,20 +11,23 @@ import {
     RadioGroup,
     Label
 } from 'tamagui';
-import {Globe, Activity, Ruler, Check} from '@tamagui/lucide-icons';
+import {Globe, Activity, Ruler, Check, LogOut} from '@tamagui/lucide-icons';
 import {useTranslation,useToast} from '@/hooks/ui';
+import {useRouter} from 'expo-router';
 
 import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/data';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
+import {getMapRoute} from '@/utils/navigation';
 
 export const ProfileTab: React.FC = () => {
     const {t, changeLanguage} = useTranslation();
-    const {session, updateProfile: updateSessionProfile} = useSession();
+    const {session, updateProfile: updateSessionProfile, logout} = useSession();
     const {updateProfile} = useUser();
     const toast = useToast();
+    const router = useRouter();
 
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -86,6 +89,15 @@ export const ProfileTab: React.FC = () => {
             setSelectedMeasurement(session.profile.measurementSystem ?? MeasurementSystem.METRIC);
         }
         setIsEditing(false);
+    };
+
+    const handleLogout = () => {
+        logout();
+        toast.info(t('auth.logoutSuccess'), {
+            message: t('auth.logoutMessage'),
+            duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM
+        });
+        router.push(getMapRoute());
     };
 
     return (
@@ -322,6 +334,27 @@ export const ProfileTab: React.FC = () => {
                     </XStack>
                 </YStack>
             )}
+
+            {/* Logout Button */}
+            <Card backgroundColor="$content1" borderRadius="$6" padding="$4"
+                  borderWidth={1} borderColor="$borderColor" marginTop="$2">
+                <SecondaryButton
+                    width="100%"
+                    size="$4"
+                    onPress={handleLogout}
+                    backgroundColor="$red4"
+                    borderColor="$red7"
+                    hoverStyle={{backgroundColor: "$red5"}}
+                    pressStyle={{backgroundColor: "$red6"}}
+                >
+                    <XStack alignItems="center" gap="$2">
+                        <LogOut size={20} color="$red10"/>
+                        <SecondaryButtonText color="$red10">
+                            {t('auth.logout')}
+                        </SecondaryButtonText>
+                    </XStack>
+                </SecondaryButton>
+            </Card>
         </YStack>
     );
 };

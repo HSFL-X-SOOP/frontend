@@ -17,7 +17,7 @@ import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
-import {getAuthRoute, getProfileRoute} from '@/utils/navigation';
+import {getAuthRoute, getProfileRoute, getMapRoute} from '@/utils/navigation';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
@@ -70,7 +70,7 @@ export default function LoginScreen() {
                     logger.info('No profile found or not created, redirecting to create-profile');
                     router.push(getProfileRoute('create-profile'));
                 } else {
-                    router.push("/map");
+                    router.push(getMapRoute());
                 }
             },
             (error) => {
@@ -210,7 +210,7 @@ export default function LoginScreen() {
                         <SecondaryButton
                             onPress={async () => {
                                 await handleGoogleSignIn(
-                                    '/map',
+                                    getMapRoute(),
                                     () => {
                                         toast.success(t('auth.googleSignInSuccess'), {
                                             message: t('auth.welcomeBack'),
@@ -249,7 +249,7 @@ export default function LoginScreen() {
                             <SecondaryButton
                                 onPress={async () => {
                                     await handleAppleSignIn(
-                                        '/map',
+                                        getMapRoute(),
                                         (userId) => {
                                             toast.success(t('auth.appleSignInSuccess'), {
                                                 message: t('auth.welcomeBack'),

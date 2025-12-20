@@ -29,3 +29,11 @@ export function getProfileRoute(screen: ProfileScreen): Href {
     }
     return `/(tabs)/${screen === 'profile' ? 'profile-detail' : screen}` as Href;
 }
+
+export function getMapRoute(): Href {
+    if (Platform.OS === 'web') {
+        return '/map' as Href;
+    }
+    // Native uses tabs with the map at the root (index)
+    return '/' as Href;
+}
