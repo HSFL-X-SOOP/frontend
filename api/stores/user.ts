@@ -27,5 +27,12 @@ export function useUserStore() {
                 'UserStore:updateProfile'
             );
         },
+
+        deleteProfile: (): Promise<Result<void>> => {
+            return api.requestSafe(
+                httpClient.delete<void>('/user-profile'),
+                'UserStore:deleteProfile'
+            );
+        },
     };
 }

@@ -33,6 +33,7 @@ import {
     AlertCircle
 } from '@tamagui/lucide-icons';
 import {useTranslation, useToast} from '@/hooks/ui';
+import * as ImagePicker from 'expo-image-picker';
 
 import {Platform} from 'react-native';
 import {useLocationInfo} from '@/hooks/data';
@@ -75,6 +76,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
     // State for current image URL (either from API or uploaded)
     const [currentImageUrl, setCurrentImageUrl] = useState<string>('');
     const [imageKey, setImageKey] = useState<number>(0);
+    const maxImageSizeBytes = 5 * 1024 * 1024;
 
     // Fetch location info on mount
     useEffect(() => {
@@ -208,7 +210,7 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
         }
 
         // Check file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
+        if (file.size > maxImageSizeBytes) {
             toast.error(t('harbor.fileTooLarge'), {
                 message: t('harbor.maxFileSize')
             });
@@ -223,13 +225,13 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
             const base64 = dataUrl.split(',')[1];
             const mimeType = dataUrl.split(':')[1].split(';')[0];
 
-            setEditedInfo({
-                ...editedInfo,
+            setEditedInfo((prev) => ({
+                ...prev,
                 image: {
                     base64: base64,
                     contentType: mimeType
                 }
-            });
+            }));
 
             // Update preview
             setCurrentImageUrl(dataUrl);
@@ -278,9 +280,59 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
         }
     };
 
+    const pickImageFromLibrary = async () => {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+            toast.error(t('harbor.mediaPermissionDenied'), {
+                message: t('harbor.mediaPermissionMessage')
+            });
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 0.85,
+            base64: true
+        });
+
+        if (result.canceled) return;
+
+        const asset = result.assets?.[0];
+        if (!asset?.base64) {
+            toast.error(t('harbor.invalidFileType'), {
+                message: t('harbor.pleaseSelectImage')
+            });
+            return;
+        }
+
+        if (asset.fileSize && asset.fileSize > maxImageSizeBytes) {
+            toast.error(t('harbor.fileTooLarge'), {
+                message: t('harbor.maxFileSize')
+            });
+            return;
+        }
+
+        setEditedInfo((prev) => ({
+            ...prev,
+            image: {
+                base64: asset.base64,
+                contentType: asset.mimeType || 'image/jpeg'
+            }
+        }));
+        setCurrentImageUrl(asset.uri);
+        toast.success(t('harbor.imageUploaded'), {
+            message: asset.fileName || ''
+        });
+    };
+
     const triggerFileInput = () => {
         if (Platform.OS === 'web' && fileInputRef.current) {
             fileInputRef.current.click();
+            return;
+        }
+        if (Platform.OS !== 'web') {
+            void pickImageFromLibrary();
         }
     };
 
@@ -316,19 +368,22 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
 
     return (
         <ScrollView showsVerticalScrollIndicator={false}>
-            <YStack gap="$4">
-                {/* Header */}
-                <YStack gap="$3">
-                    <YStack>
-                        <H4 color="$accent7" fontFamily="$oswald">
-                            {displayData.name || t('harbor.manageHarbor')}
-                        </H4>
-                        <Text color="$gray11" fontSize="$2">
-                            {t('harbor.manageDescription')}
-                        </Text>
-                    </YStack>
-                    {/* Edit Button */}
-                    <XStack justifyContent="flex-end" alignItems="center">
+                <YStack gap="$4">
+                    {/* Header */}
+                    <XStack
+                        alignItems="center"
+                        justifyContent="space-between"
+                        flexWrap="wrap"
+                        gap="$3"
+                    >
+                        <YStack flex={1} minWidth={220}>
+                            <H4 color="$accent7" fontFamily="$oswald">
+                                {displayData.name || t('harbor.manageHarbor')}
+                            </H4>
+                            <Text color="$gray11" fontSize="$2">
+                                {t('harbor.manageDescription')}
+                            </Text>
+                        </YStack>
                         {!isEditing && (
                             <PrimaryButton
                                 size="$3"
@@ -341,7 +396,6 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                             </PrimaryButton>
                         )}
                     </XStack>
-                </YStack>
 
                 {/* Harbor Image Section */}
                 <Card backgroundColor="$content1" borderRadius="$6" padding="$5"
@@ -496,6 +550,13 @@ export const HarborMasterTab: React.FC<HarborMasterTabProps> = () => {
                                                         <Text fontSize="$5" fontWeight="600" color="$color">
                                                             {t('harbor.tapToSelectImage')}
                                                         </Text>
+                                                        <Button
+                                                            size="$3"
+                                                            variant="outlined"
+                                                            onPress={triggerFileInput}
+                                                        >
+                                                            {t('harbor.changeImage')}
+                                                        </Button>
                                                         <Text fontSize="$2" color="$gray10">
                                                             {t('harbor.maxSizeInfo')}
                                                         </Text>

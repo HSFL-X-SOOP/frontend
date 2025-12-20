@@ -9,9 +9,11 @@ import {
     View,
     Separator,
     RadioGroup,
-    Label
+    Label,
+    Dialog,
+    Button
 } from 'tamagui';
-import {Globe, Activity, Ruler, Check, LogOut} from '@tamagui/lucide-icons';
+import {Globe, Activity, Ruler, Check, LogOut, User, Trash2} from '@tamagui/lucide-icons';
 import {useTranslation,useToast} from '@/hooks/ui';
 import {useRouter} from 'expo-router';
 
@@ -25,12 +27,14 @@ import {getMapRoute} from '@/utils/navigation';
 export const ProfileTab: React.FC = () => {
     const {t, changeLanguage} = useTranslation();
     const {session, updateProfile: updateSessionProfile, logout} = useSession();
-    const {updateProfile} = useUser();
+    const {updateProfile, deleteProfile} = useUser();
     const toast = useToast();
     const router = useRouter();
 
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState<Language>(Language.DE);
     const [selectedRoles, setSelectedRoles] = useState<ActivityRole[]>([]);
     const [selectedMeasurement, setSelectedMeasurement] = useState<MeasurementSystem>(MeasurementSystem.METRIC);
@@ -100,20 +104,30 @@ export const ProfileTab: React.FC = () => {
         router.push(getMapRoute());
     };
 
+    const handleDeleteProfile = async () => {
+        setIsDeleting(true);
+        await deleteProfile(
+            () => {
+                toast.success(t('profile.deleteSuccess'), {
+                    message: t('profile.accountDeleted'),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                });
+                logout();
+                router.push(getMapRoute());
+            },
+            (error) => {
+                toast.error(t('profile.deleteError'), {
+                    message: t(error.onGetMessage()),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                });
+            }
+        );
+        setIsDeleting(false);
+        setShowDeleteDialog(false);
+    };
+
     return (
         <YStack gap="$4">
-            <XStack justifyContent="flex-end" alignItems="center">
-                {!isEditing && (
-                    <PrimaryButton
-                        size="$3"
-                        onPress={() => setIsEditing(true)}
-                    >
-                        <PrimaryButtonText>
-                            {t('profile.edit')}
-                        </PrimaryButtonText>
-                    </PrimaryButton>
-                )}
-            </XStack>
 
             <Card backgroundColor="$content1" borderRadius="$6" padding="$5"
                   borderWidth={1} borderColor="$borderColor">
@@ -335,26 +349,152 @@ export const ProfileTab: React.FC = () => {
                 </YStack>
             )}
 
-            {/* Logout Button */}
-            <Card backgroundColor="$content1" borderRadius="$6" padding="$4"
-                  borderWidth={1} borderColor="$borderColor" marginTop="$2">
-                <SecondaryButton
-                    width="100%"
-                    size="$4"
-                    onPress={handleLogout}
-                    backgroundColor="$red4"
-                    borderColor="$red7"
-                    hoverStyle={{backgroundColor: "$red5"}}
-                    pressStyle={{backgroundColor: "$red6"}}
-                >
-                    <XStack alignItems="center" gap="$2">
-                        <LogOut size={20} color="$red10"/>
-                        <SecondaryButtonText color="$red10">
-                            {t('auth.logout')}
-                        </SecondaryButtonText>
-                    </XStack>
-                </SecondaryButton>
-            </Card>
+            {/* Account Actions */}
+            {!isEditing && (
+                <YStack gap="$3" marginTop="$2">
+                    <Separator borderColor="$borderColor"/>
+                    <Card backgroundColor="$content1" borderRadius="$6" padding="$4"
+                          borderWidth={1} borderColor="$borderColor">
+                        <YStack gap="$3">
+                            <Text fontSize={15} fontWeight="600" color="$color">
+                                {t('profile.accountActions')}
+                            </Text>
+
+                            <PrimaryButton
+                                width="100%"
+                                size="$4"
+                                onPress={() => setIsEditing(true)}
+                                icon={<User size={18} color="white"/>}
+                            >
+                                <PrimaryButtonText>
+                                    {t('profile.edit')}
+                                </PrimaryButtonText>
+                            </PrimaryButton>
+
+                            <SecondaryButton
+                                width="100%"
+                                size="$4"
+                                onPress={handleLogout}
+                                borderColor="$red10"
+                                hoverStyle={{borderColor: "$red11"}}
+                                pressStyle={{scale: 0.98, borderColor: "$red11"}}
+                            >
+                                <XStack alignItems="center" gap="$2" justifyContent="center">
+                                    <LogOut size={20} color="$red10"/>
+                                    <SecondaryButtonText color="$red10" fontWeight="600">
+                                        {t('auth.logout')}
+                                    </SecondaryButtonText>
+                                </XStack>
+                            </SecondaryButton>
+
+                            <Separator marginVertical="$2" borderColor="$borderColor"/>
+
+                            <Text fontSize={13} fontWeight="600" color="$red10">
+                                {t('profile.dangerZone')}
+                            </Text>
+
+                            <PrimaryButton
+                                width="100%"
+                                size="$4"
+                                onPress={() => setShowDeleteDialog(true)}
+                                backgroundColor="$red9"
+                                borderColor="$red10"
+                                shadowColor="transparent"
+                                shadowOffset={{width: 0, height: 0}}
+                                shadowOpacity={0}
+                                shadowRadius={0}
+                                elevation={0}
+                                hoverStyle={{backgroundColor: "$red10", borderColor: "$red11", shadowOpacity: 0}}
+                                pressStyle={{backgroundColor: "$red8", scale: 0.98, borderColor: "$red10", shadowOpacity: 0}}
+                                focusStyle={{borderColor: "$red11", shadowOpacity: 0}}
+                                disabled={isDeleting}
+                            >
+                                <XStack alignItems="center" gap="$2" justifyContent="center">
+                                    {isDeleting ? (
+                                        <Spinner color="white" />
+                                    ) : (
+                                        <Trash2 size={20} color="white"/>
+                                    )}
+                                    <PrimaryButtonText fontWeight="600">
+                                        {isDeleting ? t('profile.deleting') : t('profile.deleteAccount')}
+                                    </PrimaryButtonText>
+                                </XStack>
+                            </PrimaryButton>
+                        </YStack>
+                    </Card>
+                </YStack>
+            )}
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog modal open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <Dialog.Portal>
+                    <Dialog.Overlay
+                        key="overlay"
+                        animation="quick"
+                        opacity={0.5}
+                        enterStyle={{ opacity: 0 }}
+                        exitStyle={{ opacity: 0 }}
+                    />
+                    <Dialog.Content
+                        bordered
+                        elevate
+                        key="content"
+                        animation={[
+                            'quick',
+                            {
+                                opacity: {
+                                    overshootClamping: true,
+                                },
+                            },
+                        ]}
+                        enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
+                        exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
+                        gap="$4"
+                        backgroundColor="$content1"
+                        maxWidth={400}
+                        width="90%"
+                    >
+                        <Dialog.Title fontSize={20} fontWeight="700" color="$red10">
+                            {t('profile.deleteDialogTitle')}
+                        </Dialog.Title>
+                        <Dialog.Description color="$color">
+                            {t('profile.deleteDialogMessage')}
+                        </Dialog.Description>
+
+                        <XStack gap="$3" justifyContent="flex-end">
+                            <Dialog.Close asChild>
+                                <SecondaryButton size="$4">
+                                    <SecondaryButtonText>
+                                        {t('profile.actions.cancel')}
+                                    </SecondaryButtonText>
+                                </SecondaryButton>
+                            </Dialog.Close>
+                            <PrimaryButton
+                                size="$4"
+                                backgroundColor="$red9"
+                                borderColor="$red10"
+                                shadowColor="transparent"
+                                shadowOffset={{width: 0, height: 0}}
+                                shadowOpacity={0}
+                                shadowRadius={0}
+                                elevation={0}
+                                hoverStyle={{backgroundColor: "$red10", borderColor: "$red11", shadowOpacity: 0}}
+                                pressStyle={{backgroundColor: "$red8", scale: 0.98, borderColor: "$red10", shadowOpacity: 0}}
+                                focusStyle={{borderColor: "$red11", shadowOpacity: 0}}
+                                onPress={handleDeleteProfile}
+                                disabled={isDeleting}
+                            >
+                                <XStack alignItems="center" gap="$2">
+                                    {isDeleting && <Spinner color="white" />}
+                                    <PrimaryButtonText fontWeight="600">
+                                        {isDeleting ? t('profile.deleting') : t('profile.confirmDelete')}
+                                    </PrimaryButtonText>
+                                </XStack>
+                            </PrimaryButton>
+                        </XStack>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog>
         </YStack>
     );
 };

@@ -59,10 +59,26 @@ export const useUser = () => {
         setLoading(false);
     }, [userStore]);
 
+    const deleteProfile = useCallback(async (
+        onSuccess: () => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await userStore.deleteProfile();
+
+        if (result.ok) {
+            onSuccess();
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [userStore]);
+
     return {
         loading,
         getProfile,
         createProfile,
-        updateProfile
+        updateProfile,
+        deleteProfile
     };
 };

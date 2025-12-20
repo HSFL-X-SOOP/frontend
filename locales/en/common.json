@@ -108,6 +108,7 @@
     "language": "Language",
     "notifications": "Notifications",
     "edit": "Edit",
+    "accountActions": "Account Actions",
     "loadingProfile": "Loading profile...",
     "noProfileFound": "No Profile Found",
     "noProfileMessage": "You haven't created a profile yet. Please create one to continue.",
@@ -183,7 +184,16 @@
     "saveSuccess": "Profile Saved",
     "saveError": "Failed to Save Profile",
     "saveErrorGeneric": "An error occurred while saving your profile. Please try again.",
-    "settingsUpdated": "Your settings have been updated successfully!"
+    "settingsUpdated": "Your settings have been updated successfully!",
+    "dangerZone": "Danger Zone",
+    "deleteAccount": "Delete Account",
+    "deleting": "Deleting...",
+    "deleteSuccess": "Account Deleted",
+    "accountDeleted": "Your account has been permanently deleted.",
+    "deleteError": "Failed to Delete Account",
+    "deleteDialogTitle": "Delete Account?",
+    "deleteDialogMessage": "This action cannot be undone. Your profile and all associated data will be permanently deleted.",
+    "confirmDelete": "Yes, Delete My Account"
   },
   "map": {
     "title": "Map",
@@ -270,6 +280,7 @@
   "harbor": {
     "manageHarbor": "Manage Harbor",
     "manageDescription": "Edit your harbor's information and settings",
+    "loading": "Loading harbor...",
     "image": "Harbor Image",
     "imageUrl": "Image URL",
     "imageUrlPlaceholder": "https://example.com/harbor-image.jpg",
@@ -285,6 +296,8 @@
     "saveError": "Update Failed",
     "saveErrorMessage": "Failed to update harbor information. Please try again.",
     "changeImage": "Change Image",
+    "mediaPermissionDenied": "Photo Access Needed",
+    "mediaPermissionMessage": "Allow photo library access to upload a harbor image.",
     "dragDropImage": "Drag & Drop Image Here",
     "orClickToSelect": "or click to select file",
     "tapToSelectImage": "Tap to Select Image",

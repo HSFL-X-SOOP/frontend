@@ -108,6 +108,7 @@
     "language": "Sprache",
     "notifications": "Benachrichtigungen",
     "edit": "Bearbeiten",
+    "accountActions": "Konto-Aktionen",
     "loadingProfile": "Profil wird geladen...",
     "noProfileFound": "Kein Profil gefunden",
     "noProfileMessage": "Sie haben noch kein Profil erstellt. Bitte erstellen Sie eines, um fortzufahren.",
@@ -184,7 +185,16 @@
     "saveSuccess": "Profil gespeichert",
     "saveError": "Profil konnte nicht gespeichert werden",
     "saveErrorGeneric": "Beim Speichern Ihres Profils ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-    "settingsUpdated": "Ihre Einstellungen wurden erfolgreich aktualisiert!"
+    "settingsUpdated": "Ihre Einstellungen wurden erfolgreich aktualisiert!",
+    "dangerZone": "Gefahrenzone",
+    "deleteAccount": "Konto löschen",
+    "deleting": "Wird gelöscht...",
+    "deleteSuccess": "Konto gelöscht",
+    "accountDeleted": "Ihr Konto wurde dauerhaft gelöscht.",
+    "deleteError": "Konto konnte nicht gelöscht werden",
+    "deleteDialogTitle": "Konto löschen?",
+    "deleteDialogMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Ihr Profil und alle zugehörigen Daten werden dauerhaft gelöscht.",
+    "confirmDelete": "Ja, Konto löschen"
   },
   "map": {
     "title": "Karte",
@@ -271,6 +281,7 @@
   "harbor": {
     "manageHarbor": "Hafen verwalten",
     "manageDescription": "Bearbeiten Sie die Informationen und Einstellungen Ihres Hafens",
+    "loading": "Hafen wird geladen...",
     "image": "Hafenbild",
     "imageUrl": "Bild-URL",
     "imageUrlPlaceholder": "https://beispiel.de/hafen-bild.jpg",
@@ -286,6 +297,8 @@
     "saveError": "Aktualisierung fehlgeschlagen",
     "saveErrorMessage": "Die Hafeninformationen konnten nicht aktualisiert werden. Bitte versuchen Sie es erneut.",
     "changeImage": "Bild ändern",
+    "mediaPermissionDenied": "Fotozugriff erforderlich",
+    "mediaPermissionMessage": "Bitte erlauben Sie den Zugriff auf Ihre Mediathek, um ein Hafenbild hochzuladen.",
     "dragDropImage": "Bild hier ablegen",
     "orClickToSelect": "oder klicken zum Auswählen",
     "tapToSelectImage": "Tippen zum Auswählen",
