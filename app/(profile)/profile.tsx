@@ -20,6 +20,7 @@ import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
 import {MyNotificationsTab} from '@/components/profile/MyNotificationsTab';
 import {useLocationInfo, useUser} from '@/hooks/data';
 import {DetailedLocationDTO} from '@/api/models/location';
+import {getMapRoute} from '@/utils/navigation';
 
 export default function ProfileScreen() {
     const router = useRouter();
