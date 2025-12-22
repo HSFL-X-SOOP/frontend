@@ -227,10 +227,19 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
                                 {displayData.length > 0 && (() => {
                                     const maxLabels = 6;
                                     const showEvery = Math.max(1, Math.ceil(displayData.length / maxLabels));
+                                    const lastIndex = displayData.length - 1;
+                                    // Find the last regular interval index
+                                    const lastRegularIndex = Math.floor(lastIndex / showEvery) * showEvery;
+                                    // Only show last label if it's far enough from the last regular label
+                                    const showLastLabel = lastIndex - lastRegularIndex > showEvery * 0.5;
+
                                     return displayData
                                         .map((item, index) => {
-                                            if (index % showEvery === 0 || index === displayData.length - 1) {
-                                                const xPos = (index / (displayData.length - 1 || 1)) * innerWidth;
+                                            const isRegularInterval = index % showEvery === 0;
+                                            const isLastLabel = index === lastIndex && showLastLabel;
+
+                                            if (isRegularInterval || isLastLabel) {
+                                                const xPos = (index / (lastIndex || 1)) * innerWidth;
                                                 return (
                                                     <text
                                                         key={`label-${index}`}

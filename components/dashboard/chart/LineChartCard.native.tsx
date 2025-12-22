@@ -1,10 +1,10 @@
 import {useThemeContext} from "@/context/ThemeSwitch";
 import {useTranslation} from "@/hooks/ui";
 import {Activity} from "@tamagui/lucide-icons";
-import {useMemo, useState} from "react";
-import {View, GestureResponderEvent} from "react-native";
+import {useMemo, useState, useCallback} from "react";
+import {View, GestureResponderEvent, LayoutChangeEvent, useWindowDimensions} from "react-native";
 import Svg, {G, Line, Path, Circle, Text as SvgText} from "react-native-svg";
-import {Card, H3, Text, useMedia, XStack, YStack} from "tamagui";
+import {Card, H3, Text, XStack, YStack} from "tamagui";
 
 export type LineChartCardProps = {
     title: string,
@@ -23,9 +23,17 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
                                                             }) => {
     const {isDark} = useThemeContext();
     const {t} = useTranslation();
-    const media = useMedia();
+    const {width: windowWidth} = useWindowDimensions();
     const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
     const [touchPosition, setTouchPosition] = useState({x: 0, y: 0});
+    const [containerWidth, setContainerWidth] = useState(0);
+
+    const handleLayout = useCallback((event: LayoutChangeEvent) => {
+        const {width} = event.nativeEvent.layout;
+        if (width > 0 && width !== containerWidth) {
+            setContainerWidth(width);
+        }
+    }, [containerWidth]);
 
     const {data, displayData, minValue, maxValue} = useMemo(() => {
         if (chartData.length === 0) {
@@ -46,8 +54,9 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
         };
     }, [chartData]);
 
-    const chartWidth = media.md ? 360 : 460;
-    const chartHeight = media.md ? 200 : 260;
+    const fallbackWidth = Math.min(windowWidth - 48, 800);
+    const chartWidth = containerWidth > 0 ? containerWidth : fallbackWidth;
+    const chartHeight = Math.min(280, Math.max(180, chartWidth * 0.45));
     const padding = {top: 20, right: 20, bottom: 40, left: 50};
     const innerWidth = chartWidth - padding.left - padding.right;
     const innerHeight = chartHeight - padding.top - padding.bottom;
@@ -107,10 +116,8 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
             elevate
             bordered
             backgroundColor={"$content2"}
-            flex={media.md ? undefined : 1}
-            width={media.md ? "100%" : undefined}
+            width="100%"
             minWidth={280}
-            marginBottom={media.md ? "$3" : 0}
         >
             <Card.Header padded>
                 <XStack gap="$2" alignItems="center" justifyContent="space-between">
@@ -142,7 +149,7 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
                     )}
                 </XStack>
             </Card.Header>
-            <Card.Footer padded paddingTop="$0">
+            <Card.Footer padded paddingTop="$0" onLayout={handleLayout}>
                 {displayData.length > 0 ? (
                     <YStack position="relative" width="100%">
                         <View
@@ -151,8 +158,9 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
                             onTouchEnd={handleTouchEnd}
                         >
                             <Svg
-                                width={chartWidth}
+                                width="100%"
                                 height={chartHeight}
+                                viewBox={`0 0 ${chartWidth} ${chartHeight}`}
                             >
                                 <G transform={`translate(${padding.left}, ${padding.top})`}>
                                     {/* Grid lines */}
@@ -195,10 +203,17 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
                                     {displayData.length > 0 && (() => {
                                         const maxLabels = 6;
                                         const showEvery = Math.max(1, Math.ceil(displayData.length / maxLabels));
+                                        const lastIndex = displayData.length - 1;
+                                        const lastRegularIndex = Math.floor(lastIndex / showEvery) * showEvery;
+                                        const showLastLabel = lastIndex - lastRegularIndex > showEvery * 0.5;
+
                                         return displayData
                                             .map((item, index) => {
-                                                if (index % showEvery === 0 || index === displayData.length - 1) {
-                                                    const xPos = (index / (displayData.length - 1 || 1)) * innerWidth;
+                                                const isRegularInterval = index % showEvery === 0;
+                                                const isLastLabel = index === lastIndex && showLastLabel;
+
+                                                if (isRegularInterval || isLastLabel) {
+                                                    const xPos = (index / (lastIndex || 1)) * innerWidth;
                                                     return (
                                                         <SvgText
                                                             key={`label-${index}`}
