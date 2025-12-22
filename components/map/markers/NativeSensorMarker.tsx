@@ -18,15 +18,15 @@ interface SensorMarkerProps {
  * Only re-render if sensor ID, dark mode, or callback changes
  */
 
-// const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProps): boolean => {
-//     return (
-//         prevProps.locationWithBoxes?.location?.id === nextProps.locationWithBoxes?.location?.id &&
-//         prevProps.isDark === nextProps.isDark &&
-//         prevProps.setMarker === nextProps.setMarker &&
-//         prevProps.setOpen === nextProps.setOpen &&
-//         prevProps.setSelectedId === nextProps.setSelectedId
-//     );
-// };
+const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProps): boolean => {
+    return (
+        prevProps.locationWithBoxes?.location?.id === nextProps.locationWithBoxes?.location?.id &&
+        prevProps.isDark === nextProps.isDark &&
+        prevProps.setMarker === nextProps.setMarker &&
+        prevProps.setOpen === nextProps.setOpen &&
+        prevProps.selectedLocationId === nextProps.selectedLocationId
+    );
+};
 
 /**
  * Native sensor marker component for MapLibre React Native
@@ -71,4 +71,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default React.memo(NativeSensorMarker);
+export default React.memo(NativeSensorMarker, arePropsEqual);
