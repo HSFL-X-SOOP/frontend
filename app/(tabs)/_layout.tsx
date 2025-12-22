@@ -74,6 +74,7 @@ export default function TabLayout() {
                                         },
                                     },
                                 ]}
+                                top={"20%"}
                             >
                                 <Popover.Arrow borderWidth={1} borderColor="$borderColor"/>
                                 <LanguageSelector/>
