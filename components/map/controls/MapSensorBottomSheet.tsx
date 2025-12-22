@@ -34,7 +34,7 @@ export interface MapSensorBottomSheetRef {
 // CONSTANTS
 // ==========================================
 const SHEET_CONFIG = {
-    snapPoints: [55, 17.5], // [expanded%, collapsed%]
+    snapPoints: [65, 17.5], // [expanded%, collapsed%]
     defaultPosition: 1,     // Start at collapsed position
     animationMode: 'medium' as const,
     throttleMs: 50,        // Min time between snap calls

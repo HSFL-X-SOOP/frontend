@@ -10,7 +10,7 @@ import {fuzzyMatch} from '@/utils/searchUtils';
 import {PrimaryButton, PrimaryButtonText} from '@/types/button';
 import {calculateDistance, filterSensorsByType, getLatestMeasurementTime} from '@/utils/sensorUtils';
 import { ActionSheetSelect } from '@/components/ui/ActionSheetSelect';
-import { Platform } from 'react-native';
+import { Platform, FlatList, useWindowDimensions, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 interface SensorListProps {
     sensors: LocationWithBoxes[];
@@ -35,13 +35,23 @@ export default function SensorList({
                                        horizontal = false
                                    }: SensorListProps) {
     const {t} = useTranslation();
+    const {width: windowWidth, height: windowHeight} = useWindowDimensions();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<SortOption>('distance');
     const [filterType, setFilterType] = useState<FilterType>('all');
     const [showAllSensors, setShowAllSensors] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     const sensorsToDisplay = showAllSensors ? allSensors : sensors;
+
+    const CARD_WIDTH = 260;
+    const CARD_SPACING = 12;
+    const ITEM_TOTAL_WIDTH = CARD_WIDTH + CARD_SPACING;
+
+    // Responsive card height: base height of 160, scales up on larger screens
+    // Min 160, max 220, scales between 667px (iPhone SE) and 900px height
+    const CARD_HEIGHT = Math.min(220, Math.max(160, 160 + (windowHeight - 667) * 0.25));
 
     // Select items for filter type
     const filterTypeItems: SelectItem<FilterType>[] = [
@@ -90,6 +100,18 @@ export default function SensorList({
         });
     }, [sensorsToDisplay, searchQuery, filterType, sortBy, getDistance]);
 
+    const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const offsetX = event.nativeEvent.contentOffset.x;
+        const index = Math.round(offsetX / ITEM_TOTAL_WIDTH);
+        setCurrentIndex(Math.max(0, Math.min(index, processedSensors.length - 1)));
+    }, [ITEM_TOTAL_WIDTH, processedSensors.length]);
+
+    const getItemLayout = useCallback((_data: any, index: number) => ({
+        length: CARD_WIDTH,
+        offset: index * ITEM_TOTAL_WIDTH,
+        index,
+    }), [ITEM_TOTAL_WIDTH]);
+
     if (loading) {
         return (
             <YStack padding="$4" gap="$3">
@@ -133,18 +155,20 @@ export default function SensorList({
     const sortByDropdownMobile = (
         <ActionSheetSelect
             items={sortByItems}
-            value={sortBy}  
+            value={sortBy}
             placeholder={t('sensor.sortBy')}
             onChange={setSortBy}
+            compact={horizontal}
         />
     )
 
-    const setFilterTypeDropdownMobile = (        
+    const setFilterTypeDropdownMobile = (
         <ActionSheetSelect
             items={filterTypeItems}
             value={filterType}
             placeholder={t('sensor.filterType')}
             onChange={setFilterType}
+            compact={horizontal}
         />
     )
 
@@ -156,27 +180,27 @@ export default function SensorList({
             {/* Fixed Header Section - NOT scrollable */}
             <YStack backgroundColor="$background" zIndex={1}>
                 {/* Header with count and toggle */}
-                <YStack padding="$2.5" paddingBottom="$1">
-                    <XStack justifyContent="space-between" alignItems="center" marginBottom="$1.5">
-                        <H4 fontSize="$5" fontWeight="700" color="$color">
+                <YStack padding={horizontal ? "$2" : "$2.5"} paddingBottom={horizontal ? "$0.5" : "$1"}>
+                    <XStack justifyContent="space-between" alignItems="center" marginBottom={horizontal ? "$1" : "$1.5"}>
+                        <H4 fontSize={horizontal ? "$4" : "$5"} fontWeight="700" color="$color">
                             {showAllSensors ? t('sensor.allSensors') : t('sensor.sensorsInView')}
                         </H4>
                         <XStack
-                            paddingHorizontal="$2.5"
-                            paddingVertical="$1.5"
+                            paddingHorizontal="$2"
+                            paddingVertical="$1"
                             borderRadius="$3"
                             backgroundColor="$accent6"
                         >
-                            <Text fontSize="$3" fontWeight="700" color="$color.black12">
+                            <Text fontSize="$2" fontWeight="700" color="$color.black12">
                                 {processedSensors.length}
                             </Text>
                         </XStack>
                     </XStack>
 
                     {/* Toggle between viewport and all sensors */}
-                    <XStack gap="$2" flexWrap="wrap">
+                    <XStack gap={horizontal ? "$2" : "$2"} flexWrap="wrap">
                         <Button
-                            size="$2"
+                            size={horizontal ? "$2" : "$2"}
                             flex={1}
                             variant={!showAllSensors ? "outlined" : undefined}
                             backgroundColor={!showAllSensors ? "$accent6" : "$content2"}
@@ -197,7 +221,7 @@ export default function SensorList({
                             {t('sensor.inViewport')}
                         </Button>
                         <Button
-                            size="$2"
+                            size={horizontal ? "$2" : "$2"}
                             flex={1}
                             variant={showAllSensors ? "outlined" : undefined}
                             backgroundColor={showAllSensors ? "$accent6" : "$content2"}
@@ -221,7 +245,7 @@ export default function SensorList({
                 </YStack>
 
                 {/* Search Bar */}
-                <YStack paddingHorizontal="$3" paddingVertical="$1">
+                <YStack paddingHorizontal={horizontal ? "$2" : "$3"} paddingVertical={horizontal ? "$0.5" : "$1"}>
                     <XStack alignItems="center" gap="$2" position="relative">
                         <XStack position="absolute" left="$3" zIndex={1} pointerEvents="none">
                             <Search size={16}/>
@@ -241,7 +265,7 @@ export default function SensorList({
                 </YStack>
 
                 {/* Filter and Sort Controls */}
-                <YStack paddingHorizontal="$3" paddingVertical="$1">
+                <YStack paddingHorizontal={horizontal ? "$2" : "$3"} paddingVertical={horizontal ? "$0.5" : "$1"}>
                     <XStack gap="$2" flexWrap="wrap">
                         {/* Filter Type */}
                         <XStack flex={1} minWidth="45%" gap="$2" alignItems="center">
@@ -261,7 +285,7 @@ export default function SensorList({
             </YStack>
 
             {/* Scrollable Sensor List - takes remaining space */}
-            <YStack flex={1}>
+            <YStack flex={1} overflow="hidden">
                 {horizontal ? (
                     // Horizontal scrolling for mobile bottom sheet
                     processedSensors.length === 0 ? (
@@ -318,19 +342,44 @@ export default function SensorList({
                             )}
                         </YStack>
                     ) : (
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                            <XStack gap="$3" paddingHorizontal="$3" paddingVertical="$3">
-                                {processedSensors.map((sensor) => (
-                                    <YStack key={sensor.location?.id} width={280}>
-                                        <SensorListItem
-                                            locationWithBoxes={sensor}
-                                            onPress={() => onSensorSelect(sensor)}
-                                            isHighlighted={sensor.location?.id === highlightedSensorId}
-                                        />
-                                    </YStack>
-                                ))}
-                            </XStack>
-                        </ScrollView>
+                        <YStack paddingVertical="$3">
+                            <FlatList
+                                data={processedSensors}
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                snapToInterval={ITEM_TOTAL_WIDTH}
+                                decelerationRate="fast"
+                                snapToAlignment="start"
+                                onScroll={handleScroll}
+                                scrollEventThrottle={16}
+                                getItemLayout={getItemLayout}
+                                contentContainerStyle={{
+                                    paddingLeft: (windowWidth - CARD_WIDTH) / 2,
+                                    paddingRight: (windowWidth - CARD_WIDTH) / 2,
+                                }}
+                                ItemSeparatorComponent={() => <YStack width={CARD_SPACING} />}
+                                renderItem={({item, index}) => {
+                                    const isFocused = index === currentIndex;
+                                    return (
+                                        <YStack
+                                            width={CARD_WIDTH}
+                                            opacity={isFocused ? 1 : 0.35}
+                                            scale={isFocused ? 1 : 0.90}
+                                            animation="quick"
+                                        >
+                                            <SensorListItem
+                                                locationWithBoxes={item}
+                                                onPress={() => onSensorSelect(item)}
+                                                isHighlighted={item.location?.id === highlightedSensorId}
+                                                horizontal
+                                                cardHeight={CARD_HEIGHT}
+                                            />
+                                        </YStack>
+                                    );
+                                }}
+                                keyExtractor={(item) => item.location?.id?.toString() || ''}
+                            />
+                        </YStack>
                     )
                 ) : (
                     // Vertical scrolling for drawer

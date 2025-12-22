@@ -13,6 +13,7 @@ type ActionSheetSelectProps<T extends string | number> = {
   value: T | null;
   placeholder?: string;
   onChange: (value: T) => void;
+  compact?: boolean;
 };
 
 export function ActionSheetSelect<T extends string | number>({
@@ -20,6 +21,7 @@ export function ActionSheetSelect<T extends string | number>({
   value,
   placeholder = 'Select',
   onChange,
+  compact = false,
 }: ActionSheetSelectProps<T>) {
   const { showActionSheetWithOptions } = useActionSheet();
 
@@ -43,8 +45,8 @@ export function ActionSheetSelect<T extends string | number>({
   return (
     <Card backgroundColor="$content2" borderColor="$borderColor" borderWidth={1} borderRadius={8}>
 
-      <Pressable style={styles.button} onPress={openSheet}>
-        <Text style={[styles.text, !value && styles.placeholder]}>
+      <Pressable style={[styles.button, compact && styles.compactButton]} onPress={openSheet}>
+        <Text style={[styles.text, compact && styles.compactText, !value && styles.placeholder]}>
           {selectedLabel}
         </Text>
       </Pressable>
@@ -58,8 +60,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     justifyContent: 'center',
   },
+  compactButton: {
+    height: 36,
+    paddingHorizontal: 10,
+  },
   text: {
     fontSize: 16,
+  },
+  compactText: {
+    fontSize: 14,
   },
   placeholder: {
     color: '#999',

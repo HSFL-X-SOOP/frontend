@@ -9,16 +9,20 @@ interface SensorListItemProps {
     locationWithBoxes: LocationWithBoxes;
     onPress: () => void;
     isHighlighted?: boolean;
+    horizontal?: boolean;
+    cardHeight?: number;
 }
 
 /**
  * Custom comparison function to prevent unnecessary re-renders
- * Only re-render if sensor ID, highlighted state, or callback changes
+ * Only re-render if sensor ID, highlighted state, horizontal mode, or callback changes
  */
 const arePropsEqual = (prevProps: SensorListItemProps, nextProps: SensorListItemProps): boolean => {
     return (
         prevProps.locationWithBoxes?.location?.id === nextProps.locationWithBoxes?.location?.id &&
         prevProps.isHighlighted === nextProps.isHighlighted &&
+        prevProps.horizontal === nextProps.horizontal &&
+        prevProps.cardHeight === nextProps.cardHeight &&
         prevProps.onPress === nextProps.onPress
     );
 };
@@ -30,7 +34,9 @@ const arePropsEqual = (prevProps: SensorListItemProps, nextProps: SensorListItem
 function SensorListItem({
                             locationWithBoxes,
                             onPress,
-                            isHighlighted = false
+                            isHighlighted = false,
+                            horizontal = false,
+                            cardHeight
                         }: SensorListItemProps) {
     const {t} = useTranslation();
 
@@ -88,13 +94,16 @@ function SensorListItem({
         return t('sensor.noData');
     };
 
+    const defaultHeight = horizontal ? 160 : 210;
+    const height = cardHeight ?? defaultHeight;
+
     return (
         <Card
             bordered
-            padding="$3"
-            marginHorizontal="$3"
-            marginVertical="$2"
-            height={210}
+            padding={horizontal ? "$2" : "$3"}
+            marginHorizontal={horizontal ? 0 : "$3"}
+            marginVertical={horizontal ? 0 : "$2"}
+            height={height}
             backgroundColor={'$content1'}
             borderColor={isHighlighted ? '$accent8' : '$borderColor'}
             borderWidth={isHighlighted ? 2 : 1}
@@ -111,29 +120,29 @@ function SensorListItem({
             animation="quick"
         >
             <YStack flex={1} justifyContent="space-between">
-                <YStack gap="$2.5">
+                <YStack gap={horizontal ? "$1.5" : "$2.5"}>
                     {/* Header: Location Name */}
-                    <XStack gap="$2" alignItems="center">
-                        <MapPin size={16} color="$color"/>
-                        <H4 fontSize="$5" fontWeight="600" color="$color" numberOfLines={1} flex={1}>
+                    <XStack gap="$1.5" alignItems="center">
+                        <MapPin size={horizontal ? 14 : 16} color="$color"/>
+                        <H4 fontSize={horizontal ? "$4" : "$5"} fontWeight="600" color="$color" numberOfLines={1} flex={1}>
                             {locationWithBoxes.location?.name || 'Unknown'}
                         </H4>
                     </XStack>
 
                     {/* Key Measurements */}
-                    <YStack gap="$2">
+                    <YStack gap={horizontal ? "$1" : "$2"}>
                         {keyMeasurements.map((measurement, index) => (
                             <XStack
                                 key={index}
-                                padding="$2"
+                                padding={horizontal ? "$1" : "$2"}
                                 backgroundColor="$content2"
                                 borderRadius="$2"
                                 alignItems="center"
-                                gap="$1.5"
+                                gap={horizontal ? "$1" : "$1.5"}
                             >
                                 <YStack
-                                    width={24}
-                                    height={24}
+                                    width={horizontal ? 20 : 24}
+                                    height={horizontal ? 20 : 24}
                                     borderRadius="$2"
                                     alignItems="center"
                                     justifyContent="center"
@@ -144,7 +153,7 @@ function SensorListItem({
                                     <Text fontSize="$1" color="$gray11" numberOfLines={1}>
                                         {measurement.label}
                                     </Text>
-                                    <Text fontSize="$3" fontWeight="700" color="$color">
+                                    <Text fontSize={horizontal ? "$2" : "$3"} fontWeight="700" color="$color">
                                         {measurement.value}
                                     </Text>
                                 </YStack>
@@ -156,14 +165,14 @@ function SensorListItem({
                 {/* Last Measurement Time - positioned at bottom */}
                 <XStack
                     alignItems="center"
-                    gap="$1.5"
-                    padding="$2"
+                    gap={horizontal ? "$1" : "$1.5"}
+                    padding={horizontal ? "$1" : "$2"}
                     backgroundColor="$content3"
                     borderRadius="$2"
                 >
-                    <Activity size={12} color="$green10"/>
-                    <Text fontSize="$1" color="$gray11">
-                        {t('sensor.lastMeasurement')}:{' '}
+                    <Activity size={horizontal ? 10 : 12} color="$green10"/>
+                    <Text fontSize="$1" color="$gray11" numberOfLines={1} flex={1}>
+                        {horizontal ? t('sensor.lastMeasurement').split(':')[0] : t('sensor.lastMeasurement')}:{' '}
                         <Text fontWeight="600" color="$color">
                             {getLastMeasurementTime()}
                         </Text>
