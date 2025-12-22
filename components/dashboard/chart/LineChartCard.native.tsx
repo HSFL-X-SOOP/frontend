@@ -176,7 +176,7 @@ export const LineChartCard: React.FC<LineChartCardProps> = ({
                                                     fontSize="10"
                                                     textAnchor="end"
                                                 >
-                                                    {value < 1 ? value.toFixed(1) : Math.round(value)}
+                                                    {value < 1 ? value.toFixed(1) : Math.round(value * 100) / 100}
                                                 </SvgText>
                                             </G>
                                         );
