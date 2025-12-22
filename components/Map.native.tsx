@@ -36,7 +36,7 @@ export default function NativeMap(props: MapProps) {
     const {loading, fetchData} = useSensorDataNew();
     const [open, setOpen] = useState(false);
     const {currentTheme} = useThemeContext();
-    const [locationWithBoxes, setLocationWithBoxes] = useState<LocationWithBoxes>()
+    const [selectedLocationWithBoxes, setSelectedLocationWithBoxes] = useState<LocationWithBoxes>()
 
     useEffect(() => {
         void fetchData(
@@ -107,9 +107,9 @@ export default function NativeMap(props: MapProps) {
     );
 
 
-    
     const handleCloseModal = () => {
         setOpen(false);
+        setSelectedLocationWithBoxes(undefined);
     };
     
 
@@ -138,13 +138,14 @@ export default function NativeMap(props: MapProps) {
                 <SensorMarker
                     key={locationWithBoxes!.location!.id}
                     locationWithBoxes={locationWithBoxes!}
-                    setMarker={setLocationWithBoxes}
+                    selectedLocationId={selectedLocationWithBoxes?.location?.id}
+                    setMarker={setSelectedLocationWithBoxes}
                     setOpen={setOpen}
                 />
             );
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [clusters, getClusterExpansionZoom, highlightedSensorId]);
+    }, [clusters, getClusterExpansionZoom, highlightedSensorId, selectedLocationWithBoxes]);
 
     // ========== CAMERA HELPERS ==========
 
@@ -350,7 +351,7 @@ export default function NativeMap(props: MapProps) {
                         <Theme name={currentTheme}>
                             <YStack>
                                 <SensorPopup
-                                    locationWithBoxes={locationWithBoxes!}
+                                    locationWithBoxes={selectedLocationWithBoxes!}
                                     closeOverlay={handleCloseModal}
                                 />
                             </YStack>
