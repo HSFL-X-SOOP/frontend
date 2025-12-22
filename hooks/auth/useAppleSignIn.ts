@@ -1,6 +1,6 @@
 import {useCallback, useState} from 'react';
 import {Platform} from 'react-native';
-import {useRouter} from 'expo-router';
+import {type Href, useRouter} from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import {useAuth} from '@/hooks/auth';
 import {useSession} from '@/context/SessionContext';
@@ -19,7 +19,7 @@ export const useAppleSignIn = () => {
     const [isLoading, setIsLoading] = useState(false);
 
     const handleAppleSignIn = useCallback(async (
-        redirectPath: '/map' | '/' = '/map',
+        redirectPath: Href,
         onSuccess: (userId: number | undefined) => void,
         onError: (error: AppError) => void
     ) => {

@@ -141,7 +141,7 @@ export default function LoginScreen() {
                                     </Checkbox>
                                     <Text fontSize={14} color="$color">{t('auth.rememberMe')}</Text>
                                 </XStack>
-                                <Link href={"/(auth)/magic-link" as Href}>
+                                <Link href={"/(tabs)/magic-link" as Href}>
                                     <Text color="$accent7" fontSize={14} textDecorationLine="underline">
                                         {t('auth.forgotPassword')}
                                     </Text>
@@ -171,7 +171,7 @@ export default function LoginScreen() {
                                     </Checkbox>
                                     <Text fontSize={14} color="$color" numberOfLines={1}>{t('auth.rememberMe')}</Text>
                                 </XStack>
-                                <Link href={"/(auth)/magic-link" as Href}>
+                                <Link href={"/(tabs)/magic-link" as Href}>
                                     <Text color="$accent7" fontSize={14} textDecorationLine="underline"
                                           numberOfLines={1}>
                                         {t('auth.forgotPassword')}
@@ -286,7 +286,7 @@ export default function LoginScreen() {
                     )}
 
                     <SecondaryButton
-                        onPress={() => router.push("/(auth)/magic-link")}
+                        onPress={() => router.push("/(tabs)/magic-link")}
                     >
                         <XStack gap="$2" alignItems="center">
                             <Text>✨</Text>

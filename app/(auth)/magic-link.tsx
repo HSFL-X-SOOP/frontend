@@ -131,7 +131,7 @@ export default function MagicLinkScreen() {
                 <ScrollView flex={1} backgroundColor="$content3" contentContainerStyle={{flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 16}}>
                     <AuthCard title={t('auth.magicLink.checkYourEmail')} subtitle={t('auth.magicLink.emailSent', {email})}
                               icon={CheckCircle}>
-                        <Link href={"/(auth)/login" as Href}>
+                        <Link href={"/(tabs)/login" as Href}>
                             <Text color="$accent7" textDecorationLine="underline" fontWeight="600">
                                 {t('auth.magicLink.backToSignIn')}
                             </Text>

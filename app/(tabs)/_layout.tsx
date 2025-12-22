@@ -118,6 +118,12 @@ export default function TabLayout() {
                 }}
             />
             <Tabs.Screen
+                name="magic-link"
+                options={{
+                    href: null,
+                }}
+            />
+            <Tabs.Screen
                 name="profile-detail"
                 options={{
                     href: null,

@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from 'react';
 import {Platform} from 'react-native';
-import {useRouter} from 'expo-router';
+import {Href, useRouter} from 'expo-router';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {ENV} from '@/config/environment';
 import {useAuth} from './useAuth';
@@ -30,7 +30,7 @@ export const useGoogleSignIn = () => {
     }, []);
 
     const handleGoogleSignIn = useCallback(async (
-        redirectPath: '/map' | '/' = '/map',
+        redirectPath: Href,
         onSuccess: () => void,
         onError: (error: AppError) => void
     ) => {

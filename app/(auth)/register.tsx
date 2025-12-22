@@ -3,7 +3,7 @@ import {useAuth, useGoogleSignIn} from '@/hooks/auth';
 import {AuthorityRole} from '@/api/models/profile';
 import {Link, useRouter, Href} from 'expo-router';
 import {useEffect, useState} from 'react';
-import {Platform} from 'react-native';
+import {Platform, Linking} from 'react-native';
 import {Checkbox, Text, View, YStack, XStack, Separator, Spinner, ScrollView} from 'tamagui';
 import {User} from '@tamagui/lucide-icons';
 import {useTranslation, useToast, usePasswordValidation, useEmailValidation} from '@/hooks/ui';
@@ -35,11 +35,15 @@ export default function RegisterScreen() {
     const router = useRouter();
     const {register} = useAuth();
     const {login, session} = useSession();
-    const {t} = useTranslation();
+    const {t, currentLanguage} = useTranslation();
     const {handleGoogleSignIn, isLoading: googleLoading} = useGoogleSignIn();
     const {handleAppleSignIn, isLoading: appleLoading} = useAppleSignIn();
     const toast = useToast();
     const userDeviceStore = useUserDeviceStore();
+
+    const privacyPolicyUrl = currentLanguage === 'en'
+        ? 'https://hs-flensburg.de/en/datenschutzerklaerung'
+        : 'https://hs-flensburg.de/datenschutzerklaerung';
     
     const {
         validation: passwordValidation,
@@ -204,8 +208,7 @@ export default function RegisterScreen() {
                         </YStack>
 
 
-                        <XStack gap="$2" alignItems="center" width="100%" pressStyle={{opacity: 0.7}}
-                                onPress={() => setAgreeTermsOfService(!agreeTermsOfService)}>
+                        <XStack gap="$2" alignItems="flex-start" width="100%">
                             <Checkbox
                                 id="agree-terms"
                                 checked={agreeTermsOfService}
@@ -214,6 +217,7 @@ export default function RegisterScreen() {
                                 borderWidth={2}
                                 borderColor={agreeTermsOfService ? "$accent7" : "$borderColor"}
                                 backgroundColor={agreeTermsOfService ? "$accent7" : "transparent"}
+                                marginTop={2}
                             >
                                 <Checkbox.Indicator>
                                     <View width="100%" height="100%" alignItems="center" justifyContent="center">
@@ -221,12 +225,17 @@ export default function RegisterScreen() {
                                     </View>
                                 </Checkbox.Indicator>
                             </Checkbox>
-                            <Text fontSize={14} color="$color">
-                                {t('auth.agreeToTerms').split(' ')[0]} {t('auth.agreeToTerms').split(' ').slice(1, -3).join(' ')}{' '}
-                                <Link href={"/(other)/terms-of-service" as Href}>
-                                    <Text color="$accent7"
-                                          textDecorationLine="underline">{t('auth.termsOfService')}</Text>
-                                </Link>
+                            <Text fontSize={14} color="$color" flex={1} flexWrap="wrap">
+                                {currentLanguage === 'en' ? 'I agree to the ' : 'Ich stimme der '}
+                                <Text
+                                    color="$accent7"
+                                    textDecorationLine="underline"
+                                    onPress={() => Linking.openURL(privacyPolicyUrl)}
+                                    cursor="pointer"
+                                >
+                                    {t('auth.privacyPolicy')}
+                                </Text>
+                                {currentLanguage === 'en' ? '' : ' zu'}
                             </Text>
                         </XStack>
 
