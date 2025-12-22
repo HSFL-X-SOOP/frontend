@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {LocationWithBoxes} from '@/api/models/sensor';
 import {PointAnnotation} from '@maplibre/maplibre-react-native';
 import { StyleSheet, View} from 'react-native';
@@ -8,6 +8,7 @@ interface SensorMarkerProps {
     locationWithBoxes: LocationWithBoxes;
     isDark?: boolean;
     index?: number;
+    selectedLocationId?: number;
     setMarker?: (locationWithBoxes: LocationWithBoxes) => void;
     setOpen?: (open: boolean) => void;
 }
@@ -16,21 +17,23 @@ interface SensorMarkerProps {
  * Custom comparison function to prevent unnecessary re-renders
  * Only re-render if sensor ID, dark mode, or callback changes
  */
-const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProps): boolean => {
-    return (
-        prevProps.locationWithBoxes?.location?.id === nextProps.locationWithBoxes?.location?.id &&
-        prevProps.isDark === nextProps.isDark &&
-        prevProps.setMarker === nextProps.setMarker &&
-        prevProps.setOpen === nextProps.setOpen
-    );
-};
+
+// const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProps): boolean => {
+//     return (
+//         prevProps.locationWithBoxes?.location?.id === nextProps.locationWithBoxes?.location?.id &&
+//         prevProps.isDark === nextProps.isDark &&
+//         prevProps.setMarker === nextProps.setMarker &&
+//         prevProps.setOpen === nextProps.setOpen &&
+//         prevProps.setSelectedId === nextProps.setSelectedId
+//     );
+// };
 
 /**
  * Native sensor marker component for MapLibre React Native
  * Memoized to prevent unnecessary re-renders when parent re-renders
  * Shows sensor data on map with interactive modal popup
  */
-const NativeSensorMarker = ({locationWithBoxes, setMarker, setOpen}: SensorMarkerProps) => {
+const NativeSensorMarker = ({locationWithBoxes, setMarker, setOpen, selectedLocationId}: SensorMarkerProps) => {
     // Memoize marker position to avoid recalculation
     const markerCoordinates = useMemo(
         () => ({
@@ -45,7 +48,7 @@ const NativeSensorMarker = ({locationWithBoxes, setMarker, setOpen}: SensorMarke
         <>
             <PointAnnotation
                 id={`marker-${markerCoordinates.id}`}
-                key={`marker-${markerCoordinates.id}`}
+                key={markerCoordinates.id + (selectedLocationId === markerCoordinates.id ? '_selected' : '')}
                 coordinate={[markerCoordinates.lon, markerCoordinates.lat]}
                 onSelected={() => {setMarker?.(locationWithBoxes); setOpen?.(true);}}
             >
@@ -68,4 +71,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default React.memo(NativeSensorMarker, arePropsEqual);
+export default React.memo(NativeSensorMarker);
