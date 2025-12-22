@@ -85,7 +85,7 @@
       "sendMagicLink": "Magic Link senden",
       "sending": "Senden...",
       "checkYourEmail": "Überprüfen Sie Ihre E-Mails",
-      "emailSent": "Wir haben einen Magic Link an {email} gesendet. Klicken Sie auf den Link in der E-Mail, um sich anzumelden.",
+      "emailSent": "Wir haben einen Magic Link an {{email}} gesendet. Klicken Sie auf den Link in der E-Mail, um sich anzumelden.",
       "backToSignIn": "Zurück zur Anmeldung",
       "verifying": "Magic Link wird überprüft",
       "verifyingMessage": "Bitte warten Sie, während wir Sie anmelden...",

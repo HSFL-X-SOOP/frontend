@@ -85,7 +85,7 @@
       "sendMagicLink": "Send Magic Link",
       "sending": "Sending...",
       "checkYourEmail": "Check Your Email",
-      "emailSent": "We've sent a magic link to {email}. Click the link in the email to sign in.",
+      "emailSent": "We've sent a magic link to {{email}}. Click the link in the email to sign in.",
       "backToSignIn": "Back to sign in",
       "verifying": "Verifying Magic Link",
       "verifyingMessage": "Please wait while we sign you in...",
