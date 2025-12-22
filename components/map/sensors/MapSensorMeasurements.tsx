@@ -43,10 +43,10 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
         const name = locationWithBoxes.location?.name;
         if (!name) return;
 
-        // Use typed navigation to ensure correct route on native/web and auto-encode the param
+        // Navigate to the dashboard tab with marina param to keep the tab bar visible
         router.push({
-            pathname: '/(dashboard)/marina/[name]',
-            params: {name},
+            pathname: '/(tabs)/dashboard',
+            params: {marina: name},
         });
 
         // Close the popover after triggering navigation
