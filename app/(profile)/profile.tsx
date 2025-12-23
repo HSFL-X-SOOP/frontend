@@ -1,11 +1,10 @@
 import {useRouter, useFocusEffect} from 'expo-router';
-import {useState, useEffect, useCallback} from 'react';
+import {useState, useEffect, useCallback, useRef} from 'react';
 import {Platform, ScrollView, RefreshControl} from "react-native";
 import {
     Text,
     View,
     YStack,
-    XStack,
     Spinner,
     Separator,
     Tabs,
@@ -38,6 +37,7 @@ export default function ProfileScreen() {
     const [harborLocation, setHarborLocation] = useState<DetailedLocationDTO | null>(null);
     const [refreshing, setRefreshing] = useState(false);
     const isWeb = Platform.OS === 'web';
+    const isRefreshingRef = useRef(false);
 
     useEffect(() => {
         if (!session) {
@@ -75,10 +75,15 @@ export default function ProfileScreen() {
             );
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isHarborMaster, harborLocation]); // fetchLocationInfo is a hook function
+    }, [isHarborMaster, harborLocation]);
 
-    // Refresh data (can be silent or with indicator)
     const refreshData = useCallback(async (showIndicator: boolean = false) => {
+        if (isRefreshingRef.current) {
+            return;
+        }
+
+        isRefreshingRef.current = true;
+
         if (showIndicator) {
             setRefreshing(true);
         }
@@ -107,6 +112,8 @@ export default function ProfileScreen() {
         if (showIndicator) {
             setRefreshing(false);
         }
+
+        isRefreshingRef.current = false;
     }, [getProfile, updateSessionProfile, isHarborMaster, fetchLocationInfo]);
 
     // Manual pull-to-refresh (shows indicator)
@@ -114,11 +121,13 @@ export default function ProfileScreen() {
         await refreshData(true);
     }, [refreshData]);
 
-    // Auto-refresh profile when page is visited (silent, no indicator)
     useFocusEffect(
         useCallback(() => {
-            void refreshData(false);
-        }, [refreshData])
+            if (!isRefreshingRef.current) {
+                void refreshData(false);
+            }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [])
     );
 
     if (!session?.profile && isLoadingProfile) {
