@@ -3,6 +3,7 @@ import {
     LoginRequest,
     LoginResponse,
     MagicLinkLoginRequest,
+    MagicLinkCodeLoginRequest,
     MagicLinkRequest,
     RegisterRequest,
     VerifyEmailRequest,
@@ -85,6 +86,22 @@ export const useAuth = () => {
         setLoading(false);
     }, [authStore]);
 
+    const magicLinkCodeLogin = useCallback(async (
+        body: MagicLinkCodeLoginRequest,
+        onSuccess: (data: LoginResponse) => void,
+        onError: (error: AppError) => void
+    ) => {
+        setLoading(true);
+        const result = await authStore.magicLinkCodeLogin(body);
+
+        if (result.ok) {
+            onSuccess(result.value);
+        } else {
+            onError(result.error);
+        }
+        setLoading(false);
+    }, [authStore]);
+
     const verifyEmail = useCallback(async (
         body: VerifyEmailRequest,
         onSuccess: () => void,
@@ -154,6 +171,7 @@ export const useAuth = () => {
         login,
         requestMagicLink,
         magicLinkLogin,
+        magicLinkCodeLogin,
         verifyEmail,
         sendVerificationEmail,
         googleLogin,

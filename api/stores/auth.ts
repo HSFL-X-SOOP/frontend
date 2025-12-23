@@ -1,5 +1,5 @@
 import {
-    LoginRequest, LoginResponse, MagicLinkLoginRequest,
+    LoginRequest, LoginResponse, MagicLinkLoginRequest, MagicLinkCodeLoginRequest,
     MagicLinkRequest, RegisterRequest, VerifyEmailRequest, GoogleLoginRequest,
     AppleLoginRequest,
 } from "@/api/models/auth.ts";
@@ -37,6 +37,13 @@ export function useAuthStore() {
             return api.requestSafe(
                 httpClient.post<LoginResponse>("/magic-link/login", body),
                 'AuthStore:magicLinkLogin'
+            );
+        },
+
+        magicLinkCodeLogin: (body: MagicLinkCodeLoginRequest): Promise<Result<LoginResponse>> => {
+            return api.requestSafe(
+                httpClient.post<LoginResponse>("/magic-link/login/code", body),
+                'AuthStore:magicLinkCodeLogin'
             );
         },
 

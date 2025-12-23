@@ -36,6 +36,7 @@
     "alreadyHaveAccount": "Already have an account?",
     "dontHaveAccount": "Don't have an account?",
     "welcomeBack": "Welcome back! Please enter your credentials.",
+    "loginSuccessMessage": "You have been successfully logged in.",
     "rememberMe": "Remember me",
     "signingIn": "Signing in...",
     "or": "or",
@@ -96,7 +97,19 @@
       "linkSentError": "Failed to Send Magic Link",
       "linkSentErrorGeneric": "An error occurred while sending the magic link. Please try again.",
       "loginSuccess": "Login Successful",
-      "loginError": "Login Failed"
+      "loginError": "Login Failed",
+      "codeSentSuccess": "Verification Code Sent",
+      "enterCodeBelow": "Check your email for the 6-character code and enter it below.",
+      "enterCode": "Enter Verification Code",
+      "codeDescription": "Enter the 6-character code from your email to sign in.",
+      "verificationCode": "Verification Code",
+      "verifyCode": "Verify Code",
+      "invalidCodeLength": "Code must be exactly 6 characters",
+      "didntReceiveCode": "Didn't receive the code?",
+      "resendCode": "Resend code",
+      "codeLoginError": "Code Verification Failed",
+      "codeAlreadySent": "Code Already Sent",
+      "enterExistingCode": "A code was already sent to your email. Please enter it below."
     }
   },
   "profile": {

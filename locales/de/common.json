@@ -36,6 +36,7 @@
     "alreadyHaveAccount": "Bereits ein Konto?",
     "dontHaveAccount": "Noch kein Konto?",
     "welcomeBack": "Willkommen zurück! Bitte geben Sie Ihre Anmeldedaten ein.",
+    "loginSuccessMessage": "Sie wurden erfolgreich angemeldet.",
     "rememberMe": "Angemeldet bleiben",
     "signingIn": "Anmeldung läuft...",
     "or": "oder",
@@ -96,7 +97,19 @@
       "linkSentError": "Magic Link konnte nicht gesendet werden",
       "linkSentErrorGeneric": "Beim Senden des Magic Links ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
       "loginSuccess": "Anmeldung erfolgreich",
-      "loginError": "Anmeldung fehlgeschlagen"
+      "loginError": "Anmeldung fehlgeschlagen",
+      "codeSentSuccess": "Bestätigungscode gesendet",
+      "enterCodeBelow": "Überprüfen Sie Ihre E-Mails für den 6-stelligen Code und geben Sie ihn unten ein.",
+      "enterCode": "Bestätigungscode eingeben",
+      "codeDescription": "Geben Sie den 6-stelligen Code aus Ihrer E-Mail ein, um sich anzumelden.",
+      "verificationCode": "Bestätigungscode",
+      "verifyCode": "Code bestätigen",
+      "invalidCodeLength": "Der Code muss genau 6 Zeichen lang sein",
+      "didntReceiveCode": "Keinen Code erhalten?",
+      "resendCode": "Code erneut senden",
+      "codeLoginError": "Code-Überprüfung fehlgeschlagen",
+      "codeAlreadySent": "Code bereits gesendet",
+      "enterExistingCode": "Ein Code wurde bereits an Ihre E-Mail gesendet. Bitte geben Sie ihn unten ein."
     }
   },
   "profile": {

@@ -1,5 +1,10 @@
 import {UserProfile} from './profile';
 
+export enum Platform {
+    WEB = 'WEB',
+    MOBILE = 'MOBILE'
+}
+
 export interface LoginRequest {
     email: string;
     password: string;
@@ -27,8 +32,14 @@ export interface MagicLinkLoginRequest {
     token: string;
 }
 
+export interface MagicLinkCodeLoginRequest {
+    code: string;
+    email: string;
+}
+
 export interface MagicLinkRequest {
     email: string;
+    platform: Platform;
 }
 
 export interface RegisterRequest {
