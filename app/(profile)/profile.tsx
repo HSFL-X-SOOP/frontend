@@ -1,10 +1,11 @@
-import {useRouter} from 'expo-router';
-import {useState, useEffect} from 'react';
-import {Platform, ScrollView} from "react-native";
+import {useRouter, useFocusEffect} from 'expo-router';
+import {useState, useEffect, useCallback} from 'react';
+import {Platform, ScrollView, RefreshControl} from "react-native";
 import {
     Text,
     View,
     YStack,
+    XStack,
     Spinner,
     Separator,
     Tabs,
@@ -35,6 +36,7 @@ export default function ProfileScreen() {
 
     const [activeTab, setActiveTab] = useState("profile");
     const [harborLocation, setHarborLocation] = useState<DetailedLocationDTO | null>(null);
+    const [refreshing, setRefreshing] = useState(false);
     const isWeb = Platform.OS === 'web';
 
     useEffect(() => {
@@ -74,6 +76,50 @@ export default function ProfileScreen() {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isHarborMaster, harborLocation]); // fetchLocationInfo is a hook function
+
+    // Refresh data (can be silent or with indicator)
+    const refreshData = useCallback(async (showIndicator: boolean = false) => {
+        if (showIndicator) {
+            setRefreshing(true);
+        }
+
+        await getProfile(
+            (profile) => {
+                updateSessionProfile(profile);
+            },
+            (error) => {
+                console.error('Failed to refresh profile:', error);
+            }
+        );
+
+        // Refresh harbor location if harbor master
+        if (isHarborMaster) {
+            await fetchLocationInfo(
+                (locationData) => {
+                    setHarborLocation(locationData);
+                },
+                (error) => {
+                    console.error('Failed to fetch harbor location:', error);
+                }
+            );
+        }
+
+        if (showIndicator) {
+            setRefreshing(false);
+        }
+    }, [getProfile, updateSessionProfile, isHarborMaster, fetchLocationInfo]);
+
+    // Manual pull-to-refresh (shows indicator)
+    const handleManualRefresh = useCallback(async () => {
+        await refreshData(true);
+    }, [refreshData]);
+
+    // Auto-refresh profile when page is visited (silent, no indicator)
+    useFocusEffect(
+        useCallback(() => {
+            void refreshData(false);
+        }, [refreshData])
+    );
 
     if (!session?.profile && isLoadingProfile) {
         return (
@@ -126,9 +172,19 @@ export default function ProfileScreen() {
     return (
         <View style={{flex: 1}}>
             <YStack flex={1} backgroundColor="$content1">
-                <ScrollView>
+                <ScrollView
+                    refreshControl={
+                        Platform.OS !== 'web' ? (
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={handleManualRefresh}
+                                tintColor="$accent7"
+                                colors={['$accent7']}
+                            />
+                        ) : undefined
+                    }
+                >
                     <YStack padding="$4" gap="$4" paddingBottom="$8" paddingTop="$6">
-
                         <Tabs
                             defaultValue="profile"
                             value={activeTab}
