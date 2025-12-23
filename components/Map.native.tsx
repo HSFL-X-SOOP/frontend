@@ -154,6 +154,17 @@ export default function NativeMap(props: MapProps) {
             animationDuration: MAP_CONSTANTS.ANIMATION.CAMERA_DURATION,
             ...options,
         });
+
+        //stops locking the camera after animation
+        setTimeout(() => {
+            cameraRef.current?.setCamera({
+            centerCoordinate: undefined,
+            zoomLevel: undefined,
+            bounds: undefined,
+            pitch: undefined,
+            heading: undefined,
+            });
+        }, MAP_CONSTANTS.ANIMATION.CAMERA_DURATION);
     };
 
     const flyTo = (lon: number, lat: number, zoom?: number) => {
