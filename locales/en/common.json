@@ -110,6 +110,29 @@
       "codeLoginError": "Code Verification Failed",
       "codeAlreadySent": "Code Already Sent",
       "enterExistingCode": "A code was already sent to your email. Please enter it below."
+    },
+    "emailVerification": {
+      "title": "Verify Your Email",
+      "description": "Please verify your email address to continue using all features.",
+      "verifying": "Verifying Email",
+      "verifyingMessage": "Please wait while we verify your email address...",
+      "verificationSuccess": "Email Verified!",
+      "verificationSuccessMessage": "Your email address has been successfully verified.",
+      "verificationFailed": "Verification Failed",
+      "tokenExpiredOrInvalid": "The verification link has expired or is invalid. Please request a new verification email.",
+      "sendVerification": "Send Verification Email",
+      "resendVerification": "Resend Verification Email",
+      "sending": "Sending...",
+      "emailSentSuccess": "Verification Email Sent",
+      "emailSentError": "Failed to Send Verification Email",
+      "checkYourEmail": "Check your email for the verification link.",
+      "checkYourEmailAgain": "A verification email was recently sent. Please check your inbox.",
+      "emailAlreadySent": "Email Already Sent",
+      "continueToApp": "Continue to App",
+      "backToLogin": "Back to Login",
+      "alreadyVerified": "Already verified?",
+      "goToMap": "Go to Map",
+      "notLoggedIn": "Please log in to request a verification email."
     }
   },
   "profile": {
@@ -206,7 +229,18 @@
     "deleteError": "Failed to Delete Account",
     "deleteDialogTitle": "Delete Account?",
     "deleteDialogMessage": "This action cannot be undone. Your profile and all associated data will be permanently deleted.",
-    "confirmDelete": "Yes, Delete My Account"
+    "confirmDelete": "Yes, Delete My Account",
+    "emailVerification": {
+      "title": "Verify Your Email",
+      "description": "Your email address has not been verified. Please verify your email to access all features.",
+      "sendVerification": "Send Verification Email",
+      "sending": "Sending...",
+      "emailSentSuccess": "Verification Email Sent",
+      "emailSentError": "Failed to Send Verification Email",
+      "checkYourEmail": "Check your email for the verification link.",
+      "checkYourEmailAgain": "A verification email was recently sent. Please check your inbox.",
+      "emailAlreadySent": "Email Already Sent"
+    }
   },
   "map": {
     "title": "Map",

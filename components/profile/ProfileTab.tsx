@@ -14,12 +14,13 @@ import {
     Dialog,
     Button
 } from 'tamagui';
-import {Globe, Activity, Ruler, Check, LogOut, User, Trash2} from '@tamagui/lucide-icons';
+import {Globe, Activity, Ruler, Check, LogOut, User, Trash2, Mail, AlertCircle, Pencil} from '@tamagui/lucide-icons';
 import {useTranslation,useToast} from '@/hooks/ui';
 import {useRouter} from 'expo-router';
 
 import {useSession} from '@/context/SessionContext';
 import {useUser} from '@/hooks/data';
+import {useAuth} from '@/hooks/auth';
 import {ActivityRole, Language, MeasurementSystem} from '@/api/models/profile';
 import {UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
@@ -29,12 +30,14 @@ export const ProfileTab: React.FC = () => {
     const {t, changeLanguage} = useTranslation();
     const {session, updateProfile: updateSessionProfile, logout} = useSession();
     const {updateProfile, deleteProfile} = useUser();
+    const {sendVerificationEmail} = useAuth();
     const toast = useToast();
     const router = useRouter();
 
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isSendingVerification, setIsSendingVerification] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [selectedLanguage, setSelectedLanguage] = useState<Language>(Language.DE);
     const [selectedRoles, setSelectedRoles] = useState<ActivityRole[]>([]);
@@ -125,6 +128,32 @@ export const ProfileTab: React.FC = () => {
         );
         setIsDeleting(false);
         setShowDeleteDialog(false);
+    };
+
+    const handleSendVerificationEmail = async () => {
+        setIsSendingVerification(true);
+        await sendVerificationEmail(
+            () => {
+                toast.success(t('profile.emailVerification.emailSentSuccess'), {
+                    message: t('profile.emailVerification.checkYourEmail'),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                });
+            },
+            (error) => {
+                if ('statusCode' in error && error.statusCode === 409) {
+                    toast.info(t('profile.emailVerification.emailAlreadySent'), {
+                        message: t('profile.emailVerification.checkYourEmailAgain'),
+                        duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                    });
+                } else {
+                    toast.error(t('profile.emailVerification.emailSentError'), {
+                        message: t(error.onGetMessage()),
+                        duration: UI_CONSTANTS.TOAST_DURATION.LONG
+                    });
+                }
+            }
+        );
+        setIsSendingVerification(false);
     };
 
     return (
@@ -313,6 +342,61 @@ export const ProfileTab: React.FC = () => {
                 </YStack>
             </Card>
 
+            {/* Email Verification Card - Show only if not verified */}
+            {!session?.profile?.verified && !isEditing && (
+                <Card
+                    backgroundColor="$content1"
+                    borderRadius="$6"
+                    padding="$5"
+                    borderWidth={2}
+                    borderColor="$borderColor"
+                >
+                    <YStack gap="$4">
+                        <XStack alignItems="center" gap="$3">
+                            <View
+                                width={40}
+                                height={40}
+                                backgroundColor="$content1"
+                                borderRadius="$8"
+                                alignItems="center"
+                                justifyContent="center"
+                            >
+                                <AlertCircle size={22}/>
+                            </View>
+                            <H5 fontFamily="$oswald">
+                                {t('profile.emailVerification.title')}
+                            </H5>
+                        </XStack>
+                        <Separator borderColor="$borderColor"/>
+                        <Text fontSize={15} lineHeight={22}>
+                            {t('profile.emailVerification.description')}
+                        </Text>
+                        <PrimaryButton
+                            size="$4"
+                            onPress={handleSendVerificationEmail}
+                            disabled={isSendingVerification}
+                            width="100%"
+                        >
+                            {isSendingVerification ? (
+                                <XStack alignItems="center" gap="$2" justifyContent="center" width="100%">
+                                    <Spinner size="small" color="white"/>
+                                    <PrimaryButtonText flexShrink={1}>
+                                        {t('profile.emailVerification.sending')}
+                                    </PrimaryButtonText>
+                                </XStack>
+                            ) : (
+                                <XStack alignItems="center" gap="$2" justifyContent="center" width="100%">
+                                    <Mail size={18} color="white" flexShrink={0}/>
+                                    <PrimaryButtonText flexShrink={1}>
+                                        {t('profile.emailVerification.sendVerification')}
+                                    </PrimaryButtonText>
+                                </XStack>
+                            )}
+                        </PrimaryButton>
+                    </YStack>
+                </Card>
+            )}
+
             {isEditing && (
                 <YStack gap="$3" paddingTop="$2">
                     {selectedRoles.length === 0 && (
@@ -352,7 +436,7 @@ export const ProfileTab: React.FC = () => {
 
             {/* Account Actions */}
             {!isEditing && (
-                <YStack gap="$3" marginTop="$2">
+                <YStack gap="$3">
                     <Separator borderColor="$borderColor"/>
                     <Card backgroundColor="$content1" borderRadius="$6" padding="$4"
                           borderWidth={1} borderColor="$borderColor">
@@ -367,7 +451,7 @@ export const ProfileTab: React.FC = () => {
                                         flex={1}
                                         size="$4"
                                         onPress={() => setIsEditing(true)}
-                                        icon={<User size={18} color="white"/>}
+                                        icon={<Pencil size={18} color="white"/>}
                                     >
                                         <PrimaryButtonText>
                                             {t('profile.edit')}
@@ -410,7 +494,7 @@ export const ProfileTab: React.FC = () => {
                                         width="100%"
                                         size="$4"
                                         onPress={() => setIsEditing(true)}
-                                        icon={<User size={18} color="white"/>}
+                                        icon={<Pencil size={18} color="white"/>}
                                     >
                                         <PrimaryButtonText>
                                             {t('profile.edit')}

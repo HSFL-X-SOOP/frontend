@@ -110,6 +110,29 @@
       "codeLoginError": "Code-Überprüfung fehlgeschlagen",
       "codeAlreadySent": "Code bereits gesendet",
       "enterExistingCode": "Ein Code wurde bereits an Ihre E-Mail gesendet. Bitte geben Sie ihn unten ein."
+    },
+    "emailVerification": {
+      "title": "E-Mail verifizieren",
+      "description": "Bitte verifizieren Sie Ihre E-Mail-Adresse, um alle Funktionen nutzen zu können.",
+      "verifying": "E-Mail wird verifiziert",
+      "verifyingMessage": "Bitte warten Sie, während wir Ihre E-Mail-Adresse verifizieren...",
+      "verificationSuccess": "E-Mail verifiziert!",
+      "verificationSuccessMessage": "Ihre E-Mail-Adresse wurde erfolgreich verifiziert.",
+      "verificationFailed": "Verifizierung fehlgeschlagen",
+      "tokenExpiredOrInvalid": "Der Verifizierungslink ist abgelaufen oder ungültig. Bitte fordern Sie eine neue Verifizierungs-E-Mail an.",
+      "sendVerification": "Verifizierungs-E-Mail senden",
+      "resendVerification": "Verifizierungs-E-Mail erneut senden",
+      "sending": "Wird gesendet...",
+      "emailSentSuccess": "Verifizierungs-E-Mail gesendet",
+      "emailSentError": "Fehler beim Senden der Verifizierungs-E-Mail",
+      "checkYourEmail": "Überprüfen Sie Ihre E-Mails auf den Verifizierungslink.",
+      "checkYourEmailAgain": "Eine Verifizierungs-E-Mail wurde kürzlich gesendet. Bitte überprüfen Sie Ihren Posteingang.",
+      "emailAlreadySent": "E-Mail bereits gesendet",
+      "continueToApp": "Zur App fortfahren",
+      "backToLogin": "Zurück zur Anmeldung",
+      "alreadyVerified": "Bereits verifiziert?",
+      "goToMap": "Zur Karte",
+      "notLoggedIn": "Bitte melden Sie sich an, um eine Verifizierungs-E-Mail anzufordern."
     }
   },
   "profile": {
@@ -207,7 +230,18 @@
     "deleteError": "Konto konnte nicht gelöscht werden",
     "deleteDialogTitle": "Konto löschen?",
     "deleteDialogMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Ihr Profil und alle zugehörigen Daten werden dauerhaft gelöscht.",
-    "confirmDelete": "Ja, Konto löschen"
+    "confirmDelete": "Ja, Konto löschen",
+    "emailVerification": {
+      "title": "E-Mail verifizieren",
+      "description": "Ihre E-Mail-Adresse wurde noch nicht verifiziert. Bitte verifizieren Sie Ihre E-Mail, um auf alle Funktionen zugreifen zu können.",
+      "sendVerification": "Verifizierungs-E-Mail senden",
+      "sending": "Wird gesendet...",
+      "emailSentSuccess": "Verifizierungs-E-Mail gesendet",
+      "emailSentError": "Fehler beim Senden der Verifizierungs-E-Mail",
+      "checkYourEmail": "Überprüfen Sie Ihre E-Mails auf den Verifizierungslink.",
+      "checkYourEmailAgain": "Eine Verifizierungs-E-Mail wurde kürzlich gesendet. Bitte überprüfen Sie Ihren Posteingang.",
+      "emailAlreadySent": "E-Mail bereits gesendet"
+    }
   },
   "map": {
     "title": "Karte",

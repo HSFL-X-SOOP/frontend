@@ -181,8 +181,11 @@ export default function ProfileScreen() {
                                                     textAlign="center"
                                                     width="100%"
                                                     paddingHorizontal="$1"
+                                                    numberOfLines={1}
                                                 >
-                                                    {t('profile.tabs.profile')}
+                                                    {session?.profile?.firstName && session?.profile?.lastName
+                                                        ? `${session.profile.firstName} ${session.profile.lastName}`
+                                                        : t('profile.tabs.profile')}
                                                 </Text>
                                             )}
                                         </YStack>
