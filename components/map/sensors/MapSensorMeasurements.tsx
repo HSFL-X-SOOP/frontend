@@ -43,14 +43,14 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
         const name = locationWithBoxes.location?.name;
         if (!name) return;
 
-        // Navigate to the dashboard tab with marina param to keep the tab bar visible
-        router.push({
-            pathname: '/(tabs)/dashboard',
-            params: {marina: name},
-        });
-
-        // Close the popover after triggering navigation
         closeOverlay?.();
+
+        setTimeout(() => {
+            router.push({
+                pathname: '/(tabs)/dashboard',
+                params: {marina: name},
+            });
+        }, 100);
     };
 
     return (
