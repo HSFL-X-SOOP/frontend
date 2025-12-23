@@ -361,19 +361,64 @@ export const ProfileTab: React.FC = () => {
                                 {t('profile.accountActions')}
                             </Text>
 
-                            <XStack gap="$3" flexWrap="wrap" alignItems="center">
-                                <PrimaryButton
-                                    size="$4"
-                                    onPress={() => setIsEditing(true)}
-                                    icon={<User size={18} color="white"/>}
-                                >
-                                    <PrimaryButtonText>
-                                        {t('profile.edit')}
-                                    </PrimaryButtonText>
-                                </PrimaryButton>
+                            {Platform.OS === 'web' ? (
+                                <XStack gap="$3" width="100%" alignItems="center">
+                                    <PrimaryButton
+                                        flex={1}
+                                        size="$4"
+                                        onPress={() => setIsEditing(true)}
+                                        icon={<User size={18} color="white"/>}
+                                    >
+                                        <PrimaryButtonText>
+                                            {t('profile.edit')}
+                                        </PrimaryButtonText>
+                                    </PrimaryButton>
 
-                                {Platform.OS !== 'web' && (
+                                    <View height={20} width={1} backgroundColor="$borderColor" />
+
+                                    <PrimaryButton
+                                        flex={1}
+                                        size="$4"
+                                        onPress={() => setShowDeleteDialog(true)}
+                                        backgroundColor="$red9"
+                                        borderColor="$red10"
+                                        shadowColor="transparent"
+                                        shadowOffset={{width: 0, height: 0}}
+                                        shadowOpacity={0}
+                                        shadowRadius={0}
+                                        elevation={0}
+                                        hoverStyle={{backgroundColor: "$red10", borderColor: "$red11", shadowOpacity: 0}}
+                                        pressStyle={{backgroundColor: "$red8", scale: 0.98, borderColor: "$red10", shadowOpacity: 0}}
+                                        focusStyle={{borderColor: "$red11", shadowOpacity: 0}}
+                                        disabled={isDeleting}
+                                    >
+                                        <XStack alignItems="center" gap="$2" justifyContent="center">
+                                            {isDeleting ? (
+                                                <Spinner color="white" />
+                                            ) : (
+                                                <Trash2 size={20} color="white"/>
+                                            )}
+                                            <PrimaryButtonText fontWeight="600">
+                                                {isDeleting ? t('profile.deleting') : t('profile.deleteAccount')}
+                                            </PrimaryButtonText>
+                                        </XStack>
+                                    </PrimaryButton>
+                                </XStack>
+                            ) : (
+                                <YStack gap="$3" width="100%">
+                                    <PrimaryButton
+                                        width="100%"
+                                        size="$4"
+                                        onPress={() => setIsEditing(true)}
+                                        icon={<User size={18} color="white"/>}
+                                    >
+                                        <PrimaryButtonText>
+                                            {t('profile.edit')}
+                                        </PrimaryButtonText>
+                                    </PrimaryButton>
+
                                     <SecondaryButton
+                                        width="100%"
                                         size="$4"
                                         onPress={handleLogout}
                                         borderColor="$red10"
@@ -387,47 +432,35 @@ export const ProfileTab: React.FC = () => {
                                             </SecondaryButtonText>
                                         </XStack>
                                     </SecondaryButton>
-                                )}
 
-                                {Platform.OS === 'web' && (
-                                    <View height={20} width={1} backgroundColor="$borderColor" />
-                                )}
-
-                                <PrimaryButton
-                                    size="$4"
-                                    onPress={() => setShowDeleteDialog(true)}
-                                    backgroundColor="$red9"
-                                    borderColor="$red10"
-                                    shadowColor="transparent"
-                                    shadowOffset={{width: 0, height: 0}}
-                                    shadowOpacity={0}
-                                    shadowRadius={0}
-                                    elevation={0}
-                                    hoverStyle={{backgroundColor: "$red10", borderColor: "$red11", shadowOpacity: 0}}
-                                    pressStyle={{backgroundColor: "$red8", scale: 0.98, borderColor: "$red10", shadowOpacity: 0}}
-                                    focusStyle={{borderColor: "$red11", shadowOpacity: 0}}
-                                    disabled={isDeleting}
-                                >
-                                    <XStack alignItems="center" gap="$2" justifyContent="center">
-                                        {isDeleting ? (
-                                            <Spinner color="white" />
-                                        ) : (
-                                            <Trash2 size={20} color="white"/>
-                                        )}
-                                        <PrimaryButtonText fontWeight="600">
-                                            {isDeleting ? t('profile.deleting') : t('profile.deleteAccount')}
-                                        </PrimaryButtonText>
-                                    </XStack>
-                                </PrimaryButton>
-                            </XStack>
-
-                            {Platform.OS !== 'web' && (
-                                <>
-                                    <Separator marginVertical="$2" borderColor="$borderColor"/>
-                                    <Text fontSize={13} fontWeight="600" color="$red10">
-                                        {t('profile.dangerZone')}
-                                    </Text>
-                                </>
+                                    <PrimaryButton
+                                        width="100%"
+                                        size="$4"
+                                        onPress={() => setShowDeleteDialog(true)}
+                                        backgroundColor="$red9"
+                                        borderColor="$red10"
+                                        shadowColor="transparent"
+                                        shadowOffset={{width: 0, height: 0}}
+                                        shadowOpacity={0}
+                                        shadowRadius={0}
+                                        elevation={0}
+                                        hoverStyle={{backgroundColor: "$red10", borderColor: "$red11", shadowOpacity: 0}}
+                                        pressStyle={{backgroundColor: "$red8", scale: 0.98, borderColor: "$red10", shadowOpacity: 0}}
+                                        focusStyle={{borderColor: "$red11", shadowOpacity: 0}}
+                                        disabled={isDeleting}
+                                    >
+                                        <XStack alignItems="center" gap="$2" justifyContent="center">
+                                            {isDeleting ? (
+                                                <Spinner color="white" />
+                                            ) : (
+                                                <Trash2 size={20} color="white"/>
+                                            )}
+                                            <PrimaryButtonText fontWeight="600">
+                                                {isDeleting ? t('profile.deleting') : t('profile.deleteAccount')}
+                                            </PrimaryButtonText>
+                                        </XStack>
+                                    </PrimaryButton>
+                                </YStack>
                             )}
                         </YStack>
                     </Card>
