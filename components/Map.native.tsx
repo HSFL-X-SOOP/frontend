@@ -352,7 +352,7 @@ export default function NativeMap(props: MapProps) {
             />
 
             <Modal
-                visible={open}
+                visible={open && selectedLocationWithBoxes != null}
                 transparent
                 animationType="fade"
                 onRequestClose={handleCloseModal}
@@ -361,10 +361,12 @@ export default function NativeMap(props: MapProps) {
                     <Pressable onPress={(e) => e.stopPropagation()}>
                         <Theme name={currentTheme}>
                             <YStack>
-                                <SensorPopup
-                                    locationWithBoxes={selectedLocationWithBoxes!}
-                                    closeOverlay={handleCloseModal}
-                                />
+                                {selectedLocationWithBoxes && (
+                                    <SensorPopup
+                                        locationWithBoxes={selectedLocationWithBoxes}
+                                        closeOverlay={handleCloseModal}
+                                    />
+                                )}
                             </YStack>
                         </Theme>
                     </Pressable>

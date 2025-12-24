@@ -1,4 +1,4 @@
-import  {BoxType, LocationWithBoxes} from "@/api/models/sensor";
+import {BoxType, LocationWithBoxes} from "@/api/models/sensor";
 import {useTranslation} from "@/hooks/ui";
 import {formatTimeToLocal} from "@/utils/time";
 import type {TFunction} from 'i18next';
@@ -20,7 +20,6 @@ import {useRouter} from "expo-router";
 import {useState} from "react";
 import {Card, H3, H4, Separator, Text, XStack, YStack, useTheme} from "tamagui";
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from "@/types/button";
-import {InteractionManager} from "react-native";
 
 type SensorPopupProps = {
     locationWithBoxes: LocationWithBoxes,
@@ -36,6 +35,12 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
     const theme = useTheme();
 
     const [selectedBoxIndex, setSelectedBoxIndex] = useState(0);
+
+    // Safety guard - prevent crashes if data is somehow undefined
+    if (!locationWithBoxes?.boxes || !locationWithBoxes?.location) {
+        return null;
+    }
+
     const hasMultipleBoxes = locationWithBoxes.boxes.length > 1;
 
     const cardWidth = 350;
@@ -46,11 +51,9 @@ export const SensorPopup: React.FC<SensorPopupProps> = ({
 
         closeOverlay?.();
 
-        InteractionManager.runAfterInteractions(() => {
-            router.push({
-                pathname: '/(tabs)/dashboard',
-                params: {marina: marinaName},
-            });
+        router.push({
+            pathname: '/(tabs)/dashboard',
+            params: {marina: marinaName},
         });
     };
 
