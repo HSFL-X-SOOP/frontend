@@ -90,7 +90,7 @@ jobs:
 
       - name: Build and deploy to Google Play (Closed Testing)
         working-directory: android
-        run: bundle exec fastlane internal_testing
+        run: bundle exec fastlane closed_testing
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
