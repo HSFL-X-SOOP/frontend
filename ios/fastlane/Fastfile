@@ -88,6 +88,7 @@ platform :ios do
       automatic_release: false,
       skip_metadata: false,
       skip_screenshots: false,
+      force: true,
       app_identifier: "com.marlin.live",
       ipa: "./build/Marlin.ipa",
       api_key: api_key
