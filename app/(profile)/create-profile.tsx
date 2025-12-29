@@ -1,5 +1,5 @@
 import {useRouter} from 'expo-router';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {ScrollView} from 'react-native';
 import {Text, YStack, XStack, H2, H5, Card, RadioGroup, Label, Separator, View, Spinner} from 'tamagui';
 import {Globe, Activity, Ruler, Check, User} from '@tamagui/lucide-icons';
@@ -16,10 +16,13 @@ const logger = createLogger('Profile:CreateProfile');
 
 export default function CreateProfileScreen() {
     const router = useRouter();
-    const {t, changeLanguage} = useTranslation();
+    const {t, changeLanguage, currentLanguage} = useTranslation();
     const toast = useToast();
     const {createProfile} = useUser();
-    const {updateProfile: updateSessionProfile} = useSession();
+    const {session, updateProfile: updateSessionProfile} = useSession();
+
+    const existingFirstName = session?.profile?.firstName;
+    const existingLastName = session?.profile?.lastName;
 
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -27,6 +30,13 @@ export default function CreateProfileScreen() {
     const [selectedRoles, setSelectedRoles] = useState<ActivityRole[]>([]);
     const [selectedMeasurement, setSelectedMeasurement] = useState<MeasurementSystem>(MeasurementSystem.METRIC);
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        const langCode = selectedLanguage === Language.DE ? 'de' : 'en';
+        if (currentLanguage !== langCode) {
+            changeLanguage(langCode);
+        }
+    }, [selectedLanguage, currentLanguage, changeLanguage]);
 
     const handleRoleToggle = (role: ActivityRole) => {
         logger.debug('Toggling role:', { role });
@@ -40,9 +50,12 @@ export default function CreateProfileScreen() {
     };
 
     const handleSubmit = async () => {
+        const finalFirstName = existingFirstName || firstName.trim();
+        const finalLastName = existingLastName || lastName.trim();
+
         logger.debug('Starting profile creation with:', {
-            firstName,
-            lastName,
+            firstName: finalFirstName,
+            lastName: finalLastName,
             language: selectedLanguage,
             selectedRoles: selectedRoles,
             selectedRolesLength: selectedRoles.length,
@@ -51,7 +64,12 @@ export default function CreateProfileScreen() {
         });
 
         // Validierung
-        if (!firstName.trim() || !lastName.trim()) {
+        if (!existingFirstName && !firstName.trim()) {
+            toast.error(t('profile.validation.nameRequired'));
+            return;
+        }
+
+        if (!existingLastName && !lastName.trim()) {
             toast.error(t('profile.validation.nameRequired'));
             return;
         }
@@ -62,8 +80,8 @@ export default function CreateProfileScreen() {
         }
 
         const requestData = {
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
+            firstName: finalFirstName,
+            lastName: finalLastName,
             language: selectedLanguage,
             roles: selectedRoles,
             measurementSystem: selectedMeasurement
@@ -77,9 +95,6 @@ export default function CreateProfileScreen() {
                 logger.info('Profile created successfully', { profile });
                 updateSessionProfile(profile);
                 logger.debug('Profile saved to session');
-
-                const langCode = selectedLanguage === Language.DE ? 'de' : 'en';
-                changeLanguage(langCode);
 
                 toast.success(t('profile.createProfile'), {
                     message: t('profile.profileCreated')
@@ -112,45 +127,51 @@ export default function CreateProfileScreen() {
 
                         <YStack gap="$4">
                             {/* Name Section */}
-                            <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5" borderWidth={1}
-                                  borderColor="$borderColor">
-                                <YStack gap="$4">
-                                    <XStack alignItems="center" gap="$3">
-                                        <View
-                                            width={40}
-                                            height={40}
-                                            backgroundColor="$content2"
-                                            borderRadius="$8"
-                                            alignItems="center"
-                                            justifyContent="center"
-                                        >
-                                            <User size={22} color="$accent7"/>
-                                        </View>
-                                        <H5 color="$accent7" fontFamily="$oswald">
-                                            {t('profile.nameSection.title')}
-                                        </H5>
-                                    </XStack>
-                                    <Separator/>
-                                    <YStack gap="$3">
-                                        <YStack gap="$2">
-                                            <EmailInput
-                                                value={firstName}
-                                                onChangeText={setFirstName}
-                                                placeholder={t('profile.nameSection.firstNamePlaceholder')}
-                                                label={t('profile.nameSection.firstName')}
-                                            />
-                                        </YStack>
-                                        <YStack gap="$2">
-                                            <EmailInput
-                                                value={lastName}
-                                                onChangeText={setLastName}
-                                                placeholder={t('profile.nameSection.lastNamePlaceholder')}
-                                                label={t('profile.nameSection.lastName')}
-                                            />
+                            {(!existingFirstName || !existingLastName) && (
+                                <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5" borderWidth={1}
+                                      borderColor="$borderColor">
+                                    <YStack gap="$4">
+                                        <XStack alignItems="center" gap="$3">
+                                            <View
+                                                width={40}
+                                                height={40}
+                                                backgroundColor="$content2"
+                                                borderRadius="$8"
+                                                alignItems="center"
+                                                justifyContent="center"
+                                            >
+                                                <User size={22} color="$accent7"/>
+                                            </View>
+                                            <H5 color="$accent7" fontFamily="$oswald">
+                                                {t('profile.nameSection.title')}
+                                            </H5>
+                                        </XStack>
+                                        <Separator/>
+                                        <YStack gap="$3">
+                                            {!existingFirstName && (
+                                                <YStack gap="$2">
+                                                    <EmailInput
+                                                        value={firstName}
+                                                        onChangeText={setFirstName}
+                                                        placeholder={t('profile.nameSection.firstNamePlaceholder')}
+                                                        label={t('profile.nameSection.firstName')}
+                                                    />
+                                                </YStack>
+                                            )}
+                                            {!existingLastName && (
+                                                <YStack gap="$2">
+                                                    <EmailInput
+                                                        value={lastName}
+                                                        onChangeText={setLastName}
+                                                        placeholder={t('profile.nameSection.lastNamePlaceholder')}
+                                                        label={t('profile.nameSection.lastName')}
+                                                    />
+                                                </YStack>
+                                            )}
                                         </YStack>
                                     </YStack>
-                                </YStack>
-                            </Card>
+                                </Card>
+                            )}
 
                             {/* Language Section */}
                             <Card elevate backgroundColor="$content1" borderRadius="$6" padding="$5" borderWidth={1}
@@ -175,20 +196,26 @@ export default function CreateProfileScreen() {
                                                 onValueChange={(val) => setSelectedLanguage(val as Language)} gap="$3">
                                         <XStack alignItems="center" gap="$3" padding="$3"
                                                 backgroundColor={selectedLanguage === Language.DE ? "$content2" : "transparent"}
-                                                borderRadius="$6">
+                                                borderRadius="$6"
+                                                borderWidth={0}
+                                                overflow="hidden">
                                             <RadioGroup.Item value={Language.DE} id="create-lang-de" size="$4">
                                                 <RadioGroup.Indicator/>
                                             </RadioGroup.Item>
+                                            <Text fontSize={20}>🇩🇪</Text>
                                             <Label htmlFor="create-lang-de" flex={1} color="$color"
                                                    fontSize={16}>{t('profile.languageSection.german')}</Label>
                                             {selectedLanguage === Language.DE && <Check size={20} color="$accent7"/>}
                                         </XStack>
                                         <XStack alignItems="center" gap="$3" padding="$3"
                                                 backgroundColor={selectedLanguage === Language.EN ? "$content2" : "transparent"}
-                                                borderRadius="$6">
+                                                borderRadius="$6"
+                                                borderWidth={0}
+                                                overflow="hidden">
                                             <RadioGroup.Item value={Language.EN} id="create-lang-en" size="$4">
                                                 <RadioGroup.Indicator/>
                                             </RadioGroup.Item>
+                                            <Text fontSize={20}>🇬🇧</Text>
                                             <Label htmlFor="create-lang-en" flex={1} color="$color"
                                                    fontSize={16}>{t('profile.languageSection.english')}</Label>
                                             {selectedLanguage === Language.EN && <Check size={20} color="$accent7"/>}
@@ -271,7 +298,9 @@ export default function CreateProfileScreen() {
                                                 gap="$3">
                                         <XStack alignItems="center" gap="$3" padding="$3"
                                                 backgroundColor={selectedMeasurement === MeasurementSystem.METRIC ? "$content2" : "transparent"}
-                                                borderRadius="$6">
+                                                borderRadius="$6"
+                                                borderWidth={0}
+                                                overflow="hidden">
                                             <RadioGroup.Item value={MeasurementSystem.METRIC} id="create-measure-metric"
                                                              size="$4">
                                                 <RadioGroup.Indicator/>
@@ -283,7 +312,9 @@ export default function CreateProfileScreen() {
                                         </XStack>
                                         <XStack alignItems="center" gap="$3" padding="$3"
                                                 backgroundColor={selectedMeasurement === MeasurementSystem.IMPERIAL ? "$content2" : "transparent"}
-                                                borderRadius="$6">
+                                                borderRadius="$6"
+                                                borderWidth={0}
+                                                overflow="hidden">
                                             <RadioGroup.Item value={MeasurementSystem.IMPERIAL}
                                                              id="create-measure-imperial" size="$4">
                                                 <RadioGroup.Indicator/>

@@ -27,7 +27,7 @@ import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} 
 import {getMapRoute} from '@/utils/navigation';
 
 export const ProfileTab: React.FC = () => {
-    const {t, changeLanguage} = useTranslation();
+    const {t, changeLanguage, currentLanguage} = useTranslation();
     const {session, updateProfile: updateSessionProfile, logout} = useSession();
     const {updateProfile, deleteProfile} = useUser();
     const {sendVerificationEmail} = useAuth();
@@ -50,6 +50,15 @@ export const ProfileTab: React.FC = () => {
             setSelectedMeasurement(session.profile.measurementSystem ?? MeasurementSystem.METRIC);
         }
     }, [session?.profile]);
+
+    useEffect(() => {
+        if (isEditing) {
+            const langCode = selectedLanguage === Language.DE ? 'de' : 'en';
+            if (currentLanguage !== langCode) {
+                changeLanguage(langCode);
+            }
+        }
+    }, [selectedLanguage, isEditing, currentLanguage, changeLanguage]);
 
     const handleRoleToggle = (role: ActivityRole) => {
         setSelectedRoles(prev =>
@@ -92,9 +101,13 @@ export const ProfileTab: React.FC = () => {
 
     const handleCancel = () => {
         if (session?.profile) {
-            setSelectedLanguage(session.profile.language ?? Language.DE);
+            const originalLanguage = session.profile.language ?? Language.DE;
+            setSelectedLanguage(originalLanguage);
             setSelectedRoles(session.profile.activityRoles || []);
             setSelectedMeasurement(session.profile.measurementSystem ?? MeasurementSystem.METRIC);
+
+            const langCode = originalLanguage === Language.DE ? 'de' : 'en';
+            changeLanguage(langCode);
         }
         setIsEditing(false);
     };
@@ -184,10 +197,13 @@ export const ProfileTab: React.FC = () => {
                                     gap="$3">
                             <XStack alignItems="center" gap="$3" padding="$3"
                                     backgroundColor={selectedLanguage === Language.DE ? "$content2" : "transparent"}
-                                    borderRadius="$6">
+                                    borderRadius="$6"
+                                    borderWidth={0}
+                                    overflow="hidden">
                                 <RadioGroup.Item value={Language.DE} id="lang-de" size="$4">
                                     <RadioGroup.Indicator/>
                                 </RadioGroup.Item>
+                                <Text fontSize={20}>🇩🇪</Text>
                                 <Label htmlFor="lang-de" flex={1} color="$color"
                                        fontSize={16}>{t('profile.languageSection.german')}</Label>
                                 {selectedLanguage === Language.DE &&
@@ -195,10 +211,13 @@ export const ProfileTab: React.FC = () => {
                             </XStack>
                             <XStack alignItems="center" gap="$3" padding="$3"
                                     backgroundColor={selectedLanguage === Language.EN ? "$content2" : "transparent"}
-                                    borderRadius="$6">
+                                    borderRadius="$6"
+                                    borderWidth={0}
+                                    overflow="hidden">
                                 <RadioGroup.Item value={Language.EN} id="lang-en" size="$4">
                                     <RadioGroup.Indicator/>
                                 </RadioGroup.Item>
+                                <Text fontSize={20}>🇬🇧</Text>
                                 <Label htmlFor="lang-en" flex={1} color="$color"
                                        fontSize={16}>{t('profile.languageSection.english')}</Label>
                                 {selectedLanguage === Language.EN &&
@@ -206,9 +225,12 @@ export const ProfileTab: React.FC = () => {
                             </XStack>
                         </RadioGroup>
                     ) : (
-                        <Text color="$color" fontSize={16} paddingLeft="$3">
-                            {selectedLanguage === Language.DE ? t('profile.languageSection.german') : t('profile.languageSection.english')}
-                        </Text>
+                        <XStack gap="$2" alignItems="center" paddingLeft="$3">
+                            <Text fontSize={20}>{selectedLanguage === Language.DE ? '🇩🇪' : '🇬🇧'}</Text>
+                            <Text color="$color" fontSize={16}>
+                                {selectedLanguage === Language.DE ? t('profile.languageSection.german') : t('profile.languageSection.english')}
+                            </Text>
+                        </XStack>
                     )}
                 </YStack>
             </Card>
@@ -309,7 +331,9 @@ export const ProfileTab: React.FC = () => {
                                     gap="$3">
                             <XStack alignItems="center" gap="$3" padding="$3"
                                     backgroundColor={selectedMeasurement === MeasurementSystem.METRIC ? "$content2" : "transparent"}
-                                    borderRadius="$6">
+                                    borderRadius="$6"
+                                    borderWidth={0}
+                                    overflow="hidden">
                                 <RadioGroup.Item value={MeasurementSystem.METRIC}
                                                  id="measure-metric" size="$4">
                                     <RadioGroup.Indicator/>
@@ -321,7 +345,9 @@ export const ProfileTab: React.FC = () => {
                             </XStack>
                             <XStack alignItems="center" gap="$3" padding="$3"
                                     backgroundColor={selectedMeasurement === MeasurementSystem.IMPERIAL ? "$content2" : "transparent"}
-                                    borderRadius="$6">
+                                    borderRadius="$6"
+                                    borderWidth={0}
+                                    overflow="hidden">
                                 <RadioGroup.Item value={MeasurementSystem.IMPERIAL}
                                                  id="measure-imperial" size="$4">
                                     <RadioGroup.Indicator/>

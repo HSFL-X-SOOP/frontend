@@ -5,8 +5,9 @@ import {GoogleSignin} from '@react-native-google-signin/google-signin';
 import {ENV} from '@/config/environment';
 import {useAuth} from './useAuth';
 import {useSession} from '@/context/SessionContext';
-import {AuthorityRole} from '@/api/models/profile';
+import {AuthorityRole, Language} from '@/api/models/profile';
 import {AppError, UIError} from '@/utils/errors';
+import {useTranslation} from '@/hooks/ui';
 
 /**
  * Hook for Google Sign-In authentication
@@ -17,6 +18,7 @@ export const useGoogleSignIn = () => {
     const router = useRouter();
     const {googleLogin} = useAuth();
     const {login: logUserIn} = useSession();
+    const {changeLanguage} = useTranslation();
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
@@ -67,6 +69,11 @@ export const useGoogleSignIn = () => {
                         profile: res.profile,
                     });
 
+                    if (res.profile?.language) {
+                        const langCode = res.profile.language === Language.DE ? 'de' : 'en';
+                        changeLanguage(langCode);
+                    }
+
                     // Check if user has a profile, if not redirect to create-profile
                     if (!res.profile || !res.profile.profileCreatedAt) {
                         router.push('/(profile)/create-profile');
@@ -84,7 +91,7 @@ export const useGoogleSignIn = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [googleLogin, logUserIn, router]);
+    }, [googleLogin, logUserIn, router, changeLanguage]);
 
     return {
         isLoading,

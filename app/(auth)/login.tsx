@@ -12,7 +12,7 @@ import {AuthCard} from '@/components/auth/AuthCard';
 import {EmailInput} from '@/components/auth/EmailInput';
 import {PasswordInput} from '@/components/auth/PasswordInput';
 import {createLogger} from '@/utils/logger';
-import {AuthorityRole} from '@/api/models/profile';
+import {AuthorityRole, Language} from '@/api/models/profile';
 import {useUserDeviceStore} from '@/api/stores/userDevice';
 import messaging from '@react-native-firebase/messaging';
 import {UI_CONSTANTS} from '@/config/constants';
@@ -26,7 +26,7 @@ const logger = createLogger('Auth:Login');
 
 export default function LoginScreen() {
     const router = useRouter();
-    const {t} = useTranslation();
+    const {t, changeLanguage} = useTranslation();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
@@ -61,6 +61,12 @@ export default function LoginScreen() {
                     role: res.profile?.authorityRole ?? AuthorityRole.USER,
                     profile: res.profile
                 });
+
+                if (res.profile?.language) {
+                    const langCode = res.profile.language === Language.DE ? 'de' : 'en';
+                    changeLanguage(langCode);
+                }
+
                 toast.success(t('auth.loginSuccess'), {
                     message: t('auth.welcomeBack')
                 });

@@ -4,8 +4,9 @@ import {type Href, useRouter} from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import {useAuth} from '@/hooks/auth';
 import {useSession} from '@/context/SessionContext';
-import {AuthorityRole} from '@/api/models/profile';
+import {AuthorityRole, Language} from '@/api/models/profile';
 import {AppError, UIError} from '@/utils/errors';
+import {useTranslation} from '@/hooks/ui';
 
 /**
  * Hook for Apple Sign-In authentication
@@ -16,6 +17,7 @@ export const useAppleSignIn = () => {
     const router = useRouter();
     const {appleLogin} = useAuth();
     const {login: logUserIn} = useSession();
+    const {changeLanguage} = useTranslation();
     const [isLoading, setIsLoading] = useState(false);
 
     const handleAppleSignIn = useCallback(async (
@@ -63,6 +65,11 @@ export const useAppleSignIn = () => {
                         profile: res.profile,
                     });
 
+                    if (res.profile?.language) {
+                        const langCode = res.profile.language === Language.DE ? 'de' : 'en';
+                        changeLanguage(langCode);
+                    }
+
                     if (!res.profile || !res.profile.profileCreatedAt) {
                         router.push('/(profile)/create-profile');
                     } else {
@@ -79,7 +86,7 @@ export const useAppleSignIn = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [appleLogin, logUserIn, router]);
+    }, [appleLogin, logUserIn, router, changeLanguage]);
 
     return {
         isLoading,
