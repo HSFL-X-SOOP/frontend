@@ -76,7 +76,11 @@ platform :ios do
       workspace: "Marlin.xcworkspace",
       export_method: "app-store",
       output_directory: "./build",
-      output_name: "Marlin.ipa"
+      output_name: "Marlin.ipa",
+      verbose: true,
+      suppress_xcode_output: false,
+      xcargs: "-verbose",
+      buildlog_path: "./build/logs"
     )
 
     deliver(
