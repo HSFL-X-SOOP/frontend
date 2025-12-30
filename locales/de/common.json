@@ -149,6 +149,7 @@
     "noProfileFound": "Kein Profil gefunden",
     "noProfileMessage": "Sie haben noch kein Profil erstellt. Bitte erstellen Sie eines, um fortzufahren.",
     "createProfile": "Profil erstellen",
+    "profileCreated": "Ihr Profil wurde erfolgreich erstellt!",
     "changeProfilePicture": "Profilbild ändern",
     "uploadPhoto": "Foto hochladen",
     "tabs": {
