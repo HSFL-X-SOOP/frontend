@@ -310,7 +310,7 @@ export default function CreateProfileScreen() {
                                             {selectedMeasurement === MeasurementSystem.METRIC &&
                                                 <Check size={20} color="$accent7"/>}
                                         </XStack>
-                                        <XStack alignItems="center" gap="$3" padding="$3"
+                                        {/* <XStack alignItems="center" gap="$3" padding="$3"
                                                 backgroundColor={selectedMeasurement === MeasurementSystem.IMPERIAL ? "$content2" : "transparent"}
                                                 borderRadius="$6"
                                                 borderWidth={0}
@@ -323,7 +323,7 @@ export default function CreateProfileScreen() {
                                                    fontSize={16}>{t('profile.measurementSection.imperial')}</Label>
                                             {selectedMeasurement === MeasurementSystem.IMPERIAL &&
                                                 <Check size={20} color="$accent7"/>}
-                                        </XStack>
+                                        </XStack> */}
                                     </RadioGroup>
                                 </YStack>
                             </Card>

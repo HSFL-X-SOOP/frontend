@@ -35,7 +35,7 @@
     "createAccount": "Create Account",
     "alreadyHaveAccount": "Already have an account?",
     "dontHaveAccount": "Don't have an account?",
-    "welcomeBack": "Welcome back! Please enter your credentials.",
+    "welcomeBack": "Welcome back!",
     "loginSuccessMessage": "You have been successfully logged in.",
     "rememberMe": "Remember me",
     "signingIn": "Signing in...",
