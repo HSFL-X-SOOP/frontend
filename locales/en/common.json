@@ -446,5 +446,35 @@
     "noLocationsTitle": "Here you can manage your notifications",
     "noLocationsMessage": "You need to add a location to manage notifications.",
     "selectUserLocation": "Select Harbor"
+  },
+  "disclaimer": {
+    "title": "Disclaimer",
+    "subtitle": "Important Information About Using the MARLIN App",
+    "noWarranty": "No Warranty for Accuracy",
+    "noWarrantyDesc": "The water levels, tide information, and passage heights provided in the MARLIN app are for general information purposes only. Although we strive to obtain data from reliable sources, we make no warranty regarding the timeliness, accuracy, completeness, or reliability of the information provided.",
+    "notNavInstrument": "Not an Official Navigation Instrument",
+    "notNavInstrumentDesc": "This app is not an official navigation instrument and does not replace official nautical charts or current maritime warnings. Use of this data for navigation decisions is at your own risk.",
+    "dueDiligence": "Duty to Verify Information",
+    "dueDiligenceDesc": "Before critical maneuvers – particularly for bridge passages or navigation in waterways – you must additionally consult official sources:",
+    "elwis": "ELWIS",
+    "elwisDesc": "Electronic Water Level and Information System",
+    "pegelonline": "Pegelonline",
+    "pegelonlineDesc": "Official tide tables and current water level information",
+    "warnings": "Warnings",
+    "warningsDesc": "Current maritime warnings and notices",
+    "localConditions": "Local conditions such as wind surge, currents, or short-term water level changes may cause actual water levels to differ significantly from the values displayed in the app.",
+    "liability": "Limitation of Liability",
+    "liabilityDesc": "MARLIN is not liable for damages resulting from reliance on data displayed in the app, particularly not for:",
+    "groundingDamage": "Groundings",
+    "collisionDamage": "Collisions with bridges or other objects",
+    "propertyDamage": "Property and personal damage",
+    "liabilityLimitation": "Liability for intentional acts and gross negligence remains unaffected. Use of the app is at your own risk."
+  },
+  "footer": {
+    "contact": "Contact",
+    "imprint": "Imprint",
+    "privacyPolicy": "Privacy Policy",
+    "disclaimer": "Disclaimer",
+    "copyright": "© 2024 MARLIN - University of Flensburg & SOOP"
   }
 }

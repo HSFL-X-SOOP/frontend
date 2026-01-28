@@ -1,8 +1,11 @@
+
+import { useTranslation } from '@/hooks/ui';
 import { Link } from 'expo-router';
 import { Text, XStack, YStack } from 'tamagui';
 import { Github } from '@tamagui/lucide-icons';
 
 export function Footer() {
+    const { t } = useTranslation();
     return (
         <YStack
             backgroundColor="$content1"
@@ -14,24 +17,30 @@ export function Footer() {
         >
             <XStack maxWidth={1400} width="100%" alignSelf="center" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap="$4">
                 <Text fontSize="$2" color="$gray11">
-                    © 2025 MARLIN - Hochschule Flensburg & SOOP
+                    {t('footer.copyright')}
                 </Text>
                 <XStack gap="$3" alignItems="center">
                     <Link href="mailto:info@marlin-live.com">
                         <Text fontSize="$2" color="$gray11" hoverStyle={{ color: '$accent8' }}>
-                            Kontakt
+                            {t('footer.contact')}
                         </Text>
                     </Link>
                     <Text fontSize="$2" color="$gray9">•</Text>
                     <Link href="https://hs-flensburg.de/impressum" target="_blank">
                         <Text fontSize="$2" color="$gray11" hoverStyle={{ color: '$accent8' }}>
-                            Impressum
+                            {t('footer.imprint')}
                         </Text>
                     </Link>
                     <Text fontSize="$2" color="$gray9">•</Text>
                     <Link href="https://hs-flensburg.de/datenschutzerklaerung" target="_blank">
                         <Text fontSize="$2" color="$gray11" hoverStyle={{ color: '$accent8' }}>
-                            Datenschutz
+                            {t('footer.privacyPolicy')}
+                        </Text>
+                    </Link>
+                    <Text fontSize="$2" color="$gray9">•</Text>
+                    <Link href="/(about)/disclaimer">
+                        <Text fontSize="$2" color="$gray11" hoverStyle={{ color: '$accent8' }}>
+                            {t('footer.disclaimer')}
                         </Text>
                     </Link>
                     <Text fontSize="$2" color="$gray9">•</Text>

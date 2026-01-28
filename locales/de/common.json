@@ -447,5 +447,35 @@
     "noLocationsTitle": "Hier können Sie Ihre Benachrichtigungen verwalten",
     "noLocationsMessage": "Sie müssen einen Standort hinzufügen, um Benachrichtigungen zu verwalten.",
     "selectUserLocation": "Hafen auswählen"
+  },
+  "disclaimer": {
+    "title": "Haftungsauschluss",
+    "subtitle": "Wichtige Informationen zur Nutzung der MARLIN-App",
+    "noWarranty": "Keine Gewähr für Richtigkeit",
+    "noWarrantyDesc": "Die in der MARLIN-App bereitgestellten Wasserstände, Gezeiteninformationen und Durchfahrtshöhen dienen ausschließlich der allgemeinen Information. Obwohl wir uns bemühen, Daten aus zuverlässigen Quellen zu beziehen, übernehmen wir keine Gewähr für die Aktualität, Richtigkeit, Vollständigkeit oder Genauigkeit der bereitgestellten Informationen.",
+    "notNavInstrument": "Kein amtliches Navigationsinstrument",
+    "notNavInstrumentDesc": "Diese App ist kein amtliches Navigationsinstrument und ersetzt weder die offizielle Seekarte noch geltende nautische Warnnachrichten. Die Nutzung der Daten für navigatorische Entscheidungen erfolgt ausdrücklich auf eigene Gefahr.",
+    "dueDiligence": "Pflicht zur Eigenprüfung",
+    "dueDiligenceDesc": "Vor kritischen Manövern – insbesondere bei Brückendurchfahrten oder der Befahrung von Fahrwassern – müssen Sie zusätzlich amtliche Quellen heranziehen:",
+    "elwis": "ELWIS",
+    "elwisDesc": "Elektronisches Wasserstands- und Informationssystem",
+    "pegelonline": "Pegelonline",
+    "pegelonlineDesc": "Offizielle Gezeitentafeln und aktuelle Pegelstände",
+    "warnings": "Warnmeldungen",
+    "warningsDesc": "Aktuelle nautische Warnmeldungen",
+    "localConditions": "Lokale Bedingungen wie Windstau, Strömungen oder kurzfristige Pegeländerungen können dazu führen, dass tatsächliche Wasserstände erheblich von den angezeigten Werten abweichen.",
+    "liability": "Haftungsbeschränkung",
+    "liabilityDesc": "MARLIN haftet nicht für Schäden, die durch das Vertrauen auf in der App angezeigten Daten entstehen, insbesondere nicht für:",
+    "groundingDamage": "Grundberührungen",
+    "collisionDamage": "Kollisionen mit Brücken oder anderen Objekten",
+    "propertyDamage": "Sach- und Personenschäden",
+    "liabilityLimitation": "Die Haftung für Vorsatz und grobe Fahrlässigkeit bleibt unberührt. Die Nutzung der App erfolgt auf eigenes Risiko."
+  },
+  "footer": {
+    "contact": "Kontakt",
+    "imprint": "Impressum",
+    "privacyPolicy": "Datenschutz",
+    "disclaimer": "Haftungsauschluss",
+    "copyright": "© 2024 MARLIN - Hochschule Flensburg & SOOP"
   }
 }
