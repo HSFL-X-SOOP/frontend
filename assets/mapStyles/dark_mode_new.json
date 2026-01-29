@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "name": "Toner (Dark Mode Native Language)",
+  "name": "Dark Mode Marlin MapStyle",
   "metadata": {
     "mapbox:autocomposite": false,
     "mapbox:type": "template",
@@ -844,6 +844,35 @@
         "text-halo-blur": 0,
         "text-halo-color": "rgba(0, 0, 0, 1)",
         "text-halo-width": 2
+      }
+    },
+    {
+      "id": "place_label_island",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "minzoom": 9,
+      "maxzoom": 16,
+      "filter": [
+        "all",
+        ["==", "$type", "Point"],
+        ["in", "class", "island", "islet"]
+      ],
+      "layout": {
+        "text-anchor": "center",
+        "text-field": ["coalesce", ["get", "name:latin"], ["get", "name"]],
+        "text-font": {
+          "stops": [[8, ["Noto Sans Regular"]], [14, ["Noto Sans Bold"]]]
+        },
+        "text-max-width": 10,
+        "text-size": {"stops": [[8, 12], [16, 16]]},
+        "visibility": "visible"
+      },
+      "paint": {
+        "text-color": "rgba(255, 255, 255, 0.9)",
+        "text-halo-blur": 1,
+        "text-halo-color": "rgba(0, 0, 0, 0.85)",
+        "text-halo-width": 1.5
       }
     },
     {
