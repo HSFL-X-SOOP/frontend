@@ -142,7 +142,7 @@ function RootContent() {
     const pathname = usePathname()
 
     const isWeb = Platform.OS === 'web'
-    const shouldShowFooter = isWeb && pathname !== '/map'
+    const shouldShowFooter = isWeb
 
     useEffect(() => {
         if (Platform.OS === 'web' && typeof document !== 'undefined') {
