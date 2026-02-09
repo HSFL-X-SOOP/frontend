@@ -64,6 +64,7 @@ import {
 import {UserLocation} from '@/api/models/userLocation';
 import {useSession} from '@/context/SessionContext';
 import {IconButton} from '@/types/button';
+import { useIntervalCallback } from '@/hooks/data/useIntervalCallback';
 
 
 // ============================================================================
@@ -210,6 +211,7 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
                 setTimeRangeData(null);
             }
         );
+        console.log("Fetching time range data for marinaID:", marinaID, "and timeRange:", apiTimeRange);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [marinaID, apiTimeRange]); // fetchTimeRangeData comes from a hook and is unstable; toast/t are static utilities
 
@@ -316,6 +318,36 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userLocation, marinaID, userID]); // update is a hook function
+
+    const updateAllSensorData = useCallback(() => {
+        void fetchSensors(
+            (data: LocationWithBoxes[]) => setAllSensorData(data),
+            (error: AppError) => {
+                toast.error(t('common.error'), {message: t(error.onGetMessage())});
+                setAllSensorData([]);
+            }
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // fetchSensors comes from a hook and is unstable; toast/t are static utilities
+
+    const updateTimeRangeData = useCallback(() => {
+        if (!marinaID) {
+            setTimeRangeData(null);
+            return;
+        }
+        void fetchTimeRangeData(
+            (data: LocationWithBoxes) => setTimeRangeData(data),
+            (error: AppError) => {
+                toast.error(t('common.error'), {message: t(error.onGetMessage())});
+                setTimeRangeData(null);
+            }
+        );
+        console.log("Fetching time range data for marinaID:", marinaID, "and timeRange:", apiTimeRange);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [marinaID, apiTimeRange]); // fetchTimeRangeData comes from a hook and is unstable; toast/t are static utilities
+
+    useIntervalCallback(updateAllSensorData, { delay: 60_000, immediate: true, enabled: true });
+    useIntervalCallback(updateTimeRangeData, { delay: 60_000, immediate: true, enabled: true });
 
     const renderHarborInfoContent = useCallback((extraProps?: Partial<ComponentProps<typeof Card.Footer>>) => (
         <Card.Footer
