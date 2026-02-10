@@ -29,7 +29,7 @@ import {NavbarWeb} from '@/components/navigation/web/navbar'
 import {Footer} from '@/components/navigation/web/Footer'
 import {AuthProvider} from '@/context/SessionContext'
 import {ThemeProvider, useThemeContext} from '@/context/ThemeSwitch.tsx'
-import {Slot, usePathname, Stack} from 'expo-router'
+import {Slot, usePathname, Stack, useSegments} from 'expo-router'
 import {SafeAreaProvider, useSafeAreaInsets} from 'react-native-safe-area-context'
 import type {ToastType} from '@/hooks/ui'
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
@@ -140,9 +140,11 @@ function RootContent() {
     const {currentTheme} = useThemeContext()
     const logger = useMemo(() => createLogger('RootContent'), [])
     const pathname = usePathname()
+    const segments = useSegments();
 
     const isWeb = Platform.OS === 'web'
-    const shouldShowFooter = isWeb
+    const isPublicDisplay = segments.includes('public-display' as never);
+    const shouldShowFooter = isWeb && !isPublicDisplay;
 
     useEffect(() => {
         if (Platform.OS === 'web' && typeof document !== 'undefined') {
