@@ -1,4 +1,4 @@
-import {useRouter, useFocusEffect} from 'expo-router';
+import {useRouter, useFocusEffect, useLocalSearchParams} from 'expo-router';
 import {useState, useEffect, useCallback, useRef} from 'react';
 import {Platform, ScrollView, RefreshControl} from "react-native";
 import {
@@ -11,21 +11,24 @@ import {
     H2,
     Button
 } from "tamagui";
-import {User, Anchor, Bell} from '@tamagui/lucide-icons';
+import {User, Anchor, Bell, CreditCard} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
 import {useTranslation, useToast} from '@/hooks/ui';
 import {ProfileTab} from '@/components/profile/ProfileTab';
 import {BoatsTab} from '@/components/profile/BoatsTab';
 import {HarborMasterTab} from '@/components/profile/HarborMasterTab';
 import {MyNotificationsTab} from '@/components/profile/MyNotificationsTab';
+import {SubscriptionTab} from '@/components/profile/SubscriptionTab';
 import {useLocationInfo, useUser} from '@/hooks/data';
 import {DetailedLocationDTO} from '@/api/models/location';
 import {getMapRoute} from '@/utils/navigation';
+import {UI_CONSTANTS} from '@/config/constants';
 
 export default function ProfileScreen() {
     const router = useRouter();
     const {t} = useTranslation();
     const toast = useToast();
+    const params = useLocalSearchParams<{ subscription_status?: string; subscription_type?: string }>();
     const {session, updateProfile: updateSessionProfile} = useSession();
     const {getProfile, loading: isLoadingProfile} = useUser();
     const {
@@ -38,6 +41,47 @@ export default function ProfileScreen() {
     const [refreshing, setRefreshing] = useState(false);
     const isWeb = Platform.OS === 'web';
     const isRefreshingRef = useRef(false);
+    const hasHandledSubscriptionReturn = useRef(false);
+
+    useEffect(() => {
+        if (hasHandledSubscriptionReturn.current) return;
+
+        const status = params.subscription_status
+            ?? (isWeb && typeof window !== 'undefined'
+                ? new URLSearchParams(window.location.search).get('subscription_status')
+                : null);
+        const subType = params.subscription_type
+            ?? (isWeb && typeof window !== 'undefined'
+                ? new URLSearchParams(window.location.search).get('subscription_type')
+                : null);
+
+        if (!status) return;
+        hasHandledSubscriptionReturn.current = true;
+
+        if (status === 'success') {
+            if (subType === 'APP_NOTIFICATION') {
+                setActiveTab('myNotifications');
+                toast.success(t('subscription.successTitle'), {
+                    message: t('subscription.successNotificationsMessage'),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG,
+                });
+            } else {
+                setActiveTab('subscription');
+                toast.success(t('subscription.successTitle'), {
+                    message: t('subscription.successGenericMessage'),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG,
+                });
+            }
+        }
+
+        // Clean up URL params on web
+        if (isWeb && typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('subscription_status');
+            url.searchParams.delete('subscription_type');
+            window.history.replaceState({}, '', url.toString());
+        }
+    }, [params, isWeb, t, toast]);
 
     useEffect(() => {
         if (!session) {
@@ -292,6 +336,43 @@ export default function ProfileScreen() {
                                             )}
                                         </YStack>
                                     </Tabs.Tab>
+                                    <Tabs.Tab
+                                        flex={activeTab === "subscription" ? 1.5 : 1}
+                                        value="subscription"
+                                        borderRadius="$4"
+                                        paddingHorizontal="$3"
+                                        paddingVertical="$3"
+                                        backgroundColor={activeTab === "subscription" ? "$accent7" : "transparent"}
+                                        borderWidth={activeTab === "subscription" ? 2 : 0}
+                                        borderColor={activeTab === "subscription" ? "$accent8" : "transparent"}
+                                        elevation={activeTab === "subscription" ? "$2" : 0}
+                                        pressStyle={{
+                                            backgroundColor: activeTab === "subscription" ? "$accent6" : "$accent2",
+                                            scale: 0.98
+                                        }}
+                                        hoverStyle={{backgroundColor: activeTab === "subscription" ? "$accent5" : "$content2"}}
+                                        animation="quick"
+                                        scale={activeTab === "subscription" ? 1 : 0.95}
+                                        minHeight={60}
+                                    >
+                                        <YStack gap="$1.5" alignItems="center" justifyContent="center" width="100%">
+                                            <CreditCard size={activeTab === "subscription" ? 20 : 18}
+                                                  color={"$accent7"}/>
+                                            {(isWeb || activeTab === "subscription") && (
+                                                <Text
+                                                    fontSize={activeTab === "subscription" ? 12 : 9}
+                                                    fontWeight={activeTab === "subscription" ? "700" : "600"}
+                                                    color={"$accent7"}
+                                                    textAlign="center"
+                                                    width="100%"
+                                                    paddingHorizontal="$1"
+                                                    numberOfLines={1}
+                                                >
+                                                    {t('profile.tabs.subscription')}
+                                                </Text>
+                                            )}
+                                        </YStack>
+                                    </Tabs.Tab>
                                     {isHarborMaster && (
                                         <Tabs.Tab
                                             flex={1}
@@ -345,6 +426,10 @@ export default function ProfileScreen() {
 
                             <Tabs.Content value="myNotifications" padding="$0" marginTop="$4">
                                 <MyNotificationsTab/>
+                            </Tabs.Content>
+
+                            <Tabs.Content value="subscription" padding="$0" marginTop="$4">
+                                <SubscriptionTab refreshing={refreshing}/>
                             </Tabs.Content>
 
                             {isHarborMaster && (

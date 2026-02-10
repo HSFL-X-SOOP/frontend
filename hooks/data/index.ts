@@ -8,3 +8,4 @@ export { useLocations } from './useLocations';
 export { useUser } from './useUser';
 export { useUserLocations } from './useUserLocations';
 export { useLocationInfo } from './useLocationInfo';
+export { useSubscription } from './useSubscription';
