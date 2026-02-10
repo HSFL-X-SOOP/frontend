@@ -3,7 +3,7 @@ name: Android - Build & Deploy to Google Play Store (Production)
 on:
   push:
     branches:
-      - 'staging@android'
+      - 'release@android'
     paths:
       - 'android/**'
       - 'app/**'
