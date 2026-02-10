@@ -54,7 +54,7 @@ export function NavbarWeb() {
             py={isMobileWeb ? "$1" : "$2"}
             minHeight={navbarMinHeight}
         >
-            <Link href={"/map" as Href}>
+            <Link href={"/" as Href}>
                 <XStack alignItems="center" jc="flex-start" gap="$2" minHeight={logoSize}>
                     <YStack height={logoSize} justifyContent="center">
                         <LOGO
@@ -86,7 +86,7 @@ export function NavbarWeb() {
 
             {!isMobileWeb && (
                 <XStack alignItems={"center"} gap={"$8"}>
-                    <Link href={"/map" as Href}>
+                    <Link href={"/" as Href}>
                         <XStack alignItems="center" gap="$3">
                             <MapIcon color={t.accent8?.val} size={26}/>
                             <Text fontSize="$6" fontWeight={"500"} alignSelf={"center"} color={"$accent8"}>
@@ -334,7 +334,7 @@ export function NavbarWeb() {
                             </XStack>
 
                             <YStack gap="$2" paddingTop="$3">
-                                <Link href={"/map" as Href} onPress={() => setIsMenuOpen(false)}>
+                                <Link href={"/" as Href} onPress={() => setIsMenuOpen(false)}>
                                     <XStack
                                         alignItems="center"
                                         gap="$3"

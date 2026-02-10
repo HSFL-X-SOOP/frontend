@@ -20,7 +20,8 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 interface SensorMarkerSvgProps {
-    temperature: number | string;
+    value: number | string;
+    metricSymbol: string;
     width?: number;
     height?: number;
     accentColor?: string;
@@ -31,7 +32,8 @@ interface SensorMarkerSvgProps {
 }
 
 export const SensorMarkerSvg: React.FC<SensorMarkerSvgProps> = ({
-                                                                    temperature,
+                                                                    value,
+                                                                    metricSymbol,
                                                                     width = 96,
                                                                     height = 160,
                                                                     accentColor = '#1798db',
@@ -135,7 +137,7 @@ export const SensorMarkerSvg: React.FC<SensorMarkerSvgProps> = ({
                     fill={textColor}
                     textAnchor="middle"
                 >
-                    {temperature}°
+                    {value}{metricSymbol}
                 </SvgText>
 
                 <G id="pulse-min-badge">

@@ -8,6 +8,7 @@ import {useIsMobileWeb} from '@/hooks/ui';
 
 interface SensorMarkerProps {
     locationWithBoxes: LocationWithBoxes;
+    metricToShow: string;
     onPress?: () => void;
 }
 
@@ -18,7 +19,8 @@ interface SensorMarkerProps {
 const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProps): boolean => {
     return (
         prevProps.locationWithBoxes?.location?.id === nextProps.locationWithBoxes?.location?.id &&
-        prevProps.onPress === nextProps.onPress
+        prevProps.onPress === nextProps.onPress &&
+        prevProps.metricToShow === nextProps.metricToShow
     );
 };
 
@@ -27,7 +29,7 @@ const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProp
  * Memoized to prevent unnecessary re-renders when parent re-renders
  * Shows sensor data on map with interactive popover/dialog
  */
-const WebSensorMarker = ({locationWithBoxes, onPress}: SensorMarkerProps) => {
+const WebSensorMarker = ({locationWithBoxes, metricToShow, onPress}: SensorMarkerProps) => {
     const [open, setOpen] = useState(false);
     const isMobileWeb = useIsMobileWeb();
 
@@ -61,7 +63,7 @@ const WebSensorMarker = ({locationWithBoxes, onPress}: SensorMarkerProps) => {
                         onPress={handleMarkerPress}
                         cursor="pointer"
                     >
-                        <SensorMarkerContent locationWithBoxes={locationWithBoxes}/>
+                        <SensorMarkerContent locationWithBoxes={locationWithBoxes} metricToShow={metricToShow}/>
                     </YStack>
                 </Marker>
 
@@ -119,7 +121,7 @@ const WebSensorMarker = ({locationWithBoxes, onPress}: SensorMarkerProps) => {
                         onPress={handleMarkerPress}
                         cursor="pointer"
                     >
-                        <SensorMarkerContent locationWithBoxes={locationWithBoxes}/>
+                        <SensorMarkerContent locationWithBoxes={locationWithBoxes} metricToShow={metricToShow}/>
                     </YStack>
                 </Popover.Trigger>
 
