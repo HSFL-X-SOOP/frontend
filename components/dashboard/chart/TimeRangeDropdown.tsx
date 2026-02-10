@@ -7,6 +7,7 @@ import { Platform } from "react-native";
 
 export type ChartTimeRange =
     "today"
+    | "24h"
     | "yesterday"
     | "last7days"
     | "last30days"

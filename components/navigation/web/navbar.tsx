@@ -1,4 +1,4 @@
-import {Link, useRouter, Href} from 'expo-router';
+import {Link, useRouter, Href, useSegments} from 'expo-router';
 import {Button, Popover, Sheet, Text, XStack, YStack, useTheme, ScrollView, Tooltip} from 'tamagui';
 import {useState} from 'react';
 
@@ -14,7 +14,7 @@ import {LanguageSelector} from '@/components/common/LanguageSelector';
 import {getMapRoute} from '@/utils/navigation';
 
 import {UI_CONSTANTS} from '@/config/constants';
-
+import { AutoHideNavBar } from '@/components/navigation/web/AutoHideNavBar';
 
 export function NavbarWeb() {
     const router = useRouter();
@@ -28,6 +28,7 @@ export function NavbarWeb() {
     const logoSize = isMobileWeb ? 50 : 55;
     const navbarMinHeight = logoSize + (isMobileWeb ? 12 : 16);
     const logoVerticalOffset = isMobileWeb ? 1 : 2;
+    const segments = useSegments();
 
     const handleLogout = () => {
         logout();
@@ -38,7 +39,9 @@ export function NavbarWeb() {
         router.push(getMapRoute());
     };
 
-    return (
+    const isPublicDisplay = segments.includes('public-display' as never);
+
+    const navbar = (
         <XStack
             jc={"space-between"}
             backgroundColor={"$background"}
@@ -533,4 +536,8 @@ export function NavbarWeb() {
             </Sheet>
         </XStack>
     );
+
+    return (
+        <AutoHideNavBar enabled={isPublicDisplay}>{navbar}</AutoHideNavBar>
+    )
 }
