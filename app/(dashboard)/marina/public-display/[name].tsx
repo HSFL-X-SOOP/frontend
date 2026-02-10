@@ -31,6 +31,8 @@ import { useSensorDataNew, useSensorDataTimeRange } from '@/hooks/data/useSensor
 import GpsPin from '@/components/map/markers/GPSMarker';
 import { ParentSizeCarousel } from '@/components/publicdisplay/ParentSizeCarousel';
 import { formatTimeToLocal } from '@/utils/time';
+import { useCallback } from 'react';
+import { useIntervalCallback } from '@/hooks/data/useIntervalCallback';
 // ============================================================================
 // Main Component
 // ============================================================================
@@ -109,6 +111,34 @@ export default function PublicDisplayScreen({selectedMarinaName = 'Stadthafen Fl
             }
         );
     }, [marinaID, timeRange]);
+
+    const updateAllSensorData = useCallback(() => {
+        void fetchSensors(
+            (data: LocationWithBoxes[]) => setAllSensorData(data),
+            (error: AppError) => {
+                toast.error(t('common.error'), {message: t(error.onGetMessage())});
+                setAllSensorData([]);
+            }
+        );
+    }, []);
+
+    const updateTimeRangeData = useCallback(() => {
+        if (!marinaID) {
+            setTimeRangeData(null);
+            return;
+        }
+        void fetchTimeRangeData(
+            (data: LocationWithBoxes) => setTimeRangeData(data),
+            (error: AppError) => {
+                toast.error(t('common.error'), {message: t(error.onGetMessage())});
+                setTimeRangeData(null);
+            }
+        );
+        console.log("Fetching time range data for marinaID:", marinaID, "and timeRange:", timeRange);
+    }, [marinaID, timeRange]);
+
+    useIntervalCallback(updateAllSensorData, { delay: 60_000, immediate: true, enabled: true });
+    useIntervalCallback(updateTimeRangeData, { delay: 60_000, immediate: true, enabled: true });
 
     // MAP
     const [harbourLatitude, setHarbourLatitude] = useState<number>(54.78431);
@@ -191,7 +221,7 @@ export default function PublicDisplayScreen({selectedMarinaName = 'Stadthafen Fl
                         ))}
                     </XStack>
 
-                    <Card key={"map"} flex={1} bordered backgroundColor="$content2"
+                    <Card key={"parent-size-carousel"} flex={1} bordered backgroundColor="$content2"
                         borderWidth={1} borderColor="$borderColor">
                         
                         <ParentSizeCarousel items={images} itemsLabels={list} interval={4000} />
