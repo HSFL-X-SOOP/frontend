@@ -56,7 +56,14 @@
           "iosUrlScheme": "com.googleusercontent.apps.977804708210-9nj0m7buq3qe7mbarilve0s4sfqvib74"
         }
       ],
-      "expo-apple-authentication"
+      "expo-apple-authentication",
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.marlin.live",
+          "enableGooglePay": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
