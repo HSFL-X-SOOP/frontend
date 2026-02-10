@@ -350,6 +350,13 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
     useIntervalCallback(updateAllSensorData, { delay: 60_000, immediate: true, enabled: true });
     useIntervalCallback(updateTimeRangeData, { delay: 60_000, immediate: true, enabled: true });
 
+    const handleNavigateToPublicDisplay = () => {
+        const marinaName = harbourName;
+        if (!marinaName) return;
+
+        router.push({ pathname: '/(dashboard)/marina/public-display/[name]', params: { name: marinaName } });
+    };
+
     const renderHarborInfoContent = useCallback((extraProps?: Partial<ComponentProps<typeof Card.Footer>>) => (
         <Card.Footer
             padded
@@ -387,6 +394,10 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
                     {/* Header Image with Gradient */}
                     <Stack position="relative" width="100%" height={media.lg ? 350 : 250} overflow="hidden">
                         <Image source={{uri: locationImageUrl}} width="100%" height="100%"/>
+                        {/* Navigate to Public Display Button*/}
+                        <Button position="absolute" top="$4" right="$3" onPress={handleNavigateToPublicDisplay}>
+                            <Text color="white" fontSize="$3" opacity={0.9} marginTop="$1">Public Display Modus</Text>
+                        </Button>
                         <LinearGradient
                             colors={['transparent', 'rgba(0,0,0,0.6)']}
                             style={{position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%'}}

@@ -14,7 +14,7 @@ import {LanguageSelector} from '@/components/common/LanguageSelector';
 import {getMapRoute} from '@/utils/navigation';
 
 import {UI_CONSTANTS} from '@/config/constants';
-
+import { AutoHideNavBar } from '@/components/navigation/web/AutoHideNavBar';
 
 export function NavbarWeb() {
     const router = useRouter();
@@ -39,11 +39,9 @@ export function NavbarWeb() {
         router.push(getMapRoute());
     };
 
-    if (segments.includes('public-display' as never)) {
-        console.log('Profile-Segment aktiv');
-    }
+    const isPublicDisplay = segments.includes('public-display' as never);
 
-    return (
+    const navbar = (
         <XStack
             jc={"space-between"}
             backgroundColor={"$background"}
@@ -538,4 +536,8 @@ export function NavbarWeb() {
             </Sheet>
         </XStack>
     );
+
+    return (
+        <AutoHideNavBar enabled={isPublicDisplay}>{navbar}</AutoHideNavBar>
+    )
 }
