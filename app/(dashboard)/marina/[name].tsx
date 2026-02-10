@@ -85,6 +85,7 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
 
     const getTimeRangeLabel = (timeRange: ChartTimeRange, t: any): string => {
         const labels: Record<ChartTimeRange, string> = {
+            "24h": t('dashboard.timeRange.last24h'),
             'today': t('dashboard.timeRange.today'),
             'yesterday': t('dashboard.timeRange.yesterday'),
             'last7days': t('dashboard.timeRange.last7days'),

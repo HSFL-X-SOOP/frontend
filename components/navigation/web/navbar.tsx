@@ -1,4 +1,4 @@
-import {Link, useRouter, Href} from 'expo-router';
+import {Link, useRouter, Href, useSegments} from 'expo-router';
 import {Button, Popover, Sheet, Text, XStack, YStack, useTheme, ScrollView, Tooltip} from 'tamagui';
 import {useState} from 'react';
 
@@ -28,6 +28,7 @@ export function NavbarWeb() {
     const logoSize = isMobileWeb ? 50 : 55;
     const navbarMinHeight = logoSize + (isMobileWeb ? 12 : 16);
     const logoVerticalOffset = isMobileWeb ? 1 : 2;
+    const segments = useSegments();
 
     const handleLogout = () => {
         logout();
@@ -37,6 +38,10 @@ export function NavbarWeb() {
         });
         router.push(getMapRoute());
     };
+
+    if (segments.includes('public-display' as never)) {
+        console.log('Profile-Segment aktiv');
+    }
 
     return (
         <XStack
