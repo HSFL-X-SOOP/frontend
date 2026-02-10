@@ -163,6 +163,8 @@ export default function WebMap(props: MapProps) {
 
     }, [isDark]);
 
+    const [metricToShow, setMetricToShow] = useState<string>("Temperature");
+    
     const pins = useMemo(() => {
         return clusters.map((cluster) => {
             const [longitude, latitude] = cluster.geometry.coordinates;
@@ -191,10 +193,11 @@ export default function WebMap(props: MapProps) {
                 <SensorMarker
                     key={locationWithBoxes!.location!.id}
                     locationWithBoxes={locationWithBoxes!}
+                    metricToShow={metricToShow}
                 />
             );
         });
-    }, [clusters, getClusterExpansionZoom]);
+    }, [clusters, getClusterExpansionZoom, metricToShow]);
 
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
 
@@ -302,6 +305,24 @@ export default function WebMap(props: MapProps) {
                 icon={Plus}
                 closeOnActionPress={true}
                 actions={[
+                    {
+                        key: 'metric-to-show-temperature',
+                        label: t('sensor.waterTemperature'),
+                        icon: List,
+                        onPress: () => setMetricToShow("Temperature"),
+                    },
+                    {
+                        key: 'metric-to-show-waterlevel',
+                        label: t('sensor.waterLevel'),
+                        icon: List,
+                        onPress: () => setMetricToShow("Waterlevel"),
+                    },
+                                        {
+                        key: 'metric-to-show-waveheight',
+                        label: t('sensor.waveHeight'),
+                        icon: List,
+                        onPress: () => setMetricToShow("WaveHeight"),
+                    },
                     {
                         key: 'sensors',
                         label: t('navigation.sensors'),
