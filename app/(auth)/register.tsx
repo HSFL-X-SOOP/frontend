@@ -44,6 +44,7 @@ export default function RegisterScreen() {
     const privacyPolicyUrl = currentLanguage === 'en'
         ? 'https://hs-flensburg.de/en/datenschutzerklaerung'
         : 'https://hs-flensburg.de/datenschutzerklaerung';
+    const legalTextRoute = '/disclaimer' as Href;
     
     const {
         validation: passwordValidation,
@@ -235,7 +236,25 @@ export default function RegisterScreen() {
                                 >
                                     {t('auth.privacyPolicy')}
                                 </Text>
-                                {currentLanguage === 'en' ? '' : ' zu'}
+                                {currentLanguage === 'en' ? ', the ' : ', dem '}
+                                <Text
+                                    color="$accent7"
+                                    textDecorationLine="underline"
+                                    onPress={() => router.push(legalTextRoute)}
+                                    cursor="pointer"
+                                >
+                                    {t('footer.disclaimer')}
+                                </Text>
+                                {currentLanguage === 'en' ? ', and the ' : ' und den '}
+                                <Text
+                                    color="$accent7"
+                                    textDecorationLine="underline"
+                                    onPress={() => router.push(legalTextRoute)}
+                                    cursor="pointer"
+                                >
+                                    {t('auth.termsOfService')}
+                                </Text>
+                                {currentLanguage === 'en' ? '.' : ' zu.'}
                             </Text>
                         </XStack>
 

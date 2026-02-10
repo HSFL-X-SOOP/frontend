@@ -18,10 +18,20 @@ import {useEffect, useMemo, useState} from 'react'
 import 'react-native-reanimated'
 import '../global.css'
 import {createLogger} from '@/utils/logger'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import tamaguiConfig from '@/tamagui.config'
 import {PortalProvider} from '@tamagui/portal'
-import {Button, TamaguiProvider, Theme, XStack, YStack} from 'tamagui'
+import {
+    Checkbox,
+    Dialog,
+    Spinner,
+    TamaguiProvider,
+    Text,
+    Theme,
+    XStack,
+    YStack
+} from 'tamagui'
 import {Toast, ToastProvider, ToastViewport, useToastState} from '@tamagui/toast'
 import {CheckCircle, XCircle, AlertTriangle, Info} from '@tamagui/lucide-icons'
 
@@ -29,9 +39,11 @@ import {NavbarWeb} from '@/components/navigation/web/navbar'
 import {Footer} from '@/components/navigation/web/Footer'
 import {AuthProvider} from '@/context/SessionContext'
 import {ThemeProvider, useThemeContext} from '@/context/ThemeSwitch.tsx'
-import {Slot, usePathname, Stack} from 'expo-router'
+import {Link, Slot, usePathname, Stack} from 'expo-router'
 import {SafeAreaProvider, useSafeAreaInsets} from 'react-native-safe-area-context'
-import type {ToastType} from '@/hooks/ui'
+import {useTranslation, type ToastType} from '@/hooks/ui'
+import {STORAGE_KEYS} from '@/config/constants'
+import {PrimaryButton, PrimaryButtonText} from '@/types/button'
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import * as Notifications from 'expo-notifications';
 
@@ -43,6 +55,8 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+
+const LEGAL_CONSENT_KEY = STORAGE_KEYS.LEGAL_CONSENT_ACCEPTED
 
 function CurrentToast() {
     const currentToast = useToastState()
@@ -136,13 +150,109 @@ function SafeToastViewport() {
     )
 }
 
+function LegalConsentDialog({
+    open,
+    onAccept,
+}: {
+    open: boolean
+    onAccept: () => void
+}) {
+    const {t} = useTranslation()
+    const [isChecked, setIsChecked] = useState(false)
+
+    useEffect(() => {
+        if (!open) {
+            setIsChecked(false)
+        }
+    }, [open])
+
+    return (
+        <Dialog modal open={open} onOpenChange={() => {}}>
+            <Dialog.Portal>
+                <Dialog.Overlay
+                    key="legal-consent-overlay"
+                    animation="quick"
+                    opacity={0.55}
+                    enterStyle={{opacity: 0}}
+                    exitStyle={{opacity: 0}}
+                />
+                <Dialog.Content
+                    key="legal-consent-content"
+                    bordered
+                    elevate
+                    maxWidth={560}
+                    width="92%"
+                    gap="$4"
+                    backgroundColor="$content1"
+                    enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.95}}
+                    exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+                    animation={[
+                        'quick',
+                        {
+                            opacity: {
+                                overshootClamping: true,
+                            },
+                        },
+                    ]}
+                >
+                    <Dialog.Title fontSize={22} fontWeight="700" color="$accent8">
+                        {t('legalConsent.title')}
+                    </Dialog.Title>
+                    <Dialog.Description color="$color" lineHeight={22}>
+                        {t('legalConsent.description')}
+                    </Dialog.Description>
+
+                    <Link href="/disclaimer">
+                        <Text color="$accent8" textDecorationLine="underline" fontWeight="600">
+                            {t('legalConsent.fullTextLink')}
+                        </Text>
+                    </Link>
+
+                    <XStack gap="$3" alignItems="flex-start">
+                        <Checkbox
+                            id="legal-consent-checkbox"
+                            checked={isChecked}
+                            onCheckedChange={(checked) => setIsChecked(checked === true)}
+                            size="$4"
+                            borderColor="$borderColor"
+                            marginTop={2}
+                        >
+                            <Checkbox.Indicator>
+                                <Text fontWeight="700">✓</Text>
+                            </Checkbox.Indicator>
+                        </Checkbox>
+                        <Text flex={1} color="$color">
+                            {t('legalConsent.acceptLabel')}
+                        </Text>
+                    </XStack>
+
+                    <PrimaryButton
+                        size="$4"
+                        width="100%"
+                        disabled={!isChecked}
+                        onPress={onAccept}
+                    >
+                        <PrimaryButtonText>
+                            {t('legalConsent.confirmButton')}
+                        </PrimaryButtonText>
+                    </PrimaryButton>
+                </Dialog.Content>
+            </Dialog.Portal>
+        </Dialog>
+    )
+}
+
 function RootContent() {
     const {currentTheme} = useThemeContext()
     const logger = useMemo(() => createLogger('RootContent'), [])
     const pathname = usePathname()
+    const [isLegalConsentLoading, setIsLegalConsentLoading] = useState(true)
+    const [hasAcceptedLegalConsent, setHasAcceptedLegalConsent] = useState(false)
 
     const isWeb = Platform.OS === 'web'
     const shouldShowFooter = isWeb
+    const isLegalTextRoute = pathname === '/disclaimer' || pathname === '/terms-of-service'
+    const shouldBlockAppUsage = !isLegalConsentLoading && !hasAcceptedLegalConsent && !isLegalTextRoute
 
     useEffect(() => {
         if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -196,29 +306,76 @@ function RootContent() {
         }
     }, [logger])
 
+    useEffect(() => {
+        const loadLegalConsent = async () => {
+            try {
+                const consentValue = Platform.OS === 'web'
+                    ? (typeof localStorage !== 'undefined' ? localStorage.getItem(LEGAL_CONSENT_KEY) : null)
+                    : await AsyncStorage.getItem(LEGAL_CONSENT_KEY)
+
+                setHasAcceptedLegalConsent(consentValue === 'true')
+            } catch (error) {
+                logger.error('Failed to load legal consent status', error)
+                setHasAcceptedLegalConsent(false)
+            } finally {
+                setIsLegalConsentLoading(false)
+            }
+        }
+
+        void loadLegalConsent()
+    }, [logger])
+
+    const handleAcceptLegalConsent = async () => {
+        try {
+            if (Platform.OS === 'web') {
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem(LEGAL_CONSENT_KEY, 'true')
+                }
+            } else {
+                await AsyncStorage.setItem(LEGAL_CONSENT_KEY, 'true')
+            }
+
+            setHasAcceptedLegalConsent(true)
+        } catch (error) {
+            logger.error('Failed to persist legal consent', error)
+        }
+    }
+
     return (
          <ActionSheetProvider>
             <Theme name={currentTheme}>
                 <ToastProvider>
                     <AuthProvider>
                         <CurrentToast/>
-                        {isWeb ? (
-                            <View style={{flex: 1}}>
-                                <NavbarWeb/>
-                                <View style={{flex: 1}}>
-                                    <Slot/>
-                                </View>
-                                {shouldShowFooter && <Footer/>}
-                                <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
+                        {isLegalConsentLoading ? (
+                            <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                                <Spinner size="large"/>
                             </View>
                         ) : (
-                            <Stack screenOptions={{headerShown: false}}>
-                                <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-                                <Stack.Screen name="(auth)" options={{headerShown: false}}/>
-                                <Stack.Screen name="(profile)" options={{headerShown: false}}/>
-                                <Stack.Screen name="(about)" options={{headerShown: false}}/>
-                                <Stack.Screen name="(other)" options={{headerShown: false}}/>
-                            </Stack>
+                            <>
+                                {isWeb ? (
+                                    <View style={{flex: 1}}>
+                                        <NavbarWeb/>
+                                        <View style={{flex: 1}}>
+                                            <Slot/>
+                                        </View>
+                                        {shouldShowFooter && <Footer/>}
+                                        <StatusBar style={currentTheme === 'dark' ? 'light' : 'dark'}/>
+                                    </View>
+                                ) : (
+                                    <Stack screenOptions={{headerShown: false}}>
+                                        <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+                                        <Stack.Screen name="(auth)" options={{headerShown: false}}/>
+                                        <Stack.Screen name="(profile)" options={{headerShown: false}}/>
+                                        <Stack.Screen name="(about)" options={{headerShown: false}}/>
+                                        <Stack.Screen name="(other)" options={{headerShown: false}}/>
+                                    </Stack>
+                                )}
+                                <LegalConsentDialog
+                                    open={shouldBlockAppUsage}
+                                    onAccept={handleAcceptLegalConsent}
+                                />
+                            </>
                         )}
                     </AuthProvider>
                     <SafeToastViewport/>

@@ -12,6 +12,7 @@ export const STORAGE_KEYS = {
     THEME: 'theme-preference',
     MAP_BOUNDS: 'map-bounds',
     LAST_VIEWED_MARINA: 'last-viewed-marina',
+    LEGAL_CONSENT_ACCEPTED: 'legal-consent-accepted',
     ONBOARDING_COMPLETED: 'onboarding-completed',
 } as const;
 
