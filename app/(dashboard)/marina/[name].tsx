@@ -44,7 +44,7 @@ import {LinearGradient} from 'expo-linear-gradient';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {useEffect, useMemo, useCallback, useRef, useState} from 'react';
 import type {ComponentProps} from 'react';
-import {Animated, LayoutChangeEvent, ScrollView} from 'react-native';
+import {Animated, LayoutChangeEvent, Platform, ScrollView} from 'react-native';
 import {
     Button,
     Card,
@@ -110,7 +110,7 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
     const {fetchData: fetchSensors} = useSensorDataNew();
     const {fetchLocationById} = useLocations()
     const [allSensorData, setAllSensorData] = useState<LocationWithBoxes[]>([]);
-
+    const isWeb = Platform.OS === 'web';
     const routeParams = useLocalSearchParams();
 
     // User info
@@ -395,9 +395,11 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
                     <Stack position="relative" width="100%" height={media.lg ? 350 : 250} overflow="hidden">
                         <Image source={{uri: locationImageUrl}} width="100%" height="100%"/>
                         {/* Navigate to Public Display Button*/}
-                        <Button position="absolute" top="$4" right="$3" onPress={handleNavigateToPublicDisplay}>
-                            <Text color="white" fontSize="$3" opacity={0.9} marginTop="$1">Public Display Modus</Text>
-                        </Button>
+                        {isWeb && (
+                            <Button position="absolute" top="$4" right="$3" onPress={handleNavigateToPublicDisplay}>
+                                <Text color="white" fontSize="$3" opacity={0.9} marginTop="$1">Public Display Modus</Text>
+                            </Button>
+                        )}
                         <LinearGradient
                             colors={['transparent', 'rgba(0,0,0,0.6)']}
                             style={{position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%'}}
