@@ -1,5 +1,4 @@
-
-import {Href, Link} from 'expo-router';
+import {Href, useRouter} from 'expo-router';
 import {Linking, ScrollView} from 'react-native';
 import {ComponentType} from 'react';
 import {Bell, Check, Code, CreditCard} from '@tamagui/lucide-icons';
@@ -35,6 +34,8 @@ function OfferCard({
     ctaLabel,
     gradientColors,
 }: OfferCardProps) {
+    const router = useRouter();
+
     return (
         <Card
             flex={1}
@@ -84,17 +85,16 @@ function OfferCard({
                     ))}
                 </YStack>
 
-                <Link href={ctaHref} asChild>
-                    <PrimaryButton marginTop="$2">
-                        <PrimaryButtonText>{ctaLabel}</PrimaryButtonText>
-                    </PrimaryButton>
-                </Link>
+                <PrimaryButton marginTop="$2" onPress={() => router.push(ctaHref)}>
+                    <PrimaryButtonText>{ctaLabel}</PrimaryButtonText>
+                </PrimaryButton>
             </YStack>
         </Card>
     );
 }
 
 export default function PricesScreen() {
+    const router = useRouter();
     const {t} = useTranslation();
     const {session} = useSession();
     const isLoggedIn = Boolean(session?.accessToken);
@@ -119,15 +119,19 @@ export default function PricesScreen() {
                                         {t('subscription.landingSubtitle')}
                                     </Text>
                                     <XStack gap="$3" flexWrap="wrap" marginTop="$2">
-                                        <Link href={ctaHref} asChild>
-                                            <PrimaryButton>
-                                                <XStack alignItems="center" gap="$2">
-                                                    <CreditCard size={16} color="white" />
-                                                    <PrimaryButtonText>{ctaLabel}</PrimaryButtonText>
-                                                </XStack>
-                                            </PrimaryButton>
-                                        </Link>
-                                        <SecondaryButton onPress={() => Linking.openURL(APP_METADATA.API_DOCS)}>
+                                        <PrimaryButton onPress={() => router.push(ctaHref)}>
+                                            <XStack alignItems="center" gap="$2">
+                                                <CreditCard size={16} color="white" />
+                                                <PrimaryButtonText>{ctaLabel}</PrimaryButtonText>
+                                            </XStack>
+                                        </PrimaryButton>
+                                        <SecondaryButton
+                                            onPress={() => Linking.openURL(APP_METADATA.API_DOCS)}
+                                            backgroundColor="$content1"
+                                            borderColor="$accent7"
+                                            hoverStyle={{backgroundColor: '$content2', borderColor: '$accent8'}}
+                                            pressStyle={{backgroundColor: '$content2', borderColor: '$accent6', scale: 0.98}}
+                                        >
                                             <SecondaryButtonText>
                                                 {t('api:viewDocs')}
                                             </SecondaryButtonText>

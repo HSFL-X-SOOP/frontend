@@ -1,4 +1,4 @@
-import {Link, Href} from 'expo-router';
+import {Href, useRouter} from 'expo-router';
 import {ScrollView, Linking} from 'react-native';
 import {Text, YStack, Card, H1, H2, XStack, View} from 'tamagui';
 import {Code, Database, Key, ExternalLink} from '@tamagui/lucide-icons';
@@ -10,6 +10,7 @@ import {APP_METADATA} from '@/config/constants';
 import {useSession} from '@/context/SessionContext';
 
 export default function APIScreen() {
+    const router = useRouter();
     const {t} = useTranslation('api');
     const {session} = useSession();
     const isLoggedIn = Boolean(session?.accessToken);
@@ -60,18 +61,21 @@ export default function APIScreen() {
                                             {t('api.accessDescription')}
                                         </Text>
                                         <XStack gap="$2" flexWrap="wrap" marginTop="$2">
-                                            <Link href={"/(other)/prices" as Href} asChild>
-                                                <PrimaryButton size="$3">
-                                                    <PrimaryButtonText>{t('api.viewPricing')}</PrimaryButtonText>
-                                                </PrimaryButton>
-                                            </Link>
-                                            <Link href={entryHref} asChild>
-                                                <SecondaryButton size="$3">
-                                                    <SecondaryButtonText>
-                                                        {t('api.manageInProfile')}
-                                                    </SecondaryButtonText>
-                                                </SecondaryButton>
-                                            </Link>
+                                            <PrimaryButton size="$3" onPress={() => router.push('/(other)/prices' as Href)}>
+                                                <PrimaryButtonText>{t('api.viewPricing')}</PrimaryButtonText>
+                                            </PrimaryButton>
+                                            <SecondaryButton
+                                                size="$3"
+                                                onPress={() => router.push(entryHref)}
+                                                backgroundColor="$content1"
+                                                borderColor="$accent7"
+                                                hoverStyle={{backgroundColor: '$content2', borderColor: '$accent8'}}
+                                                pressStyle={{backgroundColor: '$content2', borderColor: '$accent6', scale: 0.98}}
+                                            >
+                                                <SecondaryButtonText>
+                                                    {t('api.manageInProfile')}
+                                                </SecondaryButtonText>
+                                            </SecondaryButton>
                                         </XStack>
                                     </YStack>
                                 </XStack>
@@ -182,13 +186,11 @@ export default function APIScreen() {
                                 <Text fontSize={16} textAlign="center" color="$color" opacity={0.9} maxWidth={500}>
                                     {t('api.readyDescription')}
                                 </Text>
-                                <Link href={"/(other)/prices" as Href}>
-                                    <PrimaryButton>
-                                        <PrimaryButtonText fontSize={16}>
-                                            {t('api.viewPricing')}
-                                        </PrimaryButtonText>
-                                    </PrimaryButton>
-                                </Link>
+                                <PrimaryButton onPress={() => router.push('/(other)/prices' as Href)}>
+                                    <PrimaryButtonText fontSize={16}>
+                                        {t('api.viewPricing')}
+                                    </PrimaryButtonText>
+                                </PrimaryButton>
                             </YStack>
                         </Card>
 
@@ -207,16 +209,18 @@ export default function APIScreen() {
                                     {t('api.allPlansDescription')}
                                 </Text>
                                 <XStack gap="$3" flexWrap="wrap">
-                                    <Link href={"/(other)/prices" as Href} asChild>
-                                        <PrimaryButton>
-                                            <PrimaryButtonText>{t('api.pricingLink')}</PrimaryButtonText>
-                                        </PrimaryButton>
-                                    </Link>
-                                    <Link href={entryHref} asChild>
-                                        <SecondaryButton>
-                                            <SecondaryButtonText>{t('api.manageInProfile')}</SecondaryButtonText>
-                                        </SecondaryButton>
-                                    </Link>
+                                    <PrimaryButton onPress={() => router.push('/(other)/prices' as Href)}>
+                                        <PrimaryButtonText>{t('api.pricingLink')}</PrimaryButtonText>
+                                    </PrimaryButton>
+                                    <SecondaryButton
+                                        onPress={() => router.push(entryHref)}
+                                        backgroundColor="$content1"
+                                        borderColor="$accent7"
+                                        hoverStyle={{backgroundColor: '$content2', borderColor: '$accent8'}}
+                                        pressStyle={{backgroundColor: '$content2', borderColor: '$accent6', scale: 0.98}}
+                                    >
+                                        <SecondaryButtonText>{t('api.manageInProfile')}</SecondaryButtonText>
+                                    </SecondaryButton>
                                 </XStack>
                             </YStack>
                         </Card>

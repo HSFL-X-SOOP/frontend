@@ -1,17 +1,17 @@
 {
   "api": {
     "title": "MARLIN API",
-    "subtitle": "Programmtische Zugriff auf alle Sensordaten über unsere RESTful API",
+    "subtitle": "Programmatischer Zugriff auf alle Sensordaten über unsere RESTful API",
     "accessRequired": "API-Zugang erforderlich",
     "accessDescription": "Die Daten werden über eine kostenpflichtige API angeboten.",
     "pricingLink": "Preise und Zugänge →",
     "manageInProfile": "Im Profil verwalten",
-    "features": "API Features",
+    "features": "API-Funktionen",
     "readyTitle": "Bereit für den API-Zugang?",
-    "readyDescription": "Kontaktieren Sie uns für detaillierte API-Dokumentation und Pricing-Informationen.",
+    "readyDescription": "Kontaktieren Sie uns für eine detaillierte API-Dokumentation und Preisinformationen.",
     "viewPricing": "Preise ansehen",
     "allPlansTitle": "Mehr als nur API-Zugang?",
-    "allPlansDescription": "API-Zugang und App-Benachrichtigungen laufen ueber denselben Abo-Prozess. Vergleichen Sie Plaene auf der Preis-Seite und verwalten Sie alles im Profil.",
+    "allPlansDescription": "API-Zugang und App-Benachrichtigungen laufen über denselben Abo-Prozess. Vergleichen Sie Pläne auf der Preisseite und verwalten Sie alles im Profil.",
     "documentation": "API-Dokumentation",
     "documentationDesc": "Erkunden Sie unsere vollständige Swagger-Dokumentation für alle API-Endpunkte, Request/Response-Schemas und Authentifizierungsdetails.",
     "viewDocs": "Dokumentation ansehen"
