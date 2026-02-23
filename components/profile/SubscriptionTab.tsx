@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useCallback, useRef} from 'react';
-import {Platform} from 'react-native';
+import {Clipboard, Platform, ScrollView} from 'react-native';
 import {
     YStack,
     XStack,
@@ -10,13 +10,15 @@ import {
     View,
     Separator,
     Dialog,
+    Tabs,
+    Input,
 } from 'tamagui';
-import {Bell, Code, CreditCard, Check, FileText, Download, Pause, Play} from '@tamagui/lucide-icons';
+import {Bell, Code, CreditCard, Check, FileText, Pause, Play, ExternalLink, Key, Trash2, Copy} from '@tamagui/lucide-icons';
 import {useTranslation, useToast} from '@/hooks/ui';
 import {useFocusEffect} from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 
-import {useSubscription} from '@/hooks/data';
+import {useApiKey, useSubscription} from '@/hooks/data';
 import {
     SubscriptionType,
     SubscriptionStatus,
@@ -24,13 +26,16 @@ import {
     SubscriptionStatusResponse,
     PaymentSheetResponse,
     Invoice,
+    SetupIntentResponse,
 } from '@/api/models/subscription';
+import {ApiKeyInfo, CreateApiKeyResponse} from '@/api/models/apiKey';
 import {useStripePayment} from '@/hooks/useStripePayment';
 import {WebPaymentDialog} from '@/components/profile/WebPaymentDialog';
 import {UpdatePaymentDialog} from '@/components/profile/UpdatePaymentDialog';
 import {StripeProviderWrapper} from '@/components/providers/StripeProviderWrapper';
-import {UI_CONSTANTS} from '@/config/constants';
+import {APP_METADATA, UI_CONSTANTS} from '@/config/constants';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
+import {MyNotificationsTab} from '@/components/profile/MyNotificationsTab';
 
 const STATUS_COLORS: Record<string, string> = {
     [SubscriptionStatus.ACTIVE]: '#22c55e',
@@ -64,27 +69,21 @@ function formatDate(isoDate: string): string {
     return date.toLocaleDateString(undefined, {year: 'numeric', month: 'short', day: 'numeric'});
 }
 
-function isSubscriptionActive(sub: SubscriptionInfo | null): boolean {
-    if (!sub) return false;
-    return sub.status === SubscriptionStatus.ACTIVE || sub.status === SubscriptionStatus.TRIALING;
-}
-
-function isSubscriptionPaused(sub: SubscriptionInfo | null): boolean {
-    if (!sub) return false;
-    return sub.status === SubscriptionStatus.PAUSED;
-}
-
-function formatCurrency(amount: number | null | undefined, currency: string): string {
-    const value = amount ? amount / 100 : 0;
-    return new Intl.NumberFormat(undefined, {
-        style: 'currency',
-        currency: (currency || 'EUR').toUpperCase(),
-    }).format(value);
-}
-
 function formatUnixDate(timestamp: number): string {
     const date = new Date(timestamp * 1000);
     return date.toLocaleDateString(undefined, {year: 'numeric', month: 'short', day: 'numeric'});
+}
+
+function formatInvoiceAmount(amount: number, currency: string): string {
+    return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: (currency || 'EUR').toUpperCase(),
+    }).format(amount / 100);
+}
+
+function isSubscriptionActive(sub: SubscriptionInfo | null): boolean {
+    if (!sub) return false;
+    return sub.status === SubscriptionStatus.ACTIVE || sub.status === SubscriptionStatus.TRIALING;
 }
 
 function getBaseUrl(): string {
@@ -107,6 +106,7 @@ export const SubscriptionTab: React.FC<SubscriptionTabProps> = (props) => (
 const SubscriptionTabContent: React.FC<SubscriptionTabProps> = ({refreshing = false}) => {
     const {t} = useTranslation();
     const toast = useToast();
+    const isWeb = Platform.OS === 'web';
     const {
         loading,
         getStatus,
@@ -119,6 +119,7 @@ const SubscriptionTabContent: React.FC<SubscriptionTabProps> = ({refreshing = fa
         pauseSubscription,
         resumeSubscription
     } = useSubscription();
+    const {listApiKeys, createApiKey, revokeApiKey} = useApiKey();
     const {presentPayment} = useStripePayment();
 
     const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatusResponse | null>(null);
@@ -128,22 +129,63 @@ const SubscriptionTabContent: React.FC<SubscriptionTabProps> = ({refreshing = fa
     const [reactivateTarget, setReactivateTarget] = useState<SubscriptionType | null>(null);
     const [isReactivating, setIsReactivating] = useState(false);
     const [paymentDialogParams, setPaymentDialogParams] = useState<PaymentSheetResponse | null>(null);
-    const [updatePaymentSecret, setUpdatePaymentSecret] = useState<string | null>(null);
+    const [updatePaymentSecret, setUpdatePaymentSecret] = useState<SetupIntentResponse | null>(null);
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [invoicesLoading, setInvoicesLoading] = useState(false);
+    const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
+    const [openingInvoiceId, setOpeningInvoiceId] = useState<string | null>(null);
     const [pauseTarget, setPauseTarget] = useState<SubscriptionType | null>(null);
     const [isPausing, setIsPausing] = useState(false);
     const [resumeTarget, setResumeTarget] = useState<SubscriptionType | null>(null);
     const [isResuming, setIsResuming] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const prevRefreshingRef = useRef(refreshing);
+    const [technicalTab, setTechnicalTab] = useState('notifications');
+    const [apiKeys, setApiKeys] = useState<ApiKeyInfo[]>([]);
+    const [apiKeyName, setApiKeyName] = useState('');
+    const [newApiKey, setNewApiKey] = useState<CreateApiKeyResponse | null>(null);
+    const [apiKeysLoading, setApiKeysLoading] = useState(false);
+    const [isCreatingApiKey, setIsCreatingApiKey] = useState(false);
+    const [revokingApiKeyId, setRevokingApiKeyId] = useState<string | null>(null);
 
     const triggerRefresh = useCallback(() => setRefreshKey(k => k + 1), []);
+    const notificationsSub = subscriptionStatus?.notifications ?? null;
+    const apiAccessSub = subscriptionStatus?.apiAccess ?? null;
+    const hasNotificationsAccess = isSubscriptionActive(notificationsSub);
+    const hasApiAccess = isSubscriptionActive(apiAccessSub);
+
+    const loadApiKeys = useCallback((showErrorToast = true) => {
+        setApiKeysLoading(true);
+        void listApiKeys(
+            (data) => {
+                setApiKeys(data);
+                setApiKeysLoading(false);
+            },
+            (error) => {
+                setApiKeysLoading(false);
+                if (!showErrorToast) {
+                    return;
+                }
+                toast.error(t('subscription.apiKeyLoadErrorTitle'), {
+                    message: t(error.onGetMessage()),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG,
+                });
+            }
+        );
+    }, [listApiKeys, t, toast]);
 
     useEffect(() => {
         void getStatus(
             (data) => {
                 setSubscriptionStatus(data);
+                const hasApiAccessPlan = isSubscriptionActive(data.apiAccess ?? null);
+                if (hasApiAccessPlan) {
+                    loadApiKeys(false);
+                } else {
+                    setApiKeys([]);
+                    setNewApiKey(null);
+                    setApiKeysLoading(false);
+                }
                 setIsInitialLoading(false);
             },
             (error) => {
@@ -154,17 +196,7 @@ const SubscriptionTabContent: React.FC<SubscriptionTabProps> = ({refreshing = fa
                 setIsInitialLoading(false);
             }
         );
-
-        setInvoicesLoading(true);
-        void getInvoices(
-            (data) => {
-                setInvoices(data);
-                setInvoicesLoading(false);
-            },
-            () => {
-                setInvoicesLoading(false);
-            }
-        );
+        // Intentionally keyed only by refreshKey to avoid request loops from unstable hook callbacks.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [refreshKey]);
 
@@ -181,6 +213,16 @@ const SubscriptionTabContent: React.FC<SubscriptionTabProps> = ({refreshing = fa
         prevRefreshingRef.current = refreshing;
     }, [refreshing, triggerRefresh]);
 
+    useEffect(() => {
+        if (technicalTab === 'notifications' && !hasNotificationsAccess && hasApiAccess) {
+            setTechnicalTab('apiKeys');
+            return;
+        }
+        if (technicalTab === 'apiKeys' && !hasApiAccess && hasNotificationsAccess) {
+            setTechnicalTab('notifications');
+        }
+    }, [technicalTab, hasNotificationsAccess, hasApiAccess]);
+
     const updateLocalSubscription = useCallback((type: SubscriptionType, updater: (sub: SubscriptionInfo) => SubscriptionInfo) => {
         setSubscriptionStatus(prev => {
             if (!prev) return prev;
@@ -192,8 +234,6 @@ const SubscriptionTabContent: React.FC<SubscriptionTabProps> = ({refreshing = fa
     }, []);
 
     const handleSubscribe = async (type: SubscriptionType) => {
-        const isWeb = Platform.OS === 'web';
-
         await createSubscription(
             {subscriptionType: type},
             async (data) => {
@@ -320,7 +360,7 @@ const SubscriptionTabContent: React.FC<SubscriptionTabProps> = ({refreshing = fa
     const handleUpdatePaymentMethod = async () => {
         await createSetupIntent(
             (data) => {
-                setUpdatePaymentSecret(data.clientSecret);
+                setUpdatePaymentSecret(data);
             },
             (error) => {
                 toast.error(t('subscription.updatePaymentError'), {
@@ -337,7 +377,7 @@ const SubscriptionTabContent: React.FC<SubscriptionTabProps> = ({refreshing = fa
             message: t('subscription.updatePaymentSuccessMessage'),
             duration: UI_CONSTANTS.TOAST_DURATION.LONG,
         });
-    }, []);
+    }, [t, toast]);
 
     const handlePause = async () => {
         if (!pauseTarget) return;
@@ -387,12 +427,164 @@ const SubscriptionTabContent: React.FC<SubscriptionTabProps> = ({refreshing = fa
         setIsResuming(false);
     };
 
-    const handleOpenInvoice = (pdfUrl: string) => {
+    const handleOpenInvoice = async (pdfUrl: string) => {
         if (Platform.OS === 'web' && typeof window !== 'undefined') {
             window.open(pdfUrl, '_blank');
-        } else {
-            void WebBrowser.openBrowserAsync(pdfUrl);
+            return;
         }
+        await WebBrowser.openBrowserAsync(pdfUrl);
+    };
+
+    const handleOpenInvoices = async () => {
+        setInvoicesLoading(true);
+        await getInvoices(
+            (data) => {
+                setInvoicesLoading(false);
+                const sortedInvoices = [...data].sort((a, b) => b.created - a.created);
+                setInvoices(sortedInvoices);
+
+                if (sortedInvoices.length === 0) {
+                    toast.info(t('subscription.invoicesButton'), {
+                        message: t('subscription.noInvoices'),
+                        duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM,
+                    });
+                    setInvoiceDialogOpen(false);
+                    return;
+                }
+
+                setInvoiceDialogOpen(true);
+            },
+            (error) => {
+                setInvoicesLoading(false);
+                toast.error(t('subscription.statusError'), {
+                    message: t(error.onGetMessage()),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG,
+                });
+            }
+        );
+    };
+
+    const handleInvoiceDownload = async (invoice: Invoice) => {
+        if (!invoice.pdfUrl || openingInvoiceId) {
+            return;
+        }
+        setOpeningInvoiceId(invoice.id);
+        try {
+            await handleOpenInvoice(invoice.pdfUrl);
+        } finally {
+            setOpeningInvoiceId(null);
+        }
+    };
+
+    const handleOpenApiDocs = () => {
+        if (isWeb && typeof window !== 'undefined') {
+            window.open(APP_METADATA.API_DOCS, '_blank', 'noopener,noreferrer');
+            return;
+        }
+        void WebBrowser.openBrowserAsync(APP_METADATA.API_DOCS);
+    };
+
+    const handleCopyApiKey = async () => {
+        if (!newApiKey?.key) {
+            return;
+        }
+
+        try {
+            if (Platform.OS === 'web' && typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(newApiKey.key);
+            } else if (Platform.OS === 'web' && typeof document !== 'undefined') {
+                const textArea = document.createElement('textarea');
+                textArea.value = newApiKey.key;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                const copied = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (!copied) {
+                    throw new Error('copy failed');
+                }
+            } else {
+                Clipboard.setString(newApiKey.key);
+            }
+
+            toast.success(t('subscription.apiKeyCopiedTitle'), {
+                message: t('subscription.apiKeyCopiedMessage'),
+                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM,
+            });
+        } catch {
+            toast.error(t('subscription.apiKeyCopyErrorTitle'), {
+                message: t('subscription.apiKeyCopyErrorMessage'),
+                duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM,
+            });
+        }
+    };
+
+    const handleCreateApiKey = async () => {
+        if (!hasApiAccess || isCreatingApiKey) {
+            return;
+        }
+
+        setIsCreatingApiKey(true);
+        const trimmedName = apiKeyName.trim();
+
+        await createApiKey(
+            trimmedName ? {name: trimmedName} : {},
+            (data) => {
+                setNewApiKey(data);
+                setApiKeyName('');
+                toast.success(t('subscription.apiKeyCreatedTitle'), {
+                    message: t('subscription.apiKeyCreatedMessage'),
+                    duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM,
+                });
+                loadApiKeys(false);
+            },
+            (error) => {
+                toast.error(t('subscription.apiKeyCreateErrorTitle'), {
+                    message: t(error.onGetMessage()),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG,
+                });
+            }
+        );
+
+        setIsCreatingApiKey(false);
+    };
+
+    const handleRevokeApiKey = async (id: string) => {
+        if (revokingApiKeyId || isCreatingApiKey) {
+            return;
+        }
+
+        setRevokingApiKeyId(id);
+        await revokeApiKey(
+            id,
+            (data) => {
+                if (!data.revoked) {
+                    toast.error(t('subscription.apiKeyRevokeErrorTitle'), {
+                        message: t('subscription.apiKeyRevokeErrorMessage'),
+                        duration: UI_CONSTANTS.TOAST_DURATION.LONG,
+                    });
+                    return;
+                }
+
+                setApiKeys((prev) => prev.filter((item) => item.id !== id));
+                if (newApiKey?.id === id) {
+                    setNewApiKey(null);
+                }
+                toast.success(t('subscription.apiKeyRevokedTitle'), {
+                    message: t('subscription.apiKeyRevokedMessage'),
+                    duration: UI_CONSTANTS.TOAST_DURATION.MEDIUM,
+                });
+            },
+            (error) => {
+                toast.error(t('subscription.apiKeyRevokeErrorTitle'), {
+                    message: t(error.onGetMessage()),
+                    duration: UI_CONSTANTS.TOAST_DURATION.LONG,
+                });
+            }
+        );
+        setRevokingApiKeyId(null);
     };
 
     if (isInitialLoading) {
@@ -404,137 +596,588 @@ const SubscriptionTabContent: React.FC<SubscriptionTabProps> = ({refreshing = fa
         );
     }
 
-    const notificationsSub = subscriptionStatus?.notifications ?? null;
-    const apiAccessSub = subscriptionStatus?.apiAccess ?? null;
+    const notificationsTabDisabled = !hasNotificationsAccess;
+    const apiKeysTabDisabled = !hasApiAccess;
+    const notificationsTabActive = technicalTab === 'notifications' && !notificationsTabDisabled;
+    const apiKeysTabActive = technicalTab === 'apiKeys' && !apiKeysTabDisabled;
+    const webBillingActionButtons = (
+        <>
+            <PrimaryButton size="$3" onPress={handleManageBilling} disabled={loading} flexShrink={0}>
+                <XStack alignItems="center" gap="$2">
+                    <CreditCard size={14} color="white" />
+                    <PrimaryButtonText>{t('subscription.manageBilling')}</PrimaryButtonText>
+                </XStack>
+            </PrimaryButton>
+            <SecondaryButton size="$3" onPress={handleUpdatePaymentMethod} disabled={loading} flexShrink={0}>
+                <XStack alignItems="center" gap="$2">
+                    <CreditCard size={14} color="$accent7" />
+                    <SecondaryButtonText>
+                        {t('subscription.updatePaymentMethod')}
+                    </SecondaryButtonText>
+                </XStack>
+            </SecondaryButton>
+            <SecondaryButton size="$3" onPress={handleOpenInvoices} disabled={loading || invoicesLoading} flexShrink={0}>
+                <XStack alignItems="center" gap="$2">
+                    {invoicesLoading ? <Spinner size="small" color="$accent7" /> : <FileText size={14} color="$accent7" />}
+                    <SecondaryButtonText>{t('subscription.invoicesButton')}</SecondaryButtonText>
+                </XStack>
+            </SecondaryButton>
+        </>
+    );
+    const nativeBillingActionButtons = (
+        <YStack width="100%" gap="$2">
+            <PrimaryButton
+                size="$2"
+                onPress={handleManageBilling}
+                disabled={loading}
+                width="100%"
+                borderRadius={999}
+                minHeight={38}
+                paddingHorizontal="$3"
+                paddingVertical="$2"
+                shadowOpacity={0}
+                elevation={0}
+            >
+                <XStack alignItems="center" justifyContent="center" gap="$1.5" width="100%">
+                    <CreditCard size={13} color="white" />
+                    <PrimaryButtonText fontSize={12} numberOfLines={1}>
+                        {t('subscription.manageBilling')}
+                    </PrimaryButtonText>
+                </XStack>
+            </PrimaryButton>
+
+            <XStack
+                alignItems="center"
+                gap="$1.5"
+                padding="$1.5"
+                width="100%"
+                backgroundColor="$content2"
+                borderWidth={1}
+                borderColor="$borderColor"
+                borderRadius={999}
+            >
+                <SecondaryButton
+                    size="$2"
+                    onPress={handleUpdatePaymentMethod}
+                    disabled={loading}
+                    flex={1}
+                    minWidth={0}
+                    borderRadius={999}
+                    minHeight={36}
+                    borderWidth={0}
+                    backgroundColor="transparent"
+                    shadowOpacity={0}
+                    elevation={0}
+                    pressStyle={{backgroundColor: '$accent2', borderColor: 'transparent', scale: 0.98}}
+                >
+                    <XStack alignItems="center" justifyContent="center" gap="$1.5" width="100%">
+                        <CreditCard size={13} color="$accent7" />
+                        <SecondaryButtonText fontSize={11} numberOfLines={1} flexShrink={1}>
+                            {t('subscription.updatePaymentMethod')}
+                        </SecondaryButtonText>
+                    </XStack>
+                </SecondaryButton>
+
+                <Separator vertical height={22} borderColor="$borderColor" opacity={0.55} />
+
+                <SecondaryButton
+                    size="$2"
+                    onPress={handleOpenInvoices}
+                    disabled={loading || invoicesLoading}
+                    flex={1}
+                    minWidth={0}
+                    borderRadius={999}
+                    minHeight={36}
+                    borderWidth={0}
+                    backgroundColor="transparent"
+                    shadowOpacity={0}
+                    elevation={0}
+                    pressStyle={{backgroundColor: '$accent2', borderColor: 'transparent', scale: 0.98}}
+                >
+                    <XStack alignItems="center" justifyContent="center" gap="$1.5" width="100%">
+                        {invoicesLoading ? <Spinner size="small" color="$accent7" /> : <FileText size={13} color="$accent7" />}
+                        <SecondaryButtonText fontSize={11} numberOfLines={1} flexShrink={1}>
+                            {t('subscription.invoicesButton')}
+                        </SecondaryButtonText>
+                    </XStack>
+                </SecondaryButton>
+            </XStack>
+        </YStack>
+    );
 
     return (
         <YStack gap="$4">
             {/* APP_NOTIFICATION Plan Card */}
-            <PlanCard
-                icon={<Bell size={22} color="$accent7"/>}
-                title={t('subscription.appNotifications')}
-                description={t('subscription.appNotificationsDesc')}
-                price="4.99€"
-                features={[
-                    t('subscription.features.notifications.1'),
-                    t('subscription.features.notifications.2'),
-                    t('subscription.features.notifications.3'),
-                ]}
-                subscription={notificationsSub}
-                subscriptionType={SubscriptionType.APP_NOTIFICATION}
-                onSubscribe={handleSubscribe}
-                onCancel={(type) => setCancelTarget(type)}
-                onReactivate={(type) => setReactivateTarget(type)}
-                onPause={(type) => setPauseTarget(type)}
-                onResume={(type) => setResumeTarget(type)}
-                isLoading={loading}
-                t={t}
-            />
+            <XStack gap="$4" flexWrap="wrap">
+                <YStack flex={1} minWidth={310}>
+                    <PlanCard
+                        icon={<Bell size={22} color="$accent7"/>}
+                        title={t('subscription.appNotifications')}
+                        description={t('subscription.appNotificationsDesc')}
+                        price="4.99€"
+                        features={[
+                            t('subscription.features.notifications.1'),
+                            t('subscription.features.notifications.2'),
+                            t('subscription.features.notifications.3'),
+                        ]}
+                        subscription={notificationsSub}
+                        subscriptionType={SubscriptionType.APP_NOTIFICATION}
+                        onSubscribe={handleSubscribe}
+                        onCancel={(type) => setCancelTarget(type)}
+                        onReactivate={(type) => setReactivateTarget(type)}
+                        onPause={(type) => setPauseTarget(type)}
+                        onResume={(type) => setResumeTarget(type)}
+                        isLoading={loading}
+                        t={t}
+                    />
+                </YStack>
 
-            {/* API_ACCESS Plan Card */}
-            <PlanCard
-                icon={<Code size={22} color="$accent7"/>}
-                title={t('subscription.apiAccess')}
-                description={t('subscription.apiAccessDesc')}
-                price="9.99€"
-                features={[
-                    t('subscription.features.api.1'),
-                    t('subscription.features.api.2'),
-                    t('subscription.features.api.3'),
-                ]}
-                subscription={apiAccessSub}
-                subscriptionType={SubscriptionType.API_ACCESS}
-                onSubscribe={handleSubscribe}
-                onCancel={(type) => setCancelTarget(type)}
-                onReactivate={(type) => setReactivateTarget(type)}
-                onPause={(type) => setPauseTarget(type)}
-                onResume={(type) => setResumeTarget(type)}
-                isLoading={loading}
-                t={t}
-            />
+                {/* API_ACCESS Plan Card */}
+                <YStack flex={1} minWidth={310}>
+                    <PlanCard
+                        icon={<Code size={22} color="$accent7"/>}
+                        title={t('subscription.apiAccess')}
+                        description={t('subscription.apiAccessDesc')}
+                        price="9.99€"
+                        features={[
+                            t('subscription.features.api.1'),
+                            t('subscription.features.api.2'),
+                            t('subscription.features.api.3'),
+                        ]}
+                        subscription={apiAccessSub}
+                        subscriptionType={SubscriptionType.API_ACCESS}
+                        onSubscribe={handleSubscribe}
+                        onCancel={(type) => setCancelTarget(type)}
+                        onReactivate={(type) => setReactivateTarget(type)}
+                        onPause={(type) => setPauseTarget(type)}
+                        onResume={(type) => setResumeTarget(type)}
+                        isLoading={loading}
+                        t={t}
+                    />
+                </YStack>
+            </XStack>
 
-            {/* Billing History */}
-            <Card backgroundColor="$content1" borderRadius="$6" padding="$5"
-                  borderWidth={1} borderColor="$borderColor">
-                <YStack gap="$3">
-                    <XStack alignItems="center" gap="$2">
-                        <FileText size={18} color="$accent7"/>
-                        <H5 color="$accent7" fontFamily="$oswald">{t('subscription.billingHistory')}</H5>
+            <YStack gap="$2" paddingHorizontal="$1">
+                <XStack alignItems="center" gap="$2">
+                    <CreditCard size={16} color="$accent7" />
+                    <Text color="$accent7" fontSize={13} fontWeight="700">
+                        {t('subscription.billingActionsTitle')}
+                    </Text>
+                </XStack>
+                {isWeb ? (
+                    <XStack alignItems="center" justifyContent="flex-start" gap="$2" flexWrap="wrap">
+                        {webBillingActionButtons}
                     </XStack>
-                    <Separator/>
-                    {invoicesLoading ? (
-                        <XStack justifyContent="center" padding="$3">
-                            <Spinner size="small" color="$accent7"/>
-                        </XStack>
-                    ) : invoices.length === 0 ? (
-                        <Text fontSize={14} color="$color" opacity={0.6}>
-                            {t('subscription.noInvoices')}
-                        </Text>
-                    ) : (
-                        <YStack gap="$2">
-                            {invoices.map((invoice) => (
-                                <XStack key={invoice.id} alignItems="center" justifyContent="space-between"
-                                        paddingVertical="$2" borderBottomWidth={1} borderBottomColor="$borderColor">
-                                    <YStack flex={1} gap="$1">
-                                        <Text fontSize={14} fontWeight="600" color="$color">
-                                            {formatCurrency(invoice.amount, invoice.currency)}
-                                        </Text>
-                                        <Text fontSize={12} color="$color" opacity={0.6}>
-                                            {formatUnixDate(invoice.created)}
-                                        </Text>
-                                    </YStack>
-                                    <XStack alignItems="center" gap="$2">
-                                        <XStack
-                                            backgroundColor={invoice.status === 'paid' ? '$green2' : '$yellow2'}
-                                            paddingHorizontal="$2"
-                                            paddingVertical="$1"
-                                            borderRadius="$3"
-                                        >
-                                            <Text fontSize={11} fontWeight="600"
-                                                  color={invoice.status === 'paid' ? '$green10' : '$yellow10'}>
-                                                {t(`subscription.invoiceStatus.${invoice.status}` as any) || invoice.status}
-                                            </Text>
-                                        </XStack>
-                                        {invoice.pdfUrl && (
-                                            <SecondaryButton
-                                                size="$2"
-                                                circular
-                                                onPress={() => handleOpenInvoice(invoice.pdfUrl!)}
-                                            >
-                                                <Download size={14} color="$accent7"/>
-                                            </SecondaryButton>
-                                        )}
+                ) : (
+                    nativeBillingActionButtons
+                )}
+            </YStack>
+
+            <Card backgroundColor="$content1" borderRadius="$7" padding="$4" borderWidth={1} borderColor="$borderColor">
+                <Tabs
+                    value={technicalTab}
+                    onValueChange={setTechnicalTab}
+                    orientation="horizontal"
+                    flexDirection="column"
+                    width="100%"
+                >
+                    <Tabs.List
+                        disablePassBorderRadius="bottom"
+                        backgroundColor="$content2"
+                        borderRadius="$6"
+                        padding="$2"
+                        borderWidth={1}
+                        borderColor="$borderColor"
+                    >
+                        <Tabs.Tab
+                            flex={1}
+                            value="notifications"
+                            disabled={notificationsTabDisabled}
+                            opacity={notificationsTabDisabled ? 0.55 : 1}
+                            borderRadius="$4"
+                            backgroundColor={notificationsTabActive ? '$accent10' : 'transparent'}
+                            borderWidth={notificationsTabActive ? 1 : 0}
+                            borderColor={notificationsTabActive ? '$accent11' : 'transparent'}
+                            pressStyle={{
+                                backgroundColor: notificationsTabActive ? '$accent9' : '$accent2',
+                                scale: 0.98
+                            }}
+                        >
+                            <XStack alignItems="center" gap="$2">
+                                <Bell
+                                    size={16}
+                                    color={notificationsTabDisabled ? '#9ca3af' : (notificationsTabActive ? 'white' : '$accent7')}
+                                />
+                                <Text
+                                    fontSize={13}
+                                    fontWeight="700"
+                                    color={notificationsTabDisabled ? '$color' : (notificationsTabActive ? 'white' : '$accent7')}
+                                >
+                                    {t('subscription.technicalTabNotifications')}
+                                </Text>
+                            </XStack>
+                        </Tabs.Tab>
+                        <Tabs.Tab
+                            flex={1}
+                            value="apiKeys"
+                            disabled={apiKeysTabDisabled}
+                            opacity={apiKeysTabDisabled ? 0.55 : 1}
+                            borderRadius="$4"
+                            backgroundColor={apiKeysTabActive ? '$accent10' : 'transparent'}
+                            borderWidth={apiKeysTabActive ? 1 : 0}
+                            borderColor={apiKeysTabActive ? '$accent11' : 'transparent'}
+                            pressStyle={{
+                                backgroundColor: apiKeysTabActive ? '$accent9' : '$accent2',
+                                scale: 0.98
+                            }}
+                        >
+                            <XStack alignItems="center" gap="$2">
+                                <Code
+                                    size={16}
+                                    color={apiKeysTabDisabled ? '#9ca3af' : (apiKeysTabActive ? 'white' : '$accent7')}
+                                />
+                                <Text
+                                    fontSize={13}
+                                    fontWeight="700"
+                                    color={apiKeysTabDisabled ? '$color' : (apiKeysTabActive ? 'white' : '$accent7')}
+                                >
+                                    {t('subscription.technicalTabApiKeys')}
+                                </Text>
+                            </XStack>
+                        </Tabs.Tab>
+                    </Tabs.List>
+
+                    <Tabs.Content value="notifications" padding="$0" marginTop="$4">
+                        {hasNotificationsAccess ? (
+                            <MyNotificationsTab />
+                        ) : (
+                            <Card
+                                backgroundColor="$content2"
+                                borderRadius="$6"
+                                padding="$4"
+                                borderWidth={1}
+                                borderColor="$borderColor"
+                            >
+                                <YStack gap="$2.5">
+                                    <H5 color="$accent7" fontFamily="$oswald">
+                                        {t('subscription.technicalTabNotifications')}
+                                    </H5>
+                                    <Text color="$color" opacity={0.78}>
+                                        {t('subscription.notificationsRequiresPlan')}
+                                    </Text>
+                                </YStack>
+                            </Card>
+                        )}
+                    </Tabs.Content>
+
+                    <Tabs.Content value="apiKeys" padding="$0" marginTop="$4">
+                        <Card backgroundColor="$content2" borderRadius="$6" padding="$4" borderWidth={1} borderColor="$borderColor">
+                            <YStack gap="$4">
+                                <XStack alignItems="center" justifyContent="space-between" gap="$3" flexWrap="wrap">
+                                    <H5 color="$accent7" fontFamily="$oswald">
+                                        {t('subscription.apiKeyTitle')}
+                                    </H5>
+                                    <XStack gap="$2" flexWrap="wrap">
+                                        <SecondaryButton size="$3" onPress={handleOpenApiDocs}>
+                                            <XStack alignItems="center" gap="$2">
+                                                <ExternalLink size={14} color="$accent7" />
+                                                <SecondaryButtonText>{t('subscription.viewDocs')}</SecondaryButtonText>
+                                            </XStack>
+                                        </SecondaryButton>
                                     </XStack>
                                 </XStack>
-                            ))}
-                        </YStack>
-                    )}
-                </YStack>
+
+                                <Text color="$color" opacity={0.82}>
+                                    {hasApiAccess
+                                        ? t('subscription.apiKeyDescription')
+                                        : t('subscription.apiKeyRequiresPlan')}
+                                </Text>
+
+                                {hasApiAccess && (
+                                    <YStack gap="$3">
+                                        <XStack alignItems="center" gap="$3" flexWrap="wrap">
+                                            <Input
+                                                flex={1}
+                                                minWidth={220}
+                                                value={apiKeyName}
+                                                onChangeText={setApiKeyName}
+                                                placeholder={t('subscription.apiKeyNamePlaceholder')}
+                                                autoCapitalize="none"
+                                                autoCorrect={false}
+                                                width="100%"
+                                            />
+                                            <PrimaryButton
+                                                size="$4"
+                                                onPress={handleCreateApiKey}
+                                                disabled={isCreatingApiKey || revokingApiKeyId !== null}
+                                            >
+                                                <XStack alignItems="center" gap="$2">
+                                                    {isCreatingApiKey ? (
+                                                        <Spinner size="small" color="white" />
+                                                    ) : (
+                                                        <Key size={16} color="white" />
+                                                    )}
+                                                    <PrimaryButtonText>
+                                                        {isCreatingApiKey
+                                                            ? t('subscription.apiKeyCreating')
+                                                            : t('subscription.apiKeyCreate')}
+                                                    </PrimaryButtonText>
+                                                </XStack>
+                                            </PrimaryButton>
+                                        </XStack>
+
+                                        {newApiKey && (
+                                            <Card
+                                                backgroundColor="$content1"
+                                                borderRadius="$5"
+                                                padding="$3.5"
+                                                borderWidth={1}
+                                                borderColor="$borderColor"
+                                            >
+                                                <YStack gap="$2.5">
+                                                    <XStack alignItems="center" gap="$2">
+                                                        <Key size={14} color="$accent7" />
+                                                        <Text color="$accent7" fontWeight="700">
+                                                            {t('subscription.apiKeyOneTimeTitle')}
+                                                        </Text>
+                                                    </XStack>
+                                                    <Text color="$color" opacity={0.85}>{t('subscription.apiKeyOneTimeDescription')}</Text>
+                                                    <XStack alignItems="center" gap="$2">
+                                                        <Input
+                                                            flex={1}
+                                                            value={newApiKey.key}
+                                                            autoCapitalize="none"
+                                                            autoCorrect={false}
+                                                            showSoftInputOnFocus={false}
+                                                            selectTextOnFocus
+                                                            onPressIn={() => void handleCopyApiKey()}
+                                                            cursor={isWeb ? 'pointer' : undefined}
+                                                            backgroundColor="$content2"
+                                                            borderColor="$borderColor"
+                                                            color="$color"
+                                                            opacity={1}
+                                                        />
+                                                        <SecondaryButton
+                                                            size="$3"
+                                                            onPress={() => void handleCopyApiKey()}
+                                                            cursor={isWeb ? 'pointer' : undefined}
+                                                        >
+                                                            <Copy size={14} color="$accent7" />
+                                                        </SecondaryButton>
+                                                    </XStack>
+                                                    <XStack justifyContent="space-between" alignItems="center" gap="$2" flexWrap="wrap">
+                                                        <Text fontSize={12} color="$color" opacity={0.7}>
+                                                            {t('subscription.apiKeyPrefixValue', {prefix: newApiKey.prefix})}
+                                                        </Text>
+                                                        <SecondaryButton size="$3" onPress={() => setNewApiKey(null)}>
+                                                            <SecondaryButtonText>{t('common.close')}</SecondaryButtonText>
+                                                        </SecondaryButton>
+                                                    </XStack>
+                                                </YStack>
+                                            </Card>
+                                        )}
+
+                                        {apiKeysLoading ? (
+                                            <XStack alignItems="center" gap="$2.5">
+                                                <Spinner size="small" color="$accent7" />
+                                                <Text color="$color" opacity={0.8}>
+                                                    {t('common.loading')}
+                                                </Text>
+                                            </XStack>
+                                        ) : apiKeys.length === 0 ? (
+                                            <Text color="$color" opacity={0.7}>
+                                                {t('subscription.apiKeyNoKeys')}
+                                            </Text>
+                                        ) : (
+                                            <YStack gap="$2.5">
+                                                {apiKeys.map((apiKey) => (
+                                                    <Card
+                                                        key={apiKey.id}
+                                                        backgroundColor="$content1"
+                                                        borderRadius="$5"
+                                                        padding="$3.5"
+                                                        borderWidth={1}
+                                                        borderColor="$borderColor"
+                                                    >
+                                                        <XStack alignItems="center" justifyContent="space-between" gap="$3" flexWrap="wrap">
+                                                            <YStack flex={1} minWidth={220} gap="$1">
+                                                                <XStack alignItems="center" gap="$2">
+                                                                    <Text color="$accent7" fontSize={15} fontWeight="700">
+                                                                        {apiKey.prefix}
+                                                                    </Text>
+                                                                    {apiKey.name ? (
+                                                                        <Text color="$color" fontSize={13} opacity={0.85}>
+                                                                            {apiKey.name}
+                                                                        </Text>
+                                                                    ) : (
+                                                                        <Text color="$color" fontSize={13} opacity={0.65}>
+                                                                            {t('subscription.apiKeyUnnamed')}
+                                                                        </Text>
+                                                                    )}
+                                                                </XStack>
+                                                                <XStack alignItems="center" gap="$2">
+                                                                    {apiKey.isActive ? (
+                                                                        <Check size={14} color="#22c55e" />
+                                                                    ) : (
+                                                                        <Pause size={14} color="#9ca3af" />
+                                                                    )}
+                                                                    <Text color="$color" fontSize={12} opacity={0.75}>
+                                                                        {apiKey.isActive
+                                                                            ? t('subscription.status.active')
+                                                                            : t('subscription.status.inactive')}
+                                                                    </Text>
+                                                                </XStack>
+                                                                <Text color="$color" fontSize={12} opacity={0.65}>
+                                                                    {t('subscription.apiKeyCreatedAt', {date: formatDate(apiKey.createdAt)})}
+                                                                </Text>
+                                                                <Text color="$color" fontSize={12} opacity={0.65}>
+                                                                    {apiKey.lastUsedAt
+                                                                        ? t('subscription.apiKeyLastUsedAt', {date: formatDate(apiKey.lastUsedAt)})
+                                                                        : t('subscription.apiKeyNeverUsed')}
+                                                                </Text>
+                                                            </YStack>
+                                                            <SecondaryButton
+                                                                size="$3"
+                                                                borderColor="$red10"
+                                                                hoverStyle={{borderColor: "$red11"}}
+                                                                pressStyle={{scale: 0.98, borderColor: "$red11"}}
+                                                                onPress={() => handleRevokeApiKey(apiKey.id)}
+                                                                disabled={revokingApiKeyId !== null || isCreatingApiKey}
+                                                            >
+                                                                <XStack alignItems="center" gap="$2">
+                                                                    {revokingApiKeyId === apiKey.id ? (
+                                                                        <Spinner size="small" color="$red10" />
+                                                                    ) : (
+                                                                        <Trash2 size={14} color="$red10" />
+                                                                    )}
+                                                                    <SecondaryButtonText color="$red10">
+                                                                        {revokingApiKeyId === apiKey.id
+                                                                            ? t('subscription.apiKeyRevoking')
+                                                                            : t('subscription.apiKeyRevoke')}
+                                                                    </SecondaryButtonText>
+                                                                </XStack>
+                                                            </SecondaryButton>
+                                                        </XStack>
+                                                    </Card>
+                                                ))}
+                                            </YStack>
+                                        )}
+                                    </YStack>
+                                )}
+                            </YStack>
+                        </Card>
+                    </Tabs.Content>
+                </Tabs>
             </Card>
 
-            {/* Update Payment Method Button */}
-            <SecondaryButton
-                size="$4"
-                onPress={handleUpdatePaymentMethod}
-                disabled={loading}
-                icon={<CreditCard size={18} color="$accent7"/>}
-            >
-                <SecondaryButtonText>
-                    {t('subscription.updatePaymentMethod')}
-                </SecondaryButtonText>
-            </SecondaryButton>
+            <Dialog modal open={invoiceDialogOpen} onOpenChange={setInvoiceDialogOpen}>
+                <Dialog.Portal>
+                    <Dialog.Overlay
+                        key="invoice-overlay"
+                        animation="quick"
+                        opacity={0.5}
+                        enterStyle={{opacity: 0}}
+                        exitStyle={{opacity: 0}}
+                    />
+                    <Dialog.Content
+                        bordered
+                        elevate
+                        key="invoice-content"
+                        animation={[
+                            'quick',
+                            {
+                                opacity: {
+                                    overshootClamping: true,
+                                },
+                            },
+                        ]}
+                        enterStyle={{x: 0, y: -20, opacity: 0, scale: 0.9}}
+                        exitStyle={{x: 0, y: 10, opacity: 0, scale: 0.95}}
+                        gap="$4"
+                        backgroundColor="$content1"
+                        maxWidth={680}
+                        width="92%"
+                    >
+                        <Dialog.Title fontSize={20} fontWeight="700" color="$accent7">
+                            {t('subscription.invoicesButton')}
+                        </Dialog.Title>
+                        <Dialog.Description color="$color">
+                            {t('subscription.invoicePickerDescription')}
+                        </Dialog.Description>
 
-            {/* Manage Billing Button */}
-            <SecondaryButton
-                size="$4"
-                onPress={handleManageBilling}
-                disabled={loading}
-                icon={<CreditCard size={18} color="$accent7"/>}
-            >
-                <SecondaryButtonText>
-                    {t('subscription.manageBilling')}
-                </SecondaryButtonText>
-            </SecondaryButton>
+                        {invoicesLoading ? (
+                            <XStack alignItems="center" gap="$2">
+                                <Spinner size="small" color="$accent7"/>
+                                <Text color="$color" opacity={0.8}>
+                                    {t('common.loading')}
+                                </Text>
+                            </XStack>
+                        ) : (
+                            <ScrollView style={{maxHeight: 420}} showsVerticalScrollIndicator={false}>
+                                <YStack gap="$2.5">
+                                    {invoices.map((invoice) => {
+                                        const normalizedStatus = (invoice.status || 'open').toLowerCase();
+                                        const statusKey = `subscription.invoiceStatus.${normalizedStatus}`;
+                                        const translatedStatus = t(statusKey);
+                                        const statusLabel = translatedStatus === statusKey ? normalizedStatus : translatedStatus;
+
+                                        return (
+                                            <Card
+                                                key={invoice.id}
+                                                backgroundColor="$content2"
+                                                borderRadius="$5"
+                                                padding="$3"
+                                                borderWidth={1}
+                                                borderColor="$borderColor"
+                                            >
+                                                <XStack alignItems="center" justifyContent="space-between" gap="$3" flexWrap="wrap">
+                                                    <YStack gap="$1.5" flex={1} minWidth={220}>
+                                                        <Text fontSize={15} fontWeight="700" color="$accent7">
+                                                            {formatInvoiceAmount(invoice.amount, invoice.currency)}
+                                                        </Text>
+                                                        <Text fontSize={12} color="$color" opacity={0.75}>
+                                                            {formatUnixDate(invoice.created)}
+                                                        </Text>
+                                                        <Text fontSize={12} color="$color" opacity={0.65}>
+                                                            {statusLabel}
+                                                        </Text>
+                                                    </YStack>
+                                                    <SecondaryButton
+                                                        size="$3"
+                                                        onPress={() => void handleInvoiceDownload(invoice)}
+                                                        disabled={!invoice.pdfUrl || openingInvoiceId !== null}
+                                                    >
+                                                        <XStack alignItems="center" gap="$2">
+                                                            {openingInvoiceId === invoice.id ? (
+                                                                <Spinner size="small" color="$accent7"/>
+                                                            ) : (
+                                                                <FileText size={14} color="$accent7"/>
+                                                            )}
+                                                            <SecondaryButtonText>
+                                                                {invoice.pdfUrl
+                                                                    ? t('subscription.invoiceOpen')
+                                                                    : t('subscription.invoiceUnavailable')}
+                                                            </SecondaryButtonText>
+                                                        </XStack>
+                                                    </SecondaryButton>
+                                                </XStack>
+                                            </Card>
+                                        );
+                                    })}
+                                </YStack>
+                            </ScrollView>
+                        )}
+
+                        <XStack justifyContent="flex-end">
+                            <Dialog.Close asChild>
+                                <SecondaryButton size="$4">
+                                    <SecondaryButtonText>{t('common.close')}</SecondaryButtonText>
+                                </SecondaryButton>
+                            </Dialog.Close>
+                        </XStack>
+                    </Dialog.Content>
+                </Dialog.Portal>
+            </Dialog>
 
             {/* Cancel Confirmation Dialog */}
             <Dialog modal open={cancelTarget !== null} onOpenChange={(open) => {
@@ -851,28 +1494,39 @@ const PlanCard: React.FC<PlanCardProps> = ({
                                                onPause,
                                                onResume,
                                                isLoading,
-                                               t,
-                                           }) => {
-    const active = isSubscriptionActive(subscription);
-    const paused = isSubscriptionPaused(subscription);
+                                           t,
+                                       }) => {
+    // Backend returns subscription objects with nullable status. Treat null as "not subscribed yet".
+    const status = subscription?.status ?? null;
+    const active = status === SubscriptionStatus.ACTIVE || status === SubscriptionStatus.TRIALING;
+    const paused = status === SubscriptionStatus.PAUSED;
+    const trialing = status === SubscriptionStatus.TRIALING;
+    const canStartTrial = status === null;
     const pendingCancel = active && (subscription?.cancelAtPeriodEnd ?? false);
     const showCancelButton = active && !pendingCancel;
-    const showPauseButton = active && !pendingCancel && subscription?.status !== SubscriptionStatus.TRIALING;
+    const showPauseButton = active && !pendingCancel && status !== SubscriptionStatus.TRIALING;
 
-    const effectiveStatus = pendingCancel ? SubscriptionStatus.CANCELED : (subscription?.status ?? null);
+    const effectiveStatus = pendingCancel ? SubscriptionStatus.CANCELED : status;
     const statusColor = getStatusColor(effectiveStatus);
     const statusLabel = getStatusLabel(effectiveStatus, t);
+    const cardBorderColor = active ? '$accent7' : paused ? '$purple7' : pendingCancel ? '$orange7' : '$borderColor';
+    const cardBackground = active ? '$content2' : '$content1';
 
     return (
-        <Card backgroundColor="$content1" borderRadius="$6" padding="$5"
-              borderWidth={1} borderColor="$borderColor">
+        <Card
+            backgroundColor={cardBackground}
+            borderRadius="$7"
+            padding="$5"
+            borderWidth={active ? 2 : 1}
+            borderColor={cardBorderColor}
+        >
             <YStack gap="$4">
                 {/* Header */}
                 <XStack alignItems="center" gap="$3">
                     <View
                         width={40}
                         height={40}
-                        backgroundColor="$content2"
+                        backgroundColor={active ? '$accent2' : '$content3'}
                         borderRadius="$8"
                         alignItems="center"
                         justifyContent="center"
@@ -899,19 +1553,31 @@ const PlanCard: React.FC<PlanCardProps> = ({
                     {description}
                 </Text>
 
-                {/* Price */}
-                <Text fontSize={22} fontWeight="700" color="$accent7" fontFamily="$oswald">
-                    {t('subscription.priceMonth', {price})}
-                </Text>
-
-                {/* Free Trial Badge */}
-                {!subscription && (
-                    <XStack alignItems="center" gap="$2" backgroundColor="$blue2" paddingHorizontal="$3"
-                            paddingVertical="$2" borderRadius="$4">
-                        <Text fontSize={13} fontWeight="600" color="$blue10">
+                {/* Price / Trial */}
+                {canStartTrial ? (
+                    <YStack gap="$1">
+                        <Text fontSize={22} fontWeight="700" color="$blue10" fontFamily="$oswald">
                             {t('subscription.freeTrial')}
                         </Text>
-                    </XStack>
+                        <Text fontSize={13} color="$color" opacity={0.75}>
+                            {t('subscription.priceMonth', {price})}
+                        </Text>
+                    </YStack>
+                ) : trialing ? (
+                    <YStack gap="$1">
+                        <Text fontSize={22} fontWeight="700" color="$blue10" fontFamily="$oswald">
+                            {t('subscription.freeTrial')}
+                        </Text>
+                        {subscription?.trialEnd && (
+                            <Text fontSize={13} color="$blue10" opacity={0.85}>
+                                {t('subscription.trialEnds', {date: formatDate(subscription.trialEnd)})}
+                            </Text>
+                        )}
+                    </YStack>
+                ) : (
+                    <Text fontSize={22} fontWeight="700" color="$accent7" fontFamily="$oswald">
+                        {t('subscription.priceMonth', {price})}
+                    </Text>
                 )}
 
                 {/* Features */}
@@ -929,12 +1595,7 @@ const PlanCard: React.FC<PlanCardProps> = ({
                 {/* Period / Trial Info */}
                 {subscription && (
                     <YStack gap="$1">
-                        {subscription.status === SubscriptionStatus.TRIALING && subscription.trialEnd && (
-                            <Text fontSize={13} color="$blue10">
-                                {t('subscription.trialEnds', {date: formatDate(subscription.trialEnd)})}
-                            </Text>
-                        )}
-                        {subscription.status === SubscriptionStatus.ACTIVE && (
+                        {status === SubscriptionStatus.ACTIVE && subscription.currentPeriodEnd && (
                             <Text fontSize={13} color={pendingCancel ? "$red10" : "$color"}
                                   opacity={pendingCancel ? 1 : 0.7}>
                                 {pendingCancel
@@ -942,12 +1603,12 @@ const PlanCard: React.FC<PlanCardProps> = ({
                                     : t('subscription.currentPeriodEnd', {date: formatDate(subscription.currentPeriodEnd)})}
                             </Text>
                         )}
-                        {subscription.status === SubscriptionStatus.CANCELED && (
+                        {status === SubscriptionStatus.CANCELED && subscription.currentPeriodEnd && (
                             <Text fontSize={13} color="$red10">
                                 {t('subscription.canceledInfo', {date: formatDate(subscription.currentPeriodEnd)})}
                             </Text>
                         )}
-                        {subscription.status === SubscriptionStatus.PAUSED && (
+                        {status === SubscriptionStatus.PAUSED && (
                             <Text fontSize={13} color="#a855f7">
                                 {t('subscription.pausedInfo')}
                             </Text>
@@ -1030,7 +1691,9 @@ const PlanCard: React.FC<PlanCardProps> = ({
                                 <PrimaryButtonText>{t('common.loading')}</PrimaryButtonText>
                             </XStack>
                         ) : (
-                            <PrimaryButtonText>{t('subscription.subscribe')}</PrimaryButtonText>
+                            <PrimaryButtonText>
+                                {canStartTrial ? t('subscription.startFreeTrial') : t('subscription.subscribe')}
+                            </PrimaryButtonText>
                         )}
                     </PrimaryButton>
                 )}

@@ -62,12 +62,27 @@ export interface Invoice {
     pdfUrl: string | null;
 }
 
+export interface InvoiceApiResponse {
+    id: string;
+    amountDue: number;
+    amountPaid: number;
+    currency: string;
+    status: string | null;
+    invoicePdf: string | null;
+    created: number;
+    periodStart: number;
+    periodEnd: number;
+}
+
 export interface SetupIntentResponse {
     clientSecret: string;
+    customerId: string;
+    ephemeralKey: string;
 }
 
 export interface UpdatePaymentMethodRequest {
-    paymentMethodId: string;
+    paymentMethodId?: string;
+    setupIntentId?: string;
 }
 
 export interface UpdatePaymentMethodResponse {

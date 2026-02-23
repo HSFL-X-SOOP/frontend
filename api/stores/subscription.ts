@@ -7,6 +7,7 @@ import {
     CancelSubscriptionRequest,
     ReactivateSubscriptionRequest,
     Invoice,
+    InvoiceApiResponse,
     SetupIntentResponse,
     UpdatePaymentMethodRequest,
     UpdatePaymentMethodResponse,
@@ -56,11 +57,27 @@ export function useSubscriptionStore() {
             );
         },
 
-        getInvoices: (): Promise<Result<Invoice[]>> => {
-            return api.requestSafe(
-                httpClient.get<Invoice[]>('/subscriptions/invoices'),
+        getInvoices: async (): Promise<Result<Invoice[]>> => {
+            const result = await api.requestSafe(
+                httpClient.get<InvoiceApiResponse[]>('/subscriptions/invoices'),
                 'SubscriptionStore:getInvoices'
             );
+
+            if (!result.ok) {
+                return result;
+            }
+
+            return {
+                ok: true,
+                value: result.value.map((invoice) => ({
+                    id: invoice.id,
+                    amount: invoice.amountPaid || invoice.amountDue || 0,
+                    currency: invoice.currency,
+                    status: invoice.status ?? 'open',
+                    created: invoice.created,
+                    pdfUrl: invoice.invoicePdf,
+                }))
+            };
         },
 
         createSetupIntent: (): Promise<Result<SetupIntentResponse>> => {

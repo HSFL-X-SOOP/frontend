@@ -9,7 +9,7 @@ import {
     Separator,
     Tabs,
     H2,
-    Button
+    useTheme,
 } from "tamagui";
 import {User, Anchor, Bell, CreditCard} from '@tamagui/lucide-icons';
 import {useSession} from '@/context/SessionContext';
@@ -23,12 +23,14 @@ import {useLocationInfo, useUser} from '@/hooks/data';
 import {DetailedLocationDTO} from '@/api/models/location';
 import {getMapRoute} from '@/utils/navigation';
 import {UI_CONSTANTS} from '@/config/constants';
+import {PrimaryButton, PrimaryButtonText} from '@/types/button';
 
 export default function ProfileScreen() {
     const router = useRouter();
     const {t} = useTranslation();
     const toast = useToast();
-    const params = useLocalSearchParams<{ subscription_status?: string; subscription_type?: string }>();
+    const theme = useTheme();
+    const params = useLocalSearchParams<{ subscription_status?: string; subscription_type?: string; tab?: string }>();
     const {session, updateProfile: updateSessionProfile} = useSession();
     const {getProfile, loading: isLoadingProfile} = useUser();
     const {
@@ -42,6 +44,10 @@ export default function ProfileScreen() {
     const isWeb = Platform.OS === 'web';
     const isRefreshingRef = useRef(false);
     const hasHandledSubscriptionReturn = useRef(false);
+    const hasHandledTabParam = useRef(false);
+    const refreshColor = theme.accent7?.val || '#0066CC';
+    const emptyProfileIconColor = theme.accent7?.val || '#0066CC';
+    const emptyProfileIconBg = theme.accent2?.val || '#E6F3FF';
 
     useEffect(() => {
         if (hasHandledSubscriptionReturn.current) return;
@@ -82,6 +88,39 @@ export default function ProfileScreen() {
             window.history.replaceState({}, '', url.toString());
         }
     }, [params, isWeb, t, toast]);
+
+    useEffect(() => {
+        if (hasHandledTabParam.current) return;
+
+        const status = params.subscription_status
+            ?? (isWeb && typeof window !== 'undefined'
+                ? new URLSearchParams(window.location.search).get('subscription_status')
+                : null);
+
+        if (status) return;
+
+        const requestedTab = params.tab
+            ?? (isWeb && typeof window !== 'undefined'
+                ? new URLSearchParams(window.location.search).get('tab')
+                : null);
+
+        if (!requestedTab) return;
+
+        const validTabs = isHarborMaster
+            ? ['profile', 'myNotifications', 'subscription', 'harbor']
+            : ['profile', 'myNotifications', 'subscription'];
+
+        if (validTabs.includes(requestedTab)) {
+            setActiveTab(requestedTab);
+            hasHandledTabParam.current = true;
+        }
+
+        if (isWeb && typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('tab');
+            window.history.replaceState({}, '', url.toString());
+        }
+    }, [params.tab, params.subscription_status, isWeb, isHarborMaster]);
 
     useEffect(() => {
         if (!session) {
@@ -193,12 +232,12 @@ export default function ProfileScreen() {
                     <View
                         width={100}
                         height={100}
-                        backgroundColor="$accent2"
+                        backgroundColor={emptyProfileIconBg}
                         borderRadius="$12"
                         alignItems="center"
                         justifyContent="center"
                     >
-                        <User size={50} color="$accent7"/>
+                        <User size={50} color={emptyProfileIconColor}/>
                     </View>
                     <YStack gap="$3" alignItems="center" maxWidth={400}>
                         <H2 color="$accent7" fontFamily="$oswald">{t('profile.noProfileFound')}</H2>
@@ -206,16 +245,9 @@ export default function ProfileScreen() {
                             {t('profile.noProfileMessage')}
                         </Text>
                     </YStack>
-                    <Button
-                        size="$4"
-                        backgroundColor="$accent7"
-                        color="white"
-                        pressStyle={{backgroundColor: "$accent6"}}
-                        hoverStyle={{backgroundColor: "$accent4"}}
-                        onPress={() => router.push('/(profile)/create-profile')}
-                    >
-                        {t('profile.createProfile')}
-                    </Button>
+                    <PrimaryButton size="$4" onPress={() => router.push('/(profile)/create-profile')}>
+                        <PrimaryButtonText>{t('profile.createProfile')}</PrimaryButtonText>
+                    </PrimaryButton>
                 </YStack>
             </View>
         );
@@ -231,8 +263,8 @@ export default function ProfileScreen() {
                             <RefreshControl
                                 refreshing={refreshing}
                                 onRefresh={handleManualRefresh}
-                                tintColor="$accent7"
-                                colors={['$accent7']}
+                                tintColor={refreshColor}
+                                colors={[refreshColor]}
                             />
                         ) : undefined
                     }

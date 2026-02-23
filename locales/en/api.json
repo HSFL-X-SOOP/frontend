@@ -5,10 +5,13 @@
     "accessRequired": "API Access Required",
     "accessDescription": "The data is offered via a paid API.",
     "pricingLink": "Pricing and Access →",
+    "manageInProfile": "Manage in Profile",
     "features": "API Features",
     "readyTitle": "Ready for API Access?",
     "readyDescription": "Contact us for detailed API documentation and pricing information.",
     "viewPricing": "View Pricing",
+    "allPlansTitle": "Need more than API access?",
+    "allPlansDescription": "API Access and App Notifications are managed under one coherent subscription flow. Compare plans on the pricing page and manage everything in your profile.",
     "documentation": "API Documentation",
     "documentationDesc": "Explore our complete Swagger documentation for all API endpoints, request/response schemas, and authentication details.",
     "viewDocs": "View Documentation"

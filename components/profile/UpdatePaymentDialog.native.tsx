@@ -1,29 +1,38 @@
 import React, {useState, useCallback} from 'react';
 import {
     Dialog,
-    YStack,
     XStack,
     Text,
     Spinner,
 } from 'tamagui';
-import {CardField, useStripe} from '@stripe/stripe-react-native';
+import {useColorScheme} from 'react-native';
+import {useStripe} from '@stripe/stripe-react-native';
 import {useTranslation} from '@/hooks/ui';
 import {useSubscription} from '@/hooks/data';
+import {SetupIntentResponse} from '@/api/models/subscription';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
 interface UpdatePaymentDialogProps {
-    clientSecret: string | null;
+    clientSecret: SetupIntentResponse | null;
     onClose: () => void;
     onSuccess: () => void;
 }
 
 export function UpdatePaymentDialog({clientSecret, onClose, onSuccess}: UpdatePaymentDialogProps) {
     const {t} = useTranslation();
-    const {confirmSetupIntent} = useStripe();
+    const colorScheme = useColorScheme();
+    const {initPaymentSheet, presentPaymentSheet} = useStripe();
     const {updatePaymentMethod} = useSubscription();
     const [processing, setProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [cardComplete, setCardComplete] = useState(false);
+
+    const extractSetupIntentId = useCallback((secret: string) => {
+        const separator = '_secret_';
+        const index = secret.indexOf(separator);
+
+        if (index <= 0) return null;
+        return secret.slice(0, index);
+    }, []);
 
     const handleSubmit = useCallback(async () => {
         if (!clientSecret) return;
@@ -31,24 +40,41 @@ export function UpdatePaymentDialog({clientSecret, onClose, onSuccess}: UpdatePa
         setProcessing(true);
         setError(null);
 
-        const {setupIntent, error: confirmError} = await confirmSetupIntent(clientSecret, {
-            paymentMethodType: 'Card',
+        const initResult = await initPaymentSheet({
+            merchantDisplayName: 'MARLIN',
+            customerId: clientSecret.customerId,
+            customerEphemeralKeySecret: clientSecret.ephemeralKey,
+            setupIntentClientSecret: clientSecret.clientSecret,
+            returnURL: 'marlin://',
+            allowsDelayedPaymentMethods: true,
+            style: colorScheme === 'dark' ? 'alwaysDark' : 'alwaysLight',
         });
 
-        if (confirmError) {
-            setError(confirmError.message ?? t('subscription.updatePaymentError'));
+        if (initResult.error) {
+            setError(initResult.error.message ?? t('subscription.updatePaymentError'));
             setProcessing(false);
             return;
         }
 
-        if (!setupIntent?.paymentMethodId) {
+        const {error: presentError} = await presentPaymentSheet();
+
+        if (presentError) {
+            if (presentError.code !== 'Canceled') {
+                setError(presentError.message ?? t('subscription.updatePaymentError'));
+            }
+            setProcessing(false);
+            return;
+        }
+
+        const setupIntentId = extractSetupIntentId(clientSecret.clientSecret);
+        if (!setupIntentId) {
             setError(t('subscription.updatePaymentError'));
             setProcessing(false);
             return;
         }
 
         await updatePaymentMethod(
-            {paymentMethodId: setupIntent.paymentMethodId},
+            {setupIntentId},
             () => {
                 setProcessing(false);
                 onSuccess();
@@ -58,7 +84,16 @@ export function UpdatePaymentDialog({clientSecret, onClose, onSuccess}: UpdatePa
                 setProcessing(false);
             }
         );
-    }, [clientSecret, confirmSetupIntent, updatePaymentMethod, onSuccess, t]);
+    }, [
+        clientSecret,
+        colorScheme,
+        extractSetupIntentId,
+        initPaymentSheet,
+        onSuccess,
+        presentPaymentSheet,
+        t,
+        updatePaymentMethod
+    ]);
 
     if (!clientSecret) return null;
 
@@ -66,7 +101,6 @@ export function UpdatePaymentDialog({clientSecret, onClose, onSuccess}: UpdatePa
         <Dialog modal open={clientSecret !== null} onOpenChange={(open) => {
             if (!open) {
                 setError(null);
-                setCardComplete(false);
                 onClose();
             }
         }}>
@@ -105,14 +139,6 @@ export function UpdatePaymentDialog({clientSecret, onClose, onSuccess}: UpdatePa
                         {t('subscription.updatePaymentDescription')}
                     </Dialog.Description>
 
-                    <CardField
-                        postalCodeEnabled={false}
-                        style={{height: 50, marginVertical: 8}}
-                        onCardChange={(details) => {
-                            setCardComplete(details.complete);
-                        }}
-                    />
-
                     {error && (
                         <Text color="$red10" fontSize={13}>
                             {error}
@@ -130,7 +156,7 @@ export function UpdatePaymentDialog({clientSecret, onClose, onSuccess}: UpdatePa
                         <PrimaryButton
                             size="$4"
                             onPress={handleSubmit}
-                            disabled={processing || !cardComplete}
+                            disabled={processing}
                         >
                             {processing ? (
                                 <XStack alignItems="center" gap="$2">
