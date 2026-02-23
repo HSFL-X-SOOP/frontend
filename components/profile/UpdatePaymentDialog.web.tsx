@@ -12,6 +12,7 @@ import {useTranslation} from '@/hooks/ui';
 import {useThemeContext} from '@/context/ThemeSwitch';
 import {useSubscription} from '@/hooks/data';
 import {ENV} from '@/config/environment';
+import {SetupIntentResponse} from '@/api/models/subscription';
 import {PrimaryButton, PrimaryButtonText, SecondaryButton, SecondaryButtonText} from '@/types/button';
 
 let stripePromise: Promise<Stripe | null> | null = null;
@@ -112,7 +113,7 @@ function UpdatePaymentForm({onClose, onSuccess}: UpdatePaymentFormProps) {
 }
 
 interface UpdatePaymentDialogProps {
-    clientSecret: string | null;
+    clientSecret: SetupIntentResponse | null;
     onClose: () => void;
     onSuccess: () => void;
 }
@@ -167,7 +168,7 @@ export function UpdatePaymentDialog({clientSecret, onClose, onSuccess}: UpdatePa
                     <Elements
                         stripe={stripe}
                         options={{
-                            clientSecret,
+                            clientSecret: clientSecret.clientSecret,
                             appearance: {
                                 theme: isDark ? 'night' : 'stripe',
                             },
