@@ -18,31 +18,29 @@ export const SensorMarkerContent: React.FC<SensorMarkerContentProps> = ({locatio
     let valueToShow: string | number = "--";
     let metricSymbol: string = "";
     //const temperature = valueToShow !== undefined ? Math.round(Number(valueToShow)) : "--";
-    console.log(metricToShow)
+
     switch (metricToShow) {
-        case "Temperature":
+        case "waterTemperature":
             if (box?.type === BoxType.AirBox) {
                 valueToShow = box.measurementTimes.find(measurement => measurement.measurements.airTemperature)?.measurements.airTemperature ?? "--";
             } else {
                 valueToShow = box?.measurementTimes.find(measurement => measurement.measurements.waterTemperature)?.measurements.waterTemperature ?? "--";
             }
-            console.log("Raw value to show for temperature:", valueToShow);
             metricSymbol = "°C";
             break;
-        case "Waterlevel":
+        case "waterLevel":
             if (box?.type === BoxType.WaterBox) {
                 valueToShow = box.measurementTimes.find(measurement => measurement.measurements.tide)?.measurements.tide ?? "--";
                 metricSymbol = "cm";
             }
             break;
-        case "WaveHeight":
+        case "waveHeight":
             if (box?.type === BoxType.WaterBox) {
                 valueToShow = box.measurementTimes.find(measurement => measurement.measurements.waveHeight)?.measurements.waveHeight ?? "--";
                 metricSymbol = "cm";
             }
             break;
     }
-    console.log("Value to show for metric", metricToShow, ":", valueToShow);
     if (valueToShow !== "--") {
         valueToShow = Math.round(Number(valueToShow));
     }
