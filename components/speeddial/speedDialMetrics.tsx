@@ -5,10 +5,10 @@ import {useTranslation} from '@/hooks/ui';
 import {Plus} from '@tamagui/lucide-icons';
 import {getMeasurementIcon} from '../map/sensors/MapSensorMeasurements';
 import { Pressable } from 'react-native'
-import { AnimatePresence, Button, Text, XStack, YStack } from 'tamagui'
+import { AnimatePresence, Button, Text, useTheme, XStack, YStack } from 'tamagui'
 import {
   X
-} from '@tamagui/lucide-icons'
+} from '@tamagui/lucide-icons'    
 
 type Action = {
   key: string
@@ -27,6 +27,7 @@ export function SpeedDialMetrics({
 }: SpeedDialMetricsProps) {
   const [open, setOpen] = useState(false);
   const {t} = useTranslation();   
+  const theme = useTheme();
   const items: Action[] =
     actions ?? [
     ]
@@ -109,7 +110,7 @@ export function SpeedDialMetrics({
           minWidth={220}
           borderRadius="$8"
           paddingHorizontal="$4"
-          backgroundColor="rgba(255,255,255,0.2)"
+          backgroundColor={"$background"}//"rgba(255,255,255,0.2)"
           color="white"
           shadowColor="$shadowColor"
           shadowOpacity={0.22}
@@ -120,20 +121,11 @@ export function SpeedDialMetrics({
         >
           <XStack alignItems="center" gap="$3" width="100%">
                 {getMeasurementIcon(selectedValue).icon}
-            <Text color="white" fontWeight="700" flex={1} numberOfLines={1}>
+            <Text fontWeight="700" flex={1} numberOfLines={1}>
                 {t('sensor.' + selectedValue)}
             </Text>
 
-            <XStack
-              width={28}
-              height={28}
-              borderRadius="$4"
-              alignItems="center"
-              justifyContent="center"
-              backgroundColor="rgba(255,255,255,0.5)"
-            >
-              {open ? <X size={18} color="white" /> : <Plus size={18} color="white" />}
-            </XStack>
+
           </XStack>
         </Button>
       </YStack>
