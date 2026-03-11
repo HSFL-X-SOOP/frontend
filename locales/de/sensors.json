@@ -29,5 +29,27 @@
     "canKnockAdult": "Kann einen Erwachsenen umhauen",
     "tsunami": "Tsunami",
     "wouldKnockTower": "Würde sogar den Eiffelturm umwerfen"
+  },
+  "animatedMeasurementTiles": {
+    "waterTemperature": {
+      "cold": "Kalt",
+      "cool": "Kühl",
+      "pleasant": "Angenehm",
+      "warm": "Warm"
+    },
+    "waveHeight": {
+      "calm": "Ruhig",
+      "small": "Klein",
+      "moderate": "Mäßig",
+      "high": "Hoch"
+    },
+    "waterLevel": {
+      "low": "Niedrig",
+      "lowerThanNormal": "Niedriger als sonst",
+      "normal": "Normal",
+      "higherThanNormal": "Höher als sonst",
+      "high": "Hoch",
+      "flooding": "Überflutung"
+    }
   }
 }
