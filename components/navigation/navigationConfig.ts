@@ -24,7 +24,7 @@ export const MAIN_NAVIGATION_ITEMS: readonly NavigationItem[] = [
         key: 'map',
         label: 'navigation.map',
         icon: MapIcon,
-        href: '/map',
+        href: '/',
     },
     {
         key: 'dashboard',

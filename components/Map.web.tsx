@@ -19,7 +19,7 @@ import MapFilterButton, {MapFilterState} from './map/controls/MapFilterButton';
 import * as Location from 'expo-location';
 import GpsPin from './map/markers/GPSMarker';
 import {MAP_CONSTANTS} from '@/config/constants';
-
+import { SpeedDialMetrics } from './speeddial/speedDialMetrics';
 interface MapProps {
     module1Visible?: boolean;
     module2Visible?: boolean;
@@ -39,7 +39,6 @@ export default function WebMap(props: MapProps) {
     const [module3Visible, setModule3Visible] = useState(props.module3Visible ?? false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const toast = useToast();
-
     const {loading, fetchData} = useSensorDataNew();
     const [content, setContent] = useState<LocationWithBoxes[]>([]);
 
@@ -163,6 +162,8 @@ export default function WebMap(props: MapProps) {
 
     }, [isDark]);
 
+    const [metricToShow, setMetricToShow] = useState<string>("waterTemperature");
+
     const pins = useMemo(() => {
         return clusters.map((cluster) => {
             const [longitude, latitude] = cluster.geometry.coordinates;
@@ -191,10 +192,11 @@ export default function WebMap(props: MapProps) {
                 <SensorMarker
                     key={locationWithBoxes!.location!.id}
                     locationWithBoxes={locationWithBoxes!}
+                    metricToShow={metricToShow}
                 />
             );
         });
-    }, [clusters, getClusterExpansionZoom]);
+    }, [clusters, getClusterExpansionZoom, metricToShow]);
 
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
 
@@ -377,6 +379,27 @@ export default function WebMap(props: MapProps) {
                 gap="$2"
             />
 
+            <SpeedDialMetrics
+            selectedValue={metricToShow}
+                actions={[
+                {
+                    key: 'metric-to-show-temperature',
+                    label: 'waterTemperature',
+                    onPress: () => setMetricToShow("waterTemperature"),
+                },
+                {
+                    key: 'metric-to-show-waterlevel',
+                    label: 'waterLevel',
+                    onPress: () => setMetricToShow("waterLevel"),
+                },
+                                    {
+                    key: 'metric-to-show-waveheight',
+                    label: 'waveHeight',
+                    onPress: () => setMetricToShow("waveHeight"),
+                },
+                ]}
+            />
+
             {/* Filter Sheet - controlled by SpeedDial */}
             <MapFilterButton
                 filterState={filterState}
@@ -387,4 +410,3 @@ export default function WebMap(props: MapProps) {
         </View>
     );
 }
-

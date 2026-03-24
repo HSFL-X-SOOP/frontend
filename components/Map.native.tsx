@@ -112,8 +112,8 @@ export default function NativeMap(props: MapProps) {
         setSelectedLocationWithBoxes(undefined);
     };
     
-
-
+    const metricToShow = "Temperature";
+    console.log("Metric to show in markers native:", metricToShow);
     const pins = useMemo(() => {
         return clusters.map(cluster => {
             const [longitude, latitude] = cluster.geometry.coordinates;
@@ -138,6 +138,7 @@ export default function NativeMap(props: MapProps) {
                 <SensorMarker
                     key={locationWithBoxes!.location!.id}
                     locationWithBoxes={locationWithBoxes!}
+                    metricToShow={metricToShow}
                     selectedLocationId={selectedLocationWithBoxes?.location?.id}
                     setMarker={setSelectedLocationWithBoxes}
                     setOpen={setOpen}

@@ -2,6 +2,8 @@ const {getDefaultConfig} = require('expo/metro-config')
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname, {isCSSEnabled: true})
+
+
 config.resolver = {
     ...config.resolver,
     assetExts: [...config.resolver.assetExts, 'txt']

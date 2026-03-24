@@ -6,6 +6,7 @@ import {SensorMarkerContent} from '../sensors/MapSensorTemperatureText';
 
 interface SensorMarkerProps {
     locationWithBoxes: LocationWithBoxes;
+    metricToShow: string;
     isDark?: boolean;
     index?: number;
     selectedLocationId?: number;
@@ -33,7 +34,7 @@ const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProp
  * Memoized to prevent unnecessary re-renders when parent re-renders
  * Shows sensor data on map with interactive modal popup
  */
-const NativeSensorMarker = ({locationWithBoxes, setMarker, setOpen, selectedLocationId}: SensorMarkerProps) => {
+const NativeSensorMarker = ({locationWithBoxes, metricToShow, setMarker, setOpen, selectedLocationId}: SensorMarkerProps) => {
     // Memoize marker position to avoid recalculation
     const markerCoordinates = useMemo(
         () => ({
@@ -53,7 +54,7 @@ const NativeSensorMarker = ({locationWithBoxes, setMarker, setOpen, selectedLoca
                 onSelected={() => {setMarker?.(locationWithBoxes); setOpen?.(true);}}
             >
                 <View>
-                    <SensorMarkerContent locationWithBoxes={locationWithBoxes}/>
+                    <SensorMarkerContent locationWithBoxes={locationWithBoxes} metricToShow={metricToShow}/>
                 </View>
             </PointAnnotation>
         </>

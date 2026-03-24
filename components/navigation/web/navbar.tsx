@@ -1,4 +1,4 @@
-import {Link, useRouter, Href} from 'expo-router';
+import {Link, useRouter, Href, useSegments} from 'expo-router';
 import {Button, Popover, Sheet, Text, XStack, YStack, useTheme, ScrollView, Tooltip} from 'tamagui';
 import {useState} from 'react';
 
@@ -14,7 +14,7 @@ import {LanguageSelector} from '@/components/common/LanguageSelector';
 import {getMapRoute} from '@/utils/navigation';
 
 import {UI_CONSTANTS} from '@/config/constants';
-
+import { AutoHideNavBar } from '@/components/navigation/web/AutoHideNavBar';
 
 export function NavbarWeb() {
     const router = useRouter();
@@ -28,6 +28,7 @@ export function NavbarWeb() {
     const logoSize = isMobileWeb ? 50 : 55;
     const navbarMinHeight = logoSize + (isMobileWeb ? 12 : 16);
     const logoVerticalOffset = isMobileWeb ? 1 : 2;
+    const segments = useSegments();
 
     const handleLogout = () => {
         logout();
@@ -38,7 +39,9 @@ export function NavbarWeb() {
         router.push(getMapRoute());
     };
 
-    return (
+    const isPublicDisplay = segments.includes('public-display' as never);
+
+    const navbar = (
         <XStack
             jc={"space-between"}
             backgroundColor={"$background"}
@@ -49,7 +52,7 @@ export function NavbarWeb() {
             py={isMobileWeb ? "$1" : "$2"}
             minHeight={navbarMinHeight}
         >
-            <Link href={"/map" as Href}>
+            <Link href={"/" as Href}>
                 <XStack alignItems="center" jc="flex-start" gap="$2" minHeight={logoSize}>
                     <YStack height={logoSize} justifyContent="center">
                         <LOGO
@@ -81,7 +84,7 @@ export function NavbarWeb() {
 
             {!isMobileWeb && (
                 <XStack alignItems={"center"} gap={"$8"}>
-                    <Link href={"/map" as Href}>
+                    <Link href={"/" as Href}>
                         <XStack alignItems="center" gap="$3">
                             <MapIcon color={t.accent8?.val} size={26}/>
                             <Text fontSize="$6" fontWeight={"500"} alignSelf={"center"} color={"$accent8"}>
@@ -329,7 +332,7 @@ export function NavbarWeb() {
                             </XStack>
 
                             <YStack gap="$2" paddingTop="$3">
-                                <Link href={"/map" as Href} onPress={() => setIsMenuOpen(false)}>
+                                <Link href={"/" as Href} onPress={() => setIsMenuOpen(false)}>
                                     <XStack
                                         alignItems="center"
                                         gap="$3"
@@ -533,4 +536,8 @@ export function NavbarWeb() {
             </Sheet>
         </XStack>
     );
+
+    return (
+        <AutoHideNavBar enabled={isPublicDisplay}>{navbar}</AutoHideNavBar>
+    )
 }

@@ -29,5 +29,27 @@
     "canKnockAdult": "Can knock down an adult",
     "tsunami": "Tsunami",
     "wouldKnockTower": "Would even knock down the Eiffel Tower"
+  },
+  "animatedMeasurementTiles": {
+    "waterTemperature": {
+      "cold": "Cold",
+      "cool": "Cool",
+      "pleasant": "Pleasant",
+      "warm": "Warm"
+    },
+    "waveHeight": {
+      "calm": "Calm",
+      "small": "Small",
+      "moderate": "Moderate",
+      "high": "High"
+    },
+    "waterLevel": {
+      "low": "Low",
+      "lowerThanNormal": "Lower than normal",
+      "normal": "Normal",
+      "higherThanNormal": "Higher than normal",
+      "high": "High",
+      "flooding": "Flooding"
+    }
   }
 }

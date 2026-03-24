@@ -9,6 +9,7 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { useSession } from '@/context/SessionContext';
 import { useUserDeviceStore } from '@/api/stores/userDevice';
+
 export default function MapScreen() {
     const {isDark} = useThemeContext();
     const {session} = useSession();

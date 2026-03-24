@@ -336,7 +336,7 @@ function getBoxTypeName(boxType: BoxType, t: TFunction): string {
     }
 }
 
-function getMeasurementIcon(measurementType: string): { icon: React.ReactNode; color: string; bgColor: string } {
+export function getMeasurementIcon(measurementType: string): { icon: React.ReactNode; color: string; bgColor: string } {
     const size = 18;
 
     switch (measurementType) {
