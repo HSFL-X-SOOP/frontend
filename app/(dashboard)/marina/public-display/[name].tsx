@@ -107,7 +107,7 @@ export default function PublicDisplayScreen({selectedMarinaName = 'Stadthafen Fl
     useEffect(() => {
         setWaterTemperature(filteredMeasurements.filter(m => m.measurementType === "Temperature, water")[0]?.value ?? undefined);
         setWaterLevel((filteredMeasurements.filter(m => m.measurementType === "Tide")[0]?.value ?? 0) / 100 || undefined);
-        setWaveHeight((filteredMeasurements.filter(m => m.measurementType === "Wave Height")[0]?.value ?? undefined) && (filteredMeasurements.filter(m => m.measurementType === "Wave Height")[0]?.value as number / 3));
+        setWaveHeight((filteredMeasurements.filter(m => m.measurementType === "Wave Height")[0]?.value ?? undefined) && (filteredMeasurements.filter(m => m.measurementType === "Wave Height")[0]?.value as number));
     }, [filteredMeasurements]);
     const latestTime = timeRangeData?.boxes[0]?.measurementTimes[0]?.time || new Date().toISOString();
     useEffect(() => {
