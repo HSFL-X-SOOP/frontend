@@ -44,7 +44,7 @@ export function Footer() {
                         </Text>
                     </Link>
                     <Text fontSize="$2" color="$gray9">•</Text>
-                    <Link href="https://github.com/HSFL-X-SOOP" target="_blank">
+                    <Link href="https://github.com/Maritime-Live-Information" target="_blank">
                         <XStack hoverStyle={{ opacity: 1 }}>
                             <Github size={14} color="$gray11" />
                         </XStack>
