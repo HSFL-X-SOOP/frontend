@@ -4,7 +4,7 @@ import Animated from "react-native-reanimated";
 interface Props {
     height: number;
     body: React.ReactNode;
-    waterBgStyle: any;
+    waterBgStyle?: any;
     paddingHorizontal?: number;
 }
 
