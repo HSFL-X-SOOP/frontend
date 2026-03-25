@@ -11,16 +11,16 @@ export function useUserLocationStore() {
     const httpClient = useHttpClient();
 
     return {
-        getAllUserLocationByUserId: (userId: number): Promise<Result<UserLocation[]>> => {
+        getAllUserLocationByUserId: (): Promise<Result<UserLocation[]>> => {
             return api.requestSafe(
-                httpClient.get<UserLocation[]>(`/user-locations/user/${userId}`),
+                httpClient.get<UserLocation[]>(`/user-locations/user`),
                 'UserLocationStore:getAllUserLocationByUserId'
             );
         },
 
-        getUserLocationByUserIdAndLocationId: (userId: number, locationId: number): Promise<Result<UserLocation>> => {
+        getUserLocationByUserIdAndLocationId: (locationId: number): Promise<Result<UserLocation>> => {
             return api.requestSafe(
-                httpClient.get<UserLocation>(`/user-locations/${userId}/${locationId}`),
+                httpClient.get<UserLocation>(`/user-locations/location/${locationId}`),
                 'UserLocationStore:getUserLocationByUserIdAndLocationId'
             );
         },

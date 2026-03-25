@@ -220,7 +220,6 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
         if (!marinaID || !isLoggedIn) return;
         const fetchUserLocation = async () => {
             await getUserLocationByUserIdAndLocationId(
-                userID,
                 marinaID,
                 (location) => {
                     setUserLocation(location);
@@ -284,7 +283,6 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
         } else {
             await create(
                 {
-                    userId: userID,
                     locationId: marinaID,
                     sentHarborNotifications: false,
                 },
@@ -305,7 +303,6 @@ export default function DashboardScreen({selectedMarinaName = 'Stadthafen Flensb
         await update(
             userLocation.id,
             {
-                userId: userID,
                 locationId: marinaID,
                 sentHarborNotifications: !userLocation.sentHarborNotifications,
             },

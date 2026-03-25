@@ -19,23 +19,23 @@ export function useNotificationMeasurementRuleStore() {
             );
         },
 
-        getAllNotificationMeasurementRulesByUserId: (userId: number): Promise<Result<NotificationMeasurementRule[]>> => {
+        getAllNotificationMeasurementRulesByUserId: (): Promise<Result<NotificationMeasurementRule[]>> => {
             return api.requestSafe(
-                httpClient.get<NotificationMeasurementRule[]>(`/notification-measurement-rules/user/${userId}`),
+                httpClient.get<NotificationMeasurementRule[]>(`/notification-measurement-rules/user`),
                 'NotificationMeasurementRuleStore:getAllNotificationMeasurementRulesByUserId'
             );
         },
 
-        getAllNotificationMeasurementRulesByUserIdAndLocationId: (userId: number, locationId: number): Promise<Result<NotificationMeasurementRule[]>> => {
+        getAllNotificationMeasurementRulesByUserIdAndLocationId: (locationId: number): Promise<Result<NotificationMeasurementRule[]>> => {
             return api.requestSafe(
-                httpClient.get<NotificationMeasurementRule[]>(`/notification-measurement-rules/user/${userId}/location/${locationId}`),
+                httpClient.get<NotificationMeasurementRule[]>(`/notification-measurement-rules/user/location/${locationId}`),
                 'NotificationMeasurementRuleStore:getAllNotificationMeasurementRulesByUserIdAndLocationId'
             );
         },
 
-        // getNotificationMeasurementRule: (userId: number, locationId: number, measurementTypeId: number): Promise<Result<NotificationMeasurementRule | null>> => {
+        // getNotificationMeasurementRule: (locationId: number, measurementTypeId: number): Promise<Result<NotificationMeasurementRule | null>> => {
         //     return api.requestSafe(
-        //         httpClient.get<NotificationMeasurementRule | null>(`/notification-measurement-rules/user/${userId}/location/${locationId}/measurementTypeId/${measurementTypeId}`),
+        //         httpClient.get<NotificationMeasurementRule | null>(`/notification-measurement-rules/user/location/${locationId}/measurementTypeId/${measurementTypeId}`),
         //         'NotificationMeasurementRuleStore:getNotificationMeasurementRule'
         //     );
         // },
