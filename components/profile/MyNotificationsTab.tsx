@@ -50,7 +50,6 @@ export function MyNotificationsTab() {
 
     useEffect(() => {
         void userLocations.getAllUserLocationByUserId(
-            userID,
             (userLocationsData) => {
                 setMyLocations(userLocationsData);
                 if (userLocationsData && userLocationsData.length > 0) {
@@ -84,7 +83,6 @@ export function MyNotificationsTab() {
 
     const fetchNotifications = useCallback(() => {
         void notifications.getAllNotificationMeasurementRulesByUserIdAndLocationId(
-            userID,
             selectedUserLocationId || -1,
             (notificationsData) => {
                 setMyNotifications(notificationsData);
@@ -144,7 +142,6 @@ export function MyNotificationsTab() {
         void userLocations.update(
             selectedUserLocation.id,
             {
-                userId: userID,
                 locationId: selectedUserLocation.locationId,
                 sentHarborNotifications: !selectedUserLocation.sentHarborNotifications,
             },

@@ -1,5 +1,4 @@
 export interface CreateOrUpdateUserLocationRequest {
-    userId: number;
     locationId: number;
     sentHarborNotifications: boolean;
 }
