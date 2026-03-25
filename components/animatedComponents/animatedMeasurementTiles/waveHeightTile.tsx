@@ -48,7 +48,7 @@ export function WaveHeightTile({
               </View>
             ) : null}
             <BodyText bodyText={`${waveHeight.toFixed(1)}cm`} bodyHelperText={labelForWaveHeight(zone, t)} bodyStyle={{ position: "absolute", marginTop: 15 }}/>
-            <Bubbles width={waveW > 0 ? waveW : width} waterHeight={waveH > 0 ? waveH / 1.6 : 120} />
+            <Bubbles width={waveW > 0 ? waveW : width} waterHeight={waveH > 0 ? waveH  : 120} />
             <View position="absolute" top={10} left={-30}>
               <CloudSvg height={30} />
             </View>
