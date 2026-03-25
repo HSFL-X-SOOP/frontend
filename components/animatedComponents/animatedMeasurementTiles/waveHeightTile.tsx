@@ -35,7 +35,7 @@ export function WaveHeightTile({
     setWaveH((prev) => (Math.abs(prev - nextH) > 1 ? nextH : prev));
   }, []);
 
-  const visualAmplitude = useMemo(() => Math.max(2, Math.min(18, waveHeight * 0.35)) / waveCorrection, [waveHeight]);
+  const visualAmplitude = useMemo(() => Math.max(2, Math.min(200, waveHeight * 0.35)) / waveCorrection, [waveHeight]);
 
   const waveLevel = useSharedValue(0.55);
   const wavePhase = useSharedValue(0);
@@ -48,7 +48,7 @@ export function WaveHeightTile({
               </View>
             ) : null}
             <BodyText bodyText={`${waveHeight.toFixed(1)}cm`} bodyHelperText={labelForWaveHeight(zone, t)} bodyStyle={{ position: "absolute", marginTop: 15 }}/>
-            <Bubbles width={waveW > 0 ? waveW : width} waterHeight={waveH > 0 ? waveH  : 120} />
+            <Bubbles width={waveW > 0 ? waveW : width} waterHeight={waveH > 0 ? waveH : 120} />
             <View position="absolute" top={10} left={-30}>
               <CloudSvg height={30} />
             </View>
