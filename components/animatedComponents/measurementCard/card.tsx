@@ -18,6 +18,7 @@ interface Props {
     headerRatio?: number;
     paddingHorizontal?: number;
     badgeText?: string;
+    bodyBackgroundColor?: string;
 }
 
 export function Card(probs: Props) {
@@ -50,7 +51,12 @@ export function Card(probs: Props) {
             <HeaderText title={probs.title} badgeText={probs.badgeText}/>
         </Animated.View>
 
-        <Body height={bodyHeight} waterBgStyle={waterBgStyle} body={probs.body} paddingHorizontal={probs.paddingHorizontal ?? 16} />
+                <Body
+                    height={bodyHeight}
+                    waterBgStyle={[waterBgStyle, probs.bodyBackgroundColor ? { backgroundColor: probs.bodyBackgroundColor } : null]}
+                    body={probs.body}
+                    paddingHorizontal={probs.paddingHorizontal ?? 16}
+                />
 
         <View top={headerHeight - 1} position="absolute" height={2} left={0} right={0} pointerEvents="none" backgroundColor="rgba(255,255,255,0.22)"/>
         </View>

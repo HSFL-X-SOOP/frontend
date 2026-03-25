@@ -45,7 +45,7 @@ const pct = (v: number, min: number, max: number) => (v - min) / (max - min);
 export function CombinedTile({
   levelMeters,
   temperatureC,
-  waveAmplitude,
+  waveAmplitude = 0,
 
   width,
   height,
@@ -67,7 +67,7 @@ export function CombinedTile({
   const {t} = useTranslation('sensors');
   const minSafe = Math.min(minMeters, maxMeters);
   const maxSafe = Math.max(minMeters, maxMeters);
-
+  const waveCorrection = 3;
   const wavePhase = useSharedValue(0);
 
   const computedStep =
@@ -143,7 +143,7 @@ export function CombinedTile({
               <AnimatedWaveLevel
               width={waterW}
               height={WATER_H}
-              amplitude={waveAmplitude ?? 0}
+              amplitude={waveAmplitude / waveCorrection}
               duration={waveAnimationDuration}
               cyclesPerTile={2}
               levelSV={levelP}
@@ -160,7 +160,7 @@ export function CombinedTile({
           <FloatingBoat
             containerWidth={waterW}
             containerHeight={WATER_H}
-            amplitude={waveAmplitude ?? 0}
+            amplitude={waveAmplitude / waveCorrection}
             cyclesPerTile={2}
             levelSV={levelP}
             phaseSV={wavePhase}
