@@ -137,7 +137,7 @@ export default function RegisterScreen() {
                 try {
                     let token = await messaging().getToken();
                     logger.debug('FCM Token obtained');
-                    const result = await userDeviceStore.registerUserDevice({fcmToken: token, userId: userId});
+                    const result = await userDeviceStore.registerUserDevice({fcmToken: token});
                     if (result.ok) {
                         logger.info('User device registered with FCM token');
                     } else {

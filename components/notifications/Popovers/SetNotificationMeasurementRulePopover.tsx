@@ -77,7 +77,6 @@ export function SetNotificationMeasurementRulePopover({
             return;
         }
         const notificationMeasurementRule = {
-            userId: userID || 0,
             locationId: marinaID,
             measurementTypeId: getIDFromMeasurementType(MeasurementType),
             operator: operator,

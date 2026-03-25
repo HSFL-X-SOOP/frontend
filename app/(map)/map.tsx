@@ -54,7 +54,7 @@ export default function MapScreen() {
         });
 
         if(expoPushToken){
-            await userDeviceStore.registerUserDevice({fcmToken: expoPushToken, userId: userId});
+            await userDeviceStore.registerUserDevice({fcmToken: expoPushToken});
         }
 
         return () => {

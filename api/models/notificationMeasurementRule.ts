@@ -1,5 +1,4 @@
 export interface CreateOrUpdateNotificationMeasurementRuleRequest {
-    userId: number;
     locationId: number;
     measurementTypeId: number;
     operator: string;

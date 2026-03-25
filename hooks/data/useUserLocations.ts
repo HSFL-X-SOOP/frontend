@@ -17,12 +17,11 @@ export const useUserLocations = () => {
     const [loading, setLoading] = useState(false);
 
     const getAllUserLocationByUserId = useCallback(async (
-        userId: number,
         onSuccess: (data: UserLocation[]) => void,
         onError: (error: AppError) => void
     ) => {
         setLoading(true);
-        const result = await userLocationStore.getAllUserLocationByUserId(userId);
+        const result = await userLocationStore.getAllUserLocationByUserId();
 
         if (result.ok) {
             onSuccess(result.value);
@@ -33,13 +32,12 @@ export const useUserLocations = () => {
     }, [userLocationStore]);
 
     const getUserLocationByUserIdAndLocationId = useCallback(async (
-        userId: number,
         locationId: number,
         onSuccess: (data: UserLocation) => void,
         onError: (error: AppError) => void
     ) => {
         setLoading(true);
-        const result = await userLocationStore.getUserLocationByUserIdAndLocationId(userId, locationId);
+        const result = await userLocationStore.getUserLocationByUserIdAndLocationId(locationId);
 
         if (result.ok) {
             onSuccess(result.value);

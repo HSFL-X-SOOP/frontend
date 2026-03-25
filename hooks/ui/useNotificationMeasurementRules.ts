@@ -33,12 +33,11 @@ export const useNotificationMeasurementRules = () => {
     }, [notificationMeasurementRuleStore]);
 
     const getAllNotificationMeasurementRulesByUserId = useCallback(async (
-        userId: number,
         onSuccess: (data: NotificationMeasurementRule[]) => void,
         onError: (error: AppError) => void
     ) => {
         setLoading(true);
-        const result = await notificationMeasurementRuleStore.getAllNotificationMeasurementRulesByUserId(userId);
+        const result = await notificationMeasurementRuleStore.getAllNotificationMeasurementRulesByUserId();
 
         if (result.ok) {
             onSuccess(result.value);
@@ -49,13 +48,12 @@ export const useNotificationMeasurementRules = () => {
     }, [notificationMeasurementRuleStore]);
 
     const getAllNotificationMeasurementRulesByUserIdAndLocationId = useCallback(async (
-        userId: number,
         locationId: number,
         onSuccess: (data: NotificationMeasurementRule[]) => void,
         onError: (error: AppError) => void
     ) => {
         setLoading(true);
-        const result = await notificationMeasurementRuleStore.getAllNotificationMeasurementRulesByUserIdAndLocationId(userId, locationId);
+        const result = await notificationMeasurementRuleStore.getAllNotificationMeasurementRulesByUserIdAndLocationId(locationId);
 
         if (result.ok) {
             onSuccess(result.value);
