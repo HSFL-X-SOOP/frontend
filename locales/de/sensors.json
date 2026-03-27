@@ -32,24 +32,24 @@
   },
   "animatedMeasurementTiles": {
     "waterTemperature": {
-      "cold": "Kalt",
-      "cool": "Kühl",
-      "pleasant": "Angenehm",
-      "warm": "Warm"
+      "cold": "kalt",
+      "cool": "kühl",
+      "pleasant": "angenehm",
+      "warm": "warm"
     },
     "waveHeight": {
-      "calm": "Ruhig",
-      "small": "Klein",
-      "moderate": "Mäßig",
-      "high": "Hoch"
+      "calm": "ruhig",
+      "small": "klein",
+      "moderate": "mäßig",
+      "high": "hoch"
     },
     "waterLevel": {
-      "low": "Niedrig",
-      "lowerThanNormal": "Niedriger als sonst",
-      "normal": "Normal",
-      "higherThanNormal": "Höher als sonst",
-      "high": "Hoch",
-      "flooding": "Überflutung"
+      "low": "niedrig",
+      "lowerThanNormal": "niedriger als sonst",
+      "normal": "normal",
+      "higherThanNormal": "höher als sonst",
+      "high": "hoch",
+      "flooding": "überflutung"
     }
   }
 }
