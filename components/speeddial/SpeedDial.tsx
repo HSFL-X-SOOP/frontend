@@ -195,6 +195,8 @@ export function SpeedDial({
         return actionElements;
     };
 
+    const bottom = Platform.OS === 'web' ? 0 : -45;
+
     const speedDialContent = (
         <>
             {/* Backdrop for closing when tapping outside */}
@@ -247,6 +249,7 @@ export function SpeedDial({
 
                 {/* Floating Action Button - Fixed Position */}
                 <Button
+                    bottom={bottom}
                     circular
                     size={fabSize}
                     disabled={disabled}
