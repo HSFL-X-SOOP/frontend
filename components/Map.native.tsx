@@ -16,6 +16,7 @@ import { Theme, YStack } from "tamagui";
 import { SensorPopup } from "./map/sensors/MapSensorMeasurements";
 import { useThemeContext } from "@/context/ThemeSwitch";
 import { StyleSheet } from "react-native";
+import { SpeedDialMetrics } from "./speeddial/speedDialMetrics";
 
 interface MapProps {
     module1Visible?: boolean;
@@ -112,8 +113,7 @@ export default function NativeMap(props: MapProps) {
         setSelectedLocationWithBoxes(undefined);
     };
     
-    const metricToShow = "Temperature";
-    console.log("Metric to show in markers native:", metricToShow);
+    const [metricToShow, setMetricToShow] = useState<string>("waterTemperature");
     const pins = useMemo(() => {
         return clusters.map(cluster => {
             const [longitude, latitude] = cluster.geometry.coordinates;
@@ -146,7 +146,7 @@ export default function NativeMap(props: MapProps) {
             );
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [clusters, getClusterExpansionZoom, highlightedSensorId, selectedLocationWithBoxes]);
+    }, [clusters, getClusterExpansionZoom, highlightedSensorId, selectedLocationWithBoxes, metricToShow]);
 
     // ========== CAMERA HELPERS ==========
 
@@ -327,6 +327,27 @@ export default function NativeMap(props: MapProps) {
                 actions={speedDialActions}
                 fabSize="$6"
                 gap="$2"
+            />
+
+            <SpeedDialMetrics
+                selectedValue={metricToShow}
+                    actions={[
+                    {
+                        key: 'metric-to-show-temperature',
+                        label: 'waterTemperature',
+                        onPress: () => setMetricToShow("waterTemperature"),
+                    },
+                    {
+                        key: 'metric-to-show-waterlevel',
+                        label: 'waterLevel',
+                        onPress: () => setMetricToShow("waterLevel"),
+                    },
+                                        {
+                        key: 'metric-to-show-waveheight',
+                        label: 'waveHeight',
+                        onPress: () => setMetricToShow("waveHeight"),
+                    },
+                    ]}
             />
 
             <MapSensorBottomSheet

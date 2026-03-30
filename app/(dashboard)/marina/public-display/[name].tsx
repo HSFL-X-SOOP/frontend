@@ -184,11 +184,12 @@ export default function PublicDisplayScreen({selectedMarinaName = 'Stadthafen Fl
     
 
     const images = {
-        wasserstand: "https://placehold.co/400x400/FFFFFF/000000?text=1",
-        wellenhoehe: "https://placehold.co/400x400/FFFFFF/000000?text=2",
-        wassertemp: "https://placehold.co/400x400/FFFFFF/000000?text=3",
+        wasserstand: require('@/assets/images/marlin_poster.jpg'),
+        // wellenhoehe: "https://placehold.co/400x400/FFFFFF/000000?text=2",
+        // wassertemp: "https://placehold.co/400x400/FFFFFF/000000?text=3",
     };
-    const list = ['wasserstand', 'wellenhoehe', 'wassertemp'];
+    // const list = ['wasserstand', 'wellenhoehe', 'wassertemp'];
+    const list = ['wasserstand'];
 
     const leftHandSideFlexSize = 0.5;
     const rightHandSideFlexSize = 1;
@@ -271,7 +272,7 @@ export default function PublicDisplayScreen({selectedMarinaName = 'Stadthafen Fl
                     <XStack flex={1} flexBasis={0} gap={"$3"}>
                         <Card key={"parent-size-carousel"} flex={1} bordered backgroundColor="$content2"
                             borderWidth={1} borderColor="$borderColor">
-                            <ParentSizeCarousel items={images} itemsLabels={list} interval={4000} />
+                            <ParentSizeCarousel items={images} itemsLabels={list} interval={600000} />
                         </Card>
                     </XStack>
                 </YStack>
