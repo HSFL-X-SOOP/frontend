@@ -4,7 +4,7 @@ import {useState} from 'react';
 import {useTranslation} from '@/hooks/ui';
 import {Plus} from '@tamagui/lucide-icons';
 import {getMeasurementIcon} from '../map/sensors/MapSensorMeasurements';
-import { Pressable } from 'react-native'
+import { Platform, Pressable } from 'react-native'
 import { AnimatePresence, Button, Text, useTheme, XStack, YStack } from 'tamagui'
 import {
   X
@@ -37,6 +37,9 @@ export function SpeedDialMetrics({
     action.onPress()
   }
 
+  const bottom = Platform.OS === 'web' ? 25 : 25;
+  const minWidth = Platform.OS === 'web' ? 200 : 200;
+
   return (
     <>
       <AnimatePresence>
@@ -60,7 +63,8 @@ export function SpeedDialMetrics({
       <YStack
         position="absolute"
         right={100}
-        bottom={25}
+        width={200}
+        bottom={bottom}
         zIndex={1000}
         alignItems="flex-end"
         gap="$3"
@@ -73,7 +77,7 @@ export function SpeedDialMetrics({
                 return (
                   <Button
                     key={action.key}
-                    width={220}
+                    width={minWidth}
                     height={48}
                     borderRadius="$6"
                     justifyContent="flex-start"
@@ -107,7 +111,7 @@ export function SpeedDialMetrics({
 
         <Button
           height={56}
-          minWidth={220}
+          minWidth={minWidth}
           borderRadius="$8"
           paddingHorizontal="$4"
           backgroundColor={"$background"}//"rgba(255,255,255,0.2)"
