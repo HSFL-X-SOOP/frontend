@@ -1,50 +1,86 @@
-# Welcome to your Expo app 👋
+# Marlin
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A cross-platform React Native application built with [Expo](https://expo.dev) for sensor monitoring and visualization. Runs on iOS, Android, and Web.
 
-## Get started
+## Prerequisites
 
-1. Install dependencies
+- [Node.js](https://nodejs.org/) (LTS recommended)
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+- For iOS: Xcode (macOS only)
+- For Android: Android Studio with an emulator or a physical device
+
+## Environment Setup
+
+A `.env` file is required at the project root. Use `.env.example` as a reference for the values that need to be set:
+
+```
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=
+EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+```
+
+Copy the example and fill in the values:
+
+```bash
+cp .env.example .env
+```
+
+## Platform-Specific Configuration Files
+
+These files are gitignored and must be obtained separately:
+
+- **Android**: `android/app/google-services.json` — Firebase configuration file required for push notifications and Google Sign-In.
+- **iOS**: `ios/GoogleService-Info.plist` — Firebase configuration file required for push notifications and Google Sign-In.
+
+## Getting Started
+
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. Start the app
+2. Start the app:
 
    ```bash
-   npx expo start
+   npm start
    ```
 
-In the output, you'll find options to open the app in a
+## Run Profiles
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Each platform (web, iOS, Android) has three run profiles controlled by the `APP_MODE` environment variable. The default mode is `test`.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+| Profile | Command Examples | Backend URL | Description |
+|---------|-----------------|-------------|-------------|
+| **dev** | `npm run start:dev`, `npm run ios:dev`, `npm run android:dev`, `npm run web:dev` | `http://localhost:8080` | Local development. Requires the Marlin backend running locally. |
+| **test** | `npm run start:test`, `npm run ios:test`, `npm run android:test`, `npm run web:test` | `https://test.marlin-live.com/api` | Marlin test/staging server. |
+| **prod** | `npm run start:prod`, `npm run ios:prod`, `npm run android:prod`, `npm run web:prod` | `https://marlin-live.com/api` | Marlin production server. |
 
-## Get a fresh project
+### Web Build Profiles
 
-When you're ready, run:
+Web builds also support all three profiles:
 
 ```bash
-npm run reset-project
+npm run web:build:dev
+npm run web:build:test
+npm run web:build:prod
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Running on a Specific Platform
 
-## Learn more
+```bash
+# Android
+npm run android:test
 
-To learn more about developing your project with Expo, look at the following resources:
+# iOS
+npm run ios:test
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Web
+npm run web:test
+```
 
-## Join the community
+## Linting
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npm run lint
+```
