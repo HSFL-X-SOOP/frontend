@@ -15,6 +15,7 @@ import Animated, {
     withRepeat,
     withTiming,
 } from 'react-native-reanimated';
+import {Platform} from 'react-native';
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
@@ -86,6 +87,11 @@ export const SensorMarkerSvg: React.FC<SensorMarkerSvgProps> = ({
         return {opacity};
     });
 
+    const yValueText = metricSymbol === "cm" ? 52 : 54;
+    const yMetricText = metricSymbol === "cm" ? 62 : 54;
+    const xValueText = metricSymbol === "cm" ? 48 : 43;
+    const xMetricText = metricSymbol === "cm" ? 48 : 58;
+
     return (
         <Svg width={width} height={height} viewBox="0 0 96 20">
             <G id="marker-minimal-badge">
@@ -129,15 +135,26 @@ export const SensorMarkerSvg: React.FC<SensorMarkerSvgProps> = ({
                 <Circle cx="48" cy="48" r="17" fill={backgroundColor} opacity="0.85"/>
 
                 <SvgText
-                    x="48"
-                    y="54"
+                    x={xValueText}
+                    y={yValueText}
                     fontFamily="Arial, sans-serif"
-                    fontSize="18"
+                    fontSize={18}
                     fontWeight="bold"
                     fill={textColor}
                     textAnchor="middle"
                 >
-                    {value}{metricSymbol}
+                    {value}
+                </SvgText>
+                <SvgText
+                    x={xMetricText}
+                    y={yMetricText}
+                    fontFamily="Arial, sans-serif"
+                    fontSize={12}
+                    fontWeight="bold"
+                    fill={textColor}
+                    textAnchor="middle"
+                >
+                    {metricSymbol}
                 </SvgText>
 
                 <G id="pulse-min-badge">

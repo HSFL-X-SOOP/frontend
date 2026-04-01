@@ -15,33 +15,33 @@ export const SensorMarkerContent: React.FC<SensorMarkerContentProps> = ({locatio
         box.type === BoxType.AirBox
     );
 
-    let valueToShow: string | number = "--";
+    let valueToShow: number = -0;
     let metricSymbol: string = "";
     //const temperature = valueToShow !== undefined ? Math.round(Number(valueToShow)) : "--";
 
     switch (metricToShow) {
         case "waterTemperature":
             if (box?.type === BoxType.AirBox) {
-                valueToShow = box.measurementTimes.find(measurement => measurement.measurements.airTemperature)?.measurements.airTemperature ?? "--";
+                valueToShow = box.measurementTimes.find(measurement => measurement.measurements.airTemperature)?.measurements.airTemperature ?? -0;
             } else {
-                valueToShow = box?.measurementTimes.find(measurement => measurement.measurements.waterTemperature)?.measurements.waterTemperature ?? "--";
+                valueToShow = box?.measurementTimes.find(measurement => measurement.measurements.waterTemperature)?.measurements.waterTemperature ?? -0;
             }
             metricSymbol = "°C";
             break;
         case "waterLevel":
             if (box?.type === BoxType.WaterBox) {
-                valueToShow = box.measurementTimes.find(measurement => measurement.measurements.tide)?.measurements.tide ?? "--";
+                valueToShow = box.measurementTimes.find(measurement => measurement.measurements.tide)?.measurements.tide ?? -0;
                 metricSymbol = "cm";
             }
             break;
         case "waveHeight":
             if (box?.type === BoxType.WaterBox) {
-                valueToShow = box.measurementTimes.find(measurement => measurement.measurements.waveHeight)?.measurements.waveHeight ?? "--";
+                valueToShow = box.measurementTimes.find(measurement => measurement.measurements.waveHeight)?.measurements.waveHeight ?? -0;
                 metricSymbol = "cm";
             }
             break;
     }
-    if (valueToShow !== "--") {
+    if (valueToShow !== -0) {
         valueToShow = Math.round(Number(valueToShow));
     }
 

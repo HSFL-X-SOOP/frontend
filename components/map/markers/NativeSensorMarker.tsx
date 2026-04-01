@@ -1,7 +1,7 @@
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef} from 'react';
 import {LocationWithBoxes} from '@/api/models/sensor';
 import {PointAnnotation} from '@maplibre/maplibre-react-native';
-import { StyleSheet, View} from 'react-native';
+import {Platform, View} from 'react-native';
 import {SensorMarkerContent} from '../sensors/MapSensorTemperatureText';
 
 interface SensorMarkerProps {
@@ -25,7 +25,8 @@ const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProp
         prevProps.isDark === nextProps.isDark &&
         prevProps.setMarker === nextProps.setMarker &&
         prevProps.setOpen === nextProps.setOpen &&
-        prevProps.selectedLocationId === nextProps.selectedLocationId
+        prevProps.selectedLocationId === nextProps.selectedLocationId &&
+        prevProps.metricToShow === nextProps.metricToShow
     );
 };
 
@@ -35,6 +36,8 @@ const arePropsEqual = (prevProps: SensorMarkerProps, nextProps: SensorMarkerProp
  * Shows sensor data on map with interactive modal popup
  */
 const NativeSensorMarker = ({locationWithBoxes, metricToShow, setMarker, setOpen, selectedLocationId}: SensorMarkerProps) => {
+    const pointAnnotationRef = useRef<any>(null);
+
     // Memoize marker position to avoid recalculation
     const markerCoordinates = useMemo(
         () => ({
@@ -42,14 +45,22 @@ const NativeSensorMarker = ({locationWithBoxes, metricToShow, setMarker, setOpen
             lon: locationWithBoxes.location?.coordinates.lon ?? 0,
             lat: locationWithBoxes.location?.coordinates.lat ?? 0,
         }),
-        [locationWithBoxes.location?.id, locationWithBoxes.location?.coordinates.lon, locationWithBoxes.location?.coordinates.lat]
+        [locationWithBoxes.location?.id, locationWithBoxes.location?.coordinates.lon, locationWithBoxes.location?.coordinates.lat, metricToShow, selectedLocationId]
     );
+
+    // Android renders PointAnnotation children to a bitmap, so explicit refresh is needed when content changes.
+    useEffect(() => {
+        if (Platform.OS === 'android') {
+            pointAnnotationRef.current?.refresh?.();
+        }
+    }, [metricToShow]);
 
     return (
         <>
             <PointAnnotation
+                ref={pointAnnotationRef}
                 id={`marker-${markerCoordinates.id}`}
-                key={markerCoordinates.id + (selectedLocationId === markerCoordinates.id ? '_selected' : '')}
+                key={`${markerCoordinates.id}_${metricToShow}${selectedLocationId === markerCoordinates.id ? '_selected' : ''}`}
                 coordinate={[markerCoordinates.lon, markerCoordinates.lat]}
                 onSelected={() => {setMarker?.(locationWithBoxes); setOpen?.(true);}}
             >
@@ -62,14 +73,5 @@ const NativeSensorMarker = ({locationWithBoxes, metricToShow, setMarker, setOpen
 };
 
 NativeSensorMarker.displayName = 'NativeSensorMarker';
-
-const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-});
 
 export default React.memo(NativeSensorMarker, arePropsEqual);
